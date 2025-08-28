@@ -1,7 +1,6 @@
 // 上传文件数据接口
 interface UploadFileData {
-    file?: File;
-    base64?: string;
+    file: File;
 }
 
 // 上传响应接口
@@ -26,7 +25,8 @@ export async function upImgMain(fileData: UploadFileData): Promise<UploadRespons
 }
 
 // 上传图片到SM图床
-export async function upImgBySM({file}: {file: File}): Promise<UploadResponse> {
+export async function upImgBySM(fileData: UploadFileData): Promise<UploadResponse> {
+    const { file } = fileData;
     const formData = new FormData();
     formData.append('smfile', file);
     formData.append('format', 'json');
@@ -55,7 +55,8 @@ export async function upImgBySM({file}: {file: File}): Promise<UploadResponse> {
 }
 
 // 上传到imgBB图床
-export async function upImgByImgBB({file}: {file: File}): Promise<UploadResponse> {
+export async function upImgByImgBB(fileData: UploadFileData): Promise<UploadResponse> {
+    const { file } = fileData;
     const formData = new FormData();
     formData.append('image', file);
     formData.append('key', process.env.IMGBB_API || '');

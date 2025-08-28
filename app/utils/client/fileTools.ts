@@ -20,7 +20,6 @@ export async function imgUpload(event: Event | React.ChangeEvent<HTMLInputElemen
     try {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('base64', '');
         
         const res: BaseResponse<UploadResponseData> = await uploadImages(formData);
         console.log('uploadImages', res);

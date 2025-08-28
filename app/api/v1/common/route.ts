@@ -11,8 +11,7 @@ interface CommonRequest {
 
 // 上传文件数据
 interface UploadData {
-    file?: File;
-    base64?: string;
+    file: File;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -45,20 +44,12 @@ async function handleFileUpload(req: NextRequest): Promise<NextResponse> {
     try {
         const formData = await req.formData();
         const file = formData.get('file') as File;
-        const base64 = formData.get('base64') as string;
 
-        if (!file && !base64) {
+        if (!file) {
             return NextResponse.json(BizResult.fail('', '请选择要上传的文件'));
         }
 
-        const uploadData: UploadData = {};
-        
-        if (file) {
-            uploadData.file = file;
-        }
-        if (base64) {
-            uploadData.base64 = base64;
-        }
+        const uploadData: UploadData = { file };
 
         const result = await upImgMain(uploadData);
 
