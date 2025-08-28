@@ -3,7 +3,7 @@ import {Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger} from "@he
 import {FilterIco} from "@/components/icon/filterIco";
 import {useDispatch, useSelector} from 'react-redux'
 import {SearchIcon} from "@/components/icon/SearchICon";
-import {setAll, setUp, setDown, setUse, setUsed, closeSearch, openSearch} from "@/app/store/myGiftStore";
+import {setAll, setUp, setDown, setUse, setUsed, closeSearch, openSearch} from "@/store/myGiftStore";
 import { Key } from "@react-types/shared";
 
 export function MyGiftLeftDropdown() {

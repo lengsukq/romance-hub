@@ -10,7 +10,7 @@ import {
     setComplete,
     setNotStart,
     setPass
-} from "@/app/store/taskListStore";
+} from "@/store/taskListStore";
 import {SearchIcon} from "@/components/icon/SearchICon";
 import { Key } from "@react-types/shared";
 

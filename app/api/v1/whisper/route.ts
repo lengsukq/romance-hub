@@ -1,6 +1,6 @@
 'use server'
 import BizResult from '@/utils/BizResult';
-import executeQuery from "@/utils/db";
+import { WhisperService } from '@/utils/ormService';
 import { cookieTools } from "@/utils/cookieTools";
 import { NextRequest, NextResponse } from 'next/server';
 import { WhisperItem, PaginationParams, BaseResponse } from '@/types';
@@ -66,22 +66,19 @@ async function handleGetMyWhisperList(req: NextRequest, data: WhisperListData): 
 
         const { searchWords = '' } = data || {};
 
-        const result = await executeQuery({
-            query: `SELECT whisper_list.*, userinfo.username as publisherName, favourite_list.favId
-                   FROM whisper_list 
-                   LEFT JOIN userinfo ON whisper_list.publisherEmail = userinfo.userEmail 
-                   LEFT JOIN favourite_list ON favourite_list.collectionId = whisper_list.whisperId 
-                       AND collectionType = 'whisper' AND favourite_list.userEmail = ?
-                   WHERE whisper_list.publisherEmail = ? AND title LIKE ? 
-                   ORDER BY whisperId DESC`,
-            values: [userEmail, userEmail, `%${searchWords}%`]
-        });
+        const whispers = await WhisperService.getMyWhispers(userEmail, searchWords);
 
-        // 添加收藏状态
-        result.forEach((item: any) => {
-            item.isFavorite = !!item.favId;
-            delete item.favId;
-        });
+        // 添加收藏状态和格式化数据
+        const result = [];
+        for (const whisper of whispers) {
+            const favourite = await WhisperService.checkWhisperFavourite(whisper.whisperId, userEmail);
+            result.push({
+                ...whisper,
+                publisherName: whisper.publisher.username,
+                isFavorite: !!favourite,
+                favId: favourite?.favId || null
+            });
+        }
 
         return NextResponse.json(BizResult.success(result, '获取我的留言列表成功'));
 
@@ -102,22 +99,19 @@ async function handleGetTAWhisperList(req: NextRequest, data: WhisperListData): 
 
         const { searchWords = '' } = data || {};
 
-        const result = await executeQuery({
-            query: `SELECT whisper_list.*, userinfo.username as publisherName, favourite_list.favId
-                   FROM whisper_list 
-                   LEFT JOIN userinfo ON whisper_list.publisherEmail = userinfo.userEmail 
-                   LEFT JOIN favourite_list ON favourite_list.collectionId = whisper_list.whisperId 
-                       AND collectionType = 'whisper' AND favourite_list.userEmail = ?
-                   WHERE whisper_list.publisherEmail = ? AND title LIKE ? 
-                   ORDER BY whisperId DESC`,
-            values: [userEmail, lover, `%${searchWords}%`]
-        });
+        const whispers = await WhisperService.getTAWhispers(userEmail, lover, searchWords);
 
-        // 添加收藏状态
-        result.forEach((item: any) => {
-            item.isFavorite = !!item.favId;
-            delete item.favId;
-        });
+        // 添加收藏状态和格式化数据
+        const result = [];
+        for (const whisper of whispers) {
+            const favourite = await WhisperService.checkWhisperFavourite(whisper.whisperId, userEmail);
+            result.push({
+                ...whisper,
+                publisherName: whisper.publisher.username,
+                isFavorite: !!favourite,
+                favId: favourite?.favId || null
+            });
+        }
 
         return NextResponse.json(BizResult.success(result, '获取TA的留言列表成功'));
 
@@ -155,22 +149,20 @@ async function handleCreateWhisper(req: NextRequest, data: CreateWhisperData): P
         }
 
         // 检查目标用户是否存在
-        const userCheck = await executeQuery({
-            query: 'SELECT userEmail FROM userinfo WHERE userEmail = ?',
-            values: [targetUser]
-        });
+        const userExists = await WhisperService.checkUserExists(targetUser);
 
-        if (userCheck.length === 0) {
+        if (!userExists) {
             return NextResponse.json(BizResult.fail('', '目标用户不存在'));
         }
 
-        const result = await executeQuery({
-            query: `INSERT INTO whisper_list (publisherEmail, toUserEmail, title, content, creationTime) 
-                   VALUES (?, ?, ?, ?, ?)`,
-            values: [userEmail, targetUser, content.substring(0, 20), content, creationTime]
+        const result = await WhisperService.createWhisper({
+            publisherEmail: userEmail,
+            toUserEmail: targetUser,
+            title: content.substring(0, 20),
+            content
         });
 
-        return NextResponse.json(BizResult.success({ whisperId: (result as any).insertId }, '发布留言成功'));
+        return NextResponse.json(BizResult.success({ whisperId: result.whisperId }, '发布留言成功'));
 
     } catch (error) {
         console.error('创建留言失败:', error);
@@ -194,23 +186,17 @@ async function handleDeleteWhisper(req: NextRequest, data: DeleteWhisperData): P
         }
 
         // 检查留言是否存在且有权限删除
-        const whisperCheck = await executeQuery({
-            query: 'SELECT publisherEmail FROM whisper_list WHERE whisperId = ?',
-            values: [whisperId]
-        });
+        const whisper = await WhisperService.checkWhisperPermission(whisperId);
 
-        if (whisperCheck.length === 0) {
+        if (!whisper) {
             return NextResponse.json(BizResult.fail('', '留言不存在'));
         }
 
-        if (whisperCheck[0].publisherEmail !== userEmail) {
+        if (whisper.publisherEmail !== userEmail) {
             return NextResponse.json(BizResult.fail('', '只能删除自己的留言'));
         }
 
-        await executeQuery({
-            query: 'DELETE FROM whisper_list WHERE whisperId = ?',
-            values: [whisperId]
-        });
+        await WhisperService.deleteWhisper(whisperId);
 
         return NextResponse.json(BizResult.success('', '删除留言成功'));
 

@@ -1,11 +1,11 @@
 'use server'
 import BizResult from '@/utils/BizResult';
-import executeQuery from "@/utils/db";
+import { GiftService } from '@/utils/ormService';
 import { cookieTools } from "@/utils/cookieTools";
 import { NextRequest, NextResponse } from 'next/server';
 import { GiftItem, PaginationParams, BaseResponse } from '@/types';
 import { randomImages } from "@/utils/third-party-tools";
-import { addScore, subtractScore } from "@/utils/commonSQL";
+import { addScore, subtractScore } from "@/utils/commonORM";
 
 // 请求体接口
 interface GiftRequest {
@@ -101,16 +101,15 @@ async function handleGetGiftList(req: NextRequest, data: GiftListData): Promise<
 
         const { searchWords = '' } = data || {};
 
-        const result = await executeQuery({
-            query: `SELECT g.*, u.username as publisherName 
-                   FROM gift_list g 
-                   LEFT JOIN userinfo u ON g.publisherEmail = u.userEmail 
-                   WHERE g.isShow = 1 AND g.remained > 0 AND g.giftName LIKE ?
-                   ORDER BY g.giftId DESC`,
-            values: [`%${searchWords}%`]
-        });
+        const result = await GiftService.getAvailableGifts(searchWords);
 
-        return NextResponse.json(BizResult.success(result, '获取礼物列表成功'));
+        // 转换数据格式以匹配原有的返回结构
+        const transformedResult = result.map(gift => ({
+            ...gift,
+            publisherName: gift.publisher.username
+        }));
+
+        return NextResponse.json(BizResult.success(transformedResult, '获取礼物列表成功'));
 
     } catch (error) {
         console.error('获取礼物列表失败:', error);
@@ -129,28 +128,10 @@ async function handleGetMyGiftList(req: NextRequest, data: GiftListData): Promis
 
         const { searchWords = '', type = '' } = data || {};
 
-        let whereCondition = 'publisherEmail = ? AND giftName LIKE ?';
-        let queryValues: any[] = [userEmail, `%${searchWords}%`];
-
-        // 根据类型筛选
-        switch (type) {
-            case '已上架':
-                whereCondition += ' AND isShow = 1';
-                break;
-            case '已下架':
-                whereCondition += ' AND isShow = 0';
-                break;
-            case '待使用':
-                whereCondition += ' AND remained > 0';
-                break;
-            case '已用完':
-                whereCondition += ' AND remained = 0';
-                break;
-        }
-
-        const result = await executeQuery({
-            query: `SELECT * FROM gift_list WHERE ${whereCondition} ORDER BY giftId DESC`,
-            values: queryValues
+        const result = await GiftService.getMyGifts({
+            userEmail,
+            searchWords,
+            type
         });
 
         return NextResponse.json(BizResult.success(result, '获取我的礼物列表成功'));
@@ -176,16 +157,14 @@ async function handleGetGiftDetail(req: NextRequest, data: GiftOperationData): P
             return NextResponse.json(BizResult.fail('', '礼物ID不能为空'));
         }
 
-        const result = await executeQuery({
-            query: `SELECT g.*, u.username as publisherName 
-                   FROM gift_list g 
-                   LEFT JOIN userinfo u ON g.publisherEmail = u.userEmail 
-                   WHERE g.giftId = ?`,
-            values: [giftId]
-        });
+        const result = await GiftService.getGiftDetail(giftId);
 
-        if (result.length > 0) {
-            return NextResponse.json(BizResult.success(result[0], '获取礼物详情成功'));
+        if (result) {
+            const transformedResult = {
+                ...result,
+                publisherName: result.publisher.username
+            };
+            return NextResponse.json(BizResult.success(transformedResult, '获取礼物详情成功'));
         } else {
             return NextResponse.json(BizResult.fail('', '礼物不存在'));
         }
@@ -229,15 +208,18 @@ async function handleCreateGift(req: NextRequest, data: CreateGiftData): Promise
         }
 
         const finalGiftImg = giftImg || await randomImages();
-        const isShowValue = isShow ? 1 : 0;
 
-        const result = await executeQuery({
-            query: `INSERT INTO gift_list (publisherEmail, giftImg, giftName, giftDetail, needScore, remained, isShow) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            values: [userEmail, finalGiftImg, giftName, giftDetail, needScore, remained, isShowValue]
+        const result = await GiftService.createGift({
+            publisherEmail: userEmail,
+            giftImg: finalGiftImg,
+            giftName,
+            giftDetail,
+            needScore,
+            remained,
+            isShow
         });
 
-        return NextResponse.json(BizResult.success({ giftId: (result as any).insertId }, '创建礼物成功'));
+        return NextResponse.json(BizResult.success({ giftId: result.giftId }, '创建礼物成功'));
 
     } catch (error) {
         console.error('创建礼物失败:', error);
@@ -261,70 +243,62 @@ async function handleUpdateGift(req: NextRequest, data: UpdateGiftData): Promise
         }
 
         // 检查礼物是否存在且有权限修改
-        const giftCheck = await executeQuery({
-            query: 'SELECT publisherEmail FROM gift_list WHERE giftId = ?',
-            values: [giftId]
-        });
+        const giftCheck = await GiftService.checkGiftPermission(giftId);
 
-        if (giftCheck.length === 0) {
+        if (!giftCheck) {
             return NextResponse.json(BizResult.fail('', '礼物不存在'));
         }
 
-        if (giftCheck[0].publisherEmail !== userEmail) {
+        if (giftCheck.publisherEmail !== userEmail) {
             return NextResponse.json(BizResult.fail('', '没有权限修改此礼物'));
         }
 
-        const updateFields: string[] = [];
-        const updateValues: any[] = [];
+        const updateData: {
+            giftName?: string;
+            giftDetail?: string;
+            needScore?: number;
+            remained?: number;
+            giftImg?: string;
+            isShow?: boolean;
+        } = {};
 
         // 动态构建更新字段
         if (giftName) {
             if (giftName.length > 10) {
                 return NextResponse.json(BizResult.fail('', '礼物名称不能超过10个字'));
             }
-            updateFields.push('giftName = ?');
-            updateValues.push(giftName);
+            updateData.giftName = giftName;
         }
         if (giftDetail) {
             if (giftDetail.length > 20) {
                 return NextResponse.json(BizResult.fail('', '礼物描述不能超过20个字'));
             }
-            updateFields.push('giftDetail = ?');
-            updateValues.push(giftDetail);
+            updateData.giftDetail = giftDetail;
         }
         if (needScore !== undefined) {
             if (needScore < 0) {
                 return NextResponse.json(BizResult.fail('', '所需积分不能小于0'));
             }
-            updateFields.push('needScore = ?');
-            updateValues.push(needScore);
+            updateData.needScore = needScore;
         }
         if (remained !== undefined) {
             if (remained < 0) {
                 return NextResponse.json(BizResult.fail('', '库存不能小于0'));
             }
-            updateFields.push('remained = ?');
-            updateValues.push(remained);
+            updateData.remained = remained;
         }
         if (giftImg) {
-            updateFields.push('giftImg = ?');
-            updateValues.push(giftImg);
+            updateData.giftImg = giftImg;
         }
         if (isShow !== undefined) {
-            updateFields.push('isShow = ?');
-            updateValues.push(isShow ? 1 : 0);
+            updateData.isShow = isShow;
         }
 
-        if (updateFields.length === 0) {
+        if (Object.keys(updateData).length === 0) {
             return NextResponse.json(BizResult.fail('', '没有要更新的字段'));
         }
 
-        updateValues.push(giftId);
-
-        await executeQuery({
-            query: `UPDATE gift_list SET ${updateFields.join(', ')} WHERE giftId = ?`,
-            values: updateValues
-        });
+        await GiftService.updateGift(giftId, updateData);
 
         return NextResponse.json(BizResult.success('', '更新礼物成功'));
 
@@ -350,16 +324,11 @@ async function handleExchangeGift(req: NextRequest, data: GiftOperationData): Pr
         }
 
         // 获取礼物信息
-        const giftInfo = await executeQuery({
-            query: 'SELECT * FROM gift_list WHERE giftId = ? AND isShow = 1',
-            values: [giftId]
-        });
+        const gift = await GiftService.getGiftForExchange(giftId);
 
-        if (giftInfo.length === 0) {
+        if (!gift) {
             return NextResponse.json(BizResult.fail('', '礼物不存在或已下架'));
         }
-
-        const gift = giftInfo[0];
 
         if (gift.remained <= 0) {
             return NextResponse.json(BizResult.fail('', '礼物库存不足'));
@@ -377,10 +346,7 @@ async function handleExchangeGift(req: NextRequest, data: GiftOperationData): Pr
         }
 
         // 减少礼物库存
-        await executeQuery({
-            query: 'UPDATE gift_list SET remained = remained - 1 WHERE giftId = ?',
-            values: [giftId]
-        });
+        await GiftService.decrementGiftStock(giftId);
 
         // 记录兑换记录（如果有兑换记录表的话）
         // 这里可以添加兑换记录的逻辑
@@ -409,26 +375,18 @@ async function handleUseGift(req: NextRequest, data: GiftOperationData): Promise
         }
 
         // 检查礼物是否存在且属于当前用户
-        const giftCheck = await executeQuery({
-            query: 'SELECT * FROM gift_list WHERE giftId = ? AND publisherEmail = ?',
-            values: [giftId, userEmail]
-        });
+        const gift = await GiftService.getGiftDetail(giftId);
 
-        if (giftCheck.length === 0) {
+        if (!gift || gift.publisherEmail !== userEmail) {
             return NextResponse.json(BizResult.fail('', '礼物不存在或不属于您'));
         }
-
-        const gift = giftCheck[0];
 
         if (gift.remained <= 0) {
             return NextResponse.json(BizResult.fail('', '礼物已用完'));
         }
 
         // 使用礼物（减少库存）
-        await executeQuery({
-            query: 'UPDATE gift_list SET remained = remained - 1 WHERE giftId = ?',
-            values: [giftId]
-        });
+        await GiftService.decrementGiftStock(giftId);
 
         return NextResponse.json(BizResult.success('', '使用成功'));
 
@@ -454,23 +412,17 @@ async function handleShowGift(req: NextRequest, data: GiftShowData): Promise<Nex
         }
 
         // 检查礼物是否存在且属于当前用户
-        const giftCheck = await executeQuery({
-            query: 'SELECT publisherEmail FROM gift_list WHERE giftId = ?',
-            values: [giftId]
-        });
+        const giftCheck = await GiftService.checkGiftPermission(giftId);
 
-        if (giftCheck.length === 0) {
+        if (!giftCheck) {
             return NextResponse.json(BizResult.fail('', '礼物不存在'));
         }
 
-        if (giftCheck[0].publisherEmail !== userEmail) {
+        if (giftCheck.publisherEmail !== userEmail) {
             return NextResponse.json(BizResult.fail('', '没有权限操作此礼物'));
         }
 
-        await executeQuery({
-            query: 'UPDATE gift_list SET isShow = ? WHERE giftId = ?',
-            values: [isShow ? 1 : 0, giftId]
-        });
+        await GiftService.toggleGiftShow(giftId, isShow);
 
         return NextResponse.json(BizResult.success('', isShow ? '上架成功' : '下架成功'));
 

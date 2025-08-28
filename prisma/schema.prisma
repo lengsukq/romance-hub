@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户信息表
+model UserInfo {
+  userId           String   @id @default(cuid())
+  userEmail        String   @unique
+  username         String
+  password         String
+  avatar           String?
+  describeBySelf   String?
+  registrationTime DateTime @default(now())
+  lover            String
+  score            Int      @default(0)
+
+  // 关联关系
+  publishedTasks   TaskList[]     @relation("PublisherTasks")
+  receivedTasks    TaskList[]     @relation("ReceiverTasks")
+  publishedGifts   GiftList[]     @relation("PublisherGifts")
+  publishedWhispers WhisperList[] @relation("PublisherWhispers")
+  receivedWhispers  WhisperList[] @relation("ReceiverWhispers")
+  favourites       FavouriteList[]
+
+  @@map("userinfo")
+}
+
+// 任务列表表
+model TaskList {
+  taskId          String   @id @default(cuid())
+  publisherEmail  String
+  receiverEmail   String?
+  taskName        String
+  taskDesc        String?
+  taskImage       String?  // 存储为逗号分隔的字符串
+  taskScore       Int      @default(0)
+  taskStatus      String   @default("未开始")
+  creationTime    DateTime @default(now())
+  completionTime  DateTime?
+  isApprove       Boolean  @default(false)
+
+  // 关联关系
+  publisher       UserInfo @relation("PublisherTasks", fields: [publisherEmail], references: [userEmail])
+  receiver        UserInfo? @relation("ReceiverTasks", fields: [receiverEmail], references: [userEmail])
+
+  @@map("tasklist")
+}
+
+// 礼物列表表
+model GiftList {
+  giftId          String   @id @default(cuid())
+  publisherEmail  String
+  giftImg         String?
+  giftName        String
+  giftDetail      String?
+  needScore       Int      @default(0)
+  remained        Int      @default(0)
+  isShow          Boolean  @default(true)
+  creationTime    DateTime @default(now())
+
+  // 关联关系
+  publisher       UserInfo @relation("PublisherGifts", fields: [publisherEmail], references: [userEmail])
+
+  @@map("gift_list")
+}
+
+// 留言列表表
+model WhisperList {
+  whisperId       String   @id @default(cuid())
+  publisherEmail  String
+  toUserEmail     String?
+  title           String?
+  content         String
+  creationTime    DateTime @default(now())
+  isRead          Boolean  @default(false)
+
+  // 关联关系
+  publisher       UserInfo @relation("PublisherWhispers", fields: [publisherEmail], references: [userEmail])
+  receiver        UserInfo? @relation("ReceiverWhispers", fields: [toUserEmail], references: [userEmail])
+
+  @@map("whisper_list")
+}
+
+// 收藏列表表
+model FavouriteList {
+  favId          String   @id @default(cuid())
+  userEmail      String
+  collectionId   String
+  collectionType String   // 'task', 'gift', 'whisper'
+  creationTime   DateTime @default(now())
+
+  // 关联关系
+  user           UserInfo @relation(fields: [userEmail], references: [userEmail])
+
+  @@unique([userEmail, collectionId, collectionType])
+  @@map("favourite_list")
+}

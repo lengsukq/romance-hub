@@ -1,6 +1,6 @@
 'use server'
 import BizResult from '@/utils/BizResult';
-import executeQuery from "@/utils/db";
+import { TaskService } from '@/utils/ormService';
 import { cookieTools } from "@/utils/cookieTools";
 import { NextRequest, NextResponse } from 'next/server';
 import { TaskItem, PaginationParams, BaseResponse } from '@/types';
@@ -30,7 +30,7 @@ interface CreateTaskData {
 // 更新任务数据
 interface UpdateTaskData {
     taskId: string;
-    taskStatus?: number;
+    taskStatus?: string;
     taskName?: string;
     taskDesc?: string;
     taskImage?: string[];
@@ -91,25 +91,15 @@ async function handleGetTaskList(req: NextRequest, data: TaskListData): Promise<
         const offset = (current - 1) * pageSize;
 
         // 查询任务列表
-        const result = await executeQuery({
-            query: `SELECT * FROM tasklist WHERE
-                   (publisherEmail = ? OR publisherEmail = ? OR receiverEmail = ?)
-                   AND (taskStatus = ? OR ? IS NULL)
-                   AND taskName LIKE ?
-                   ORDER BY taskId DESC LIMIT ?, ?`,
-            values: [userEmail, lover, userEmail, taskStatus, taskStatus, `%${searchWords}%`, offset, pageSize]
+        const { tasks: result, totalCount } = await TaskService.getTaskList({
+            userEmail,
+            lover,
+            taskStatus: taskStatus || undefined,
+            searchWords,
+            offset,
+            pageSize
         });
 
-        // 计算总条目数
-        const totalCountResult = await executeQuery({
-            query: `SELECT COUNT(*) AS totalCount FROM tasklist 
-                   WHERE (publisherEmail = ? OR publisherEmail = ? OR receiverEmail = ?) 
-                   AND (taskStatus = ? OR ? IS NULL)
-                   AND taskName LIKE ?`,
-            values: [userEmail, lover, userEmail, taskStatus, taskStatus, `%${searchWords}%`]
-        });
-
-        const totalCount = totalCountResult[0].totalCount;
         const totalPages = Math.ceil(totalCount / pageSize);
 
         // 处理任务图片数组
@@ -149,22 +139,19 @@ async function handleGetTaskDetail(req: NextRequest, data: TaskDetailData): Prom
             return NextResponse.json(BizResult.fail('', '任务ID不能为空'));
         }
 
-        const result = await executeQuery({
-            query: `SELECT tasklist.*, favourite_list.favId FROM tasklist 
-                   LEFT JOIN favourite_list ON collectionId = taskId AND collectionType = 'task' AND favourite_list.userEmail = ?
-                   WHERE taskId = ?`,
-            values: [userEmail, taskId]
-        });
+        const task = await TaskService.getTaskDetail(taskId);
+        const favourite = await TaskService.checkTaskFavourite(taskId, userEmail);
 
-        if (result.length > 0) {
-            const task = result[0];
-            if (task.taskImage) {
-                task.taskImage = task.taskImage.split(',');
-            }
-            task.isApprove = task.isApprove !== 0;
-            task.isFavorite = !!task.favId;
+        if (task) {
+            const result = {
+                ...task,
+                taskImage: task.taskImage ? task.taskImage.split(',') : [],
+                isApprove: task.isApprove,
+                isFavorite: !!favourite,
+                favId: favourite?.favId || null
+            };
 
-            return NextResponse.json(BizResult.success(task, '获取任务详情成功'));
+            return NextResponse.json(BizResult.success(result, '获取任务详情成功'));
         } else {
             return NextResponse.json(BizResult.fail('', '任务不存在'));
         }
@@ -198,13 +185,16 @@ async function handleCreateTask(req: NextRequest, data: CreateTaskData): Promise
         const creationTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
         const taskImageStr = taskImage.join(',');
 
-        const result = await executeQuery({
-            query: `INSERT INTO tasklist (publisherEmail, taskName, taskDesc, taskImage, taskScore, receiverEmail, creationTime, taskStatus) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            values: [userEmail, taskName, taskDesc, taskImageStr, taskScore, receiverEmail || null, creationTime, '未开始']
+        const result = await TaskService.createTask({
+            publisherEmail: userEmail,
+            taskName,
+            taskDesc,
+            taskImage: taskImageStr,
+            taskScore,
+            receiverEmail: receiverEmail || undefined
         });
 
-        return NextResponse.json(BizResult.success({ taskId: (result as any).insertId }, '创建任务成功'));
+        return NextResponse.json(BizResult.success({ taskId: result.taskId }, '创建任务成功'));
 
     } catch (error) {
         console.error('创建任务失败:', error);
@@ -228,57 +218,48 @@ async function handleUpdateTask(req: NextRequest, data: UpdateTaskData): Promise
         }
 
         // 检查任务是否存在且有权限修改
-        const taskCheck = await executeQuery({
-            query: 'SELECT publisherEmail, receiverEmail FROM tasklist WHERE taskId = ?',
-            values: [taskId]
-        });
+        const task = await TaskService.checkTaskPermission(taskId);
 
-        if (taskCheck.length === 0) {
+        if (!task) {
             return NextResponse.json(BizResult.fail('', '任务不存在'));
         }
 
-        const task = taskCheck[0];
         const hasPermission = task.publisherEmail === userEmail || task.receiverEmail === userEmail;
 
         if (!hasPermission) {
             return NextResponse.json(BizResult.fail('', '没有权限修改此任务'));
         }
 
-        const updateFields: string[] = [];
-        const updateValues: any[] = [];
+        const updateData: {
+            taskStatus?: string;
+            taskName?: string;
+            taskDesc?: string;
+            taskImage?: string;
+            taskScore?: number;
+        } = {};
 
         // 动态构建更新字段
         if (taskStatus !== undefined) {
-            updateFields.push('taskStatus = ?');
-            updateValues.push(taskStatus);
+            updateData.taskStatus = taskStatus;
         }
         if (taskName) {
-            updateFields.push('taskName = ?');
-            updateValues.push(taskName);
+            updateData.taskName = taskName;
         }
         if (taskDesc) {
-            updateFields.push('taskDesc = ?');
-            updateValues.push(taskDesc);
+            updateData.taskDesc = taskDesc;
         }
         if (taskImage && taskImage.length > 0) {
-            updateFields.push('taskImage = ?');
-            updateValues.push(taskImage.join(','));
+            updateData.taskImage = taskImage.join(',');
         }
         if (taskScore !== undefined) {
-            updateFields.push('taskScore = ?');
-            updateValues.push(taskScore);
+            updateData.taskScore = taskScore;
         }
 
-        if (updateFields.length === 0) {
+        if (Object.keys(updateData).length === 0) {
             return NextResponse.json(BizResult.fail('', '没有要更新的字段'));
         }
 
-        updateValues.push(taskId);
-
-        await executeQuery({
-            query: `UPDATE tasklist SET ${updateFields.join(', ')} WHERE taskId = ?`,
-            values: updateValues
-        });
+        await TaskService.updateTask(taskId, updateData);
 
         return NextResponse.json(BizResult.success('', '更新任务成功'));
 
@@ -304,23 +285,17 @@ async function handleDeleteTask(req: NextRequest, data: TaskDetailData): Promise
         }
 
         // 检查任务是否存在且有权限删除
-        const taskCheck = await executeQuery({
-            query: 'SELECT publisherEmail FROM tasklist WHERE taskId = ?',
-            values: [taskId]
-        });
+        const task = await TaskService.checkTaskPermission(taskId);
 
-        if (taskCheck.length === 0) {
+        if (!task) {
             return NextResponse.json(BizResult.fail('', '任务不存在'));
         }
 
-        if (taskCheck[0].publisherEmail !== userEmail) {
+        if (task.publisherEmail !== userEmail) {
             return NextResponse.json(BizResult.fail('', '只有任务发布者可以删除任务'));
         }
 
-        await executeQuery({
-            query: 'DELETE FROM tasklist WHERE taskId = ?',
-            values: [taskId]
-        });
+        await TaskService.deleteTask(taskId);
 
         return NextResponse.json(BizResult.success('', '删除任务成功'));
 
