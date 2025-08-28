@@ -10,7 +10,7 @@ interface ClientCookie {
     expires: string;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     try {
         const reqCookie = request.cookies.get('cookie');
         if (!reqCookie) {
@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
         }
         
         const clientCookie: ClientCookie = JSON.parse(reqCookie.value);
-        const serverCookie = cookies().get(clientCookie.name);
+        const serverCookie = (await cookies()).get(clientCookie.name);
         const pastDate = new Date(Date.now() - 86400000).toUTCString();
 
         if (!serverCookie || clientCookie.value !== serverCookie.value) {

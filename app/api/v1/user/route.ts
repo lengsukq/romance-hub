@@ -86,7 +86,7 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
                 lover: lover
             });
             
-            cookies().set({
+            (await cookies()).set({
                 name: userEmail,
                 value: cookie,
                 httpOnly: false,
@@ -96,7 +96,7 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
             
             return NextResponse.json(BizResult.success(result, '登录成功'), {
                 status: 200,
-                headers: {'Set-Cookie': `cookie=${JSON.stringify(cookies().get(userEmail))}`},
+                headers: {'Set-Cookie': `cookie=${JSON.stringify((await cookies()).get(userEmail))}`},
             });
         } else {
             return NextResponse.json(BizResult.fail('', '用户名或密码错误'));
@@ -152,7 +152,7 @@ async function handleLogout(req: NextRequest): Promise<NextResponse> {
         
         if (userEmail) {
             // 清除cookie
-            cookies().delete(userEmail);
+            (await cookies()).delete(userEmail);
         }
         
         return NextResponse.json(BizResult.success('', '退出成功'));
