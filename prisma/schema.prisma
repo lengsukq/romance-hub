@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -11,141 +8,123 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 用户信息表
 model UserInfo {
-  userId           String   @id @default(cuid())
-  userEmail        String   @unique
-  username         String
-  password         String
-  avatar           String?
-  describeBySelf   String?
-  registrationTime DateTime @default(now())
-  lover            String
-  score            Int      @default(0)
-
-  // 关联关系
-  publishedTasks   TaskList[]     @relation("PublisherTasks")
-  receivedTasks    TaskList[]     @relation("ReceiverTasks")
-  publishedGifts   GiftList[]     @relation("PublisherGifts")
-  publishedWhispers WhisperList[] @relation("PublisherWhispers")
-  receivedWhispers  WhisperList[] @relation("ReceiverWhispers")
-  favourites       FavouriteList[]
+  userId            String          @id @default(cuid())
+  userEmail         String          @unique
+  username          String
+  password          String
+  avatar            String?
+  describeBySelf    String?
+  registrationTime  DateTime        @default(now())
+  lover             String
+  score             Int             @default(0)
+  favourites        FavouriteList[]
+  publishedGifts    GiftList[]      @relation("PublisherGifts")
+  publishedTasks    TaskList[]      @relation("PublisherTasks")
+  receivedTasks     TaskList[]      @relation("ReceiverTasks")
+  publishedWhispers WhisperList[]   @relation("PublisherWhispers")
+  receivedWhispers  WhisperList[]   @relation("ReceiverWhispers")
 
   @@map("userinfo")
 }
 
-// 任务列表表
 model TaskList {
-  taskId          String   @id @default(cuid())
-  publisherEmail  String
-  receiverEmail   String?
-  taskName        String
-  taskDesc        String?
-  taskImage       String?  // 存储为逗号分隔的字符串
-  taskScore       Int      @default(0)
-  taskStatus      String   @default("未开始")
-  creationTime    DateTime @default(now())
-  completionTime  DateTime?
-  isApprove       Boolean  @default(false)
-
-  // 关联关系
-  publisher       UserInfo @relation("PublisherTasks", fields: [publisherEmail], references: [userEmail])
-  receiver        UserInfo? @relation("ReceiverTasks", fields: [receiverEmail], references: [userEmail])
+  taskId         String    @id @default(cuid())
+  publisherEmail String
+  receiverEmail  String?
+  taskName       String
+  taskDesc       String?
+  taskImage      String?
+  taskScore      Int       @default(0)
+  taskStatus     String    @default("未开始")
+  creationTime   DateTime  @default(now())
+  completionTime DateTime?
+  isApprove      Boolean   @default(false)
+  publisher      UserInfo  @relation("PublisherTasks", fields: [publisherEmail], references: [userEmail])
+  receiver       UserInfo? @relation("ReceiverTasks", fields: [receiverEmail], references: [userEmail])
 
   @@map("tasklist")
 }
 
-// 礼物列表表
 model GiftList {
-  giftId          String   @id @default(cuid())
-  publisherEmail  String
-  giftImg         String?
-  giftName        String
-  giftDetail      String?
-  needScore       Int      @default(0)
-  remained        Int      @default(0)
-  isShow          Boolean  @default(true)
-  creationTime    DateTime @default(now())
-
-  // 关联关系
-  publisher       UserInfo @relation("PublisherGifts", fields: [publisherEmail], references: [userEmail])
+  giftId         String   @id @default(cuid())
+  publisherEmail String
+  giftImg        String?
+  giftName       String
+  giftDetail     String?
+  needScore      Int      @default(0)
+  remained       Int      @default(0)
+  isShow         Boolean  @default(true)
+  creationTime   DateTime @default(now())
+  publisher      UserInfo @relation("PublisherGifts", fields: [publisherEmail], references: [userEmail])
 
   @@map("gift_list")
 }
 
-// 留言列表表
 model WhisperList {
-  whisperId       String   @id @default(cuid())
-  publisherEmail  String
-  toUserEmail     String?
-  title           String?
-  content         String
-  creationTime    DateTime @default(now())
-  isRead          Boolean  @default(false)
-
-  // 关联关系
-  publisher       UserInfo @relation("PublisherWhispers", fields: [publisherEmail], references: [userEmail])
-  receiver        UserInfo? @relation("ReceiverWhispers", fields: [toUserEmail], references: [userEmail])
+  whisperId      String    @id @default(cuid())
+  publisherEmail String
+  toUserEmail    String?
+  title          String?
+  content        String
+  creationTime   DateTime  @default(now())
+  isRead         Boolean   @default(false)
+  publisher      UserInfo  @relation("PublisherWhispers", fields: [publisherEmail], references: [userEmail])
+  receiver       UserInfo? @relation("ReceiverWhispers", fields: [toUserEmail], references: [userEmail])
 
   @@map("whisper_list")
 }
 
-// 收藏列表表
 model FavouriteList {
   favId          String   @id @default(cuid())
   userEmail      String
   collectionId   String
-  collectionType String   // 'task', 'gift', 'whisper'
+  collectionType String
   creationTime   DateTime @default(now())
-
-  // 关联关系
   user           UserInfo @relation(fields: [userEmail], references: [userEmail])
 
   @@unique([userEmail, collectionId, collectionType])
   @@map("favourite_list")
 }
 
-// 配置管理表
 model SystemConfig {
   id          String   @id @default(cuid())
-  configKey   String   @unique // 配置键名
-  configValue String   // 配置值
-  configType  String   // 配置类型: image_bed, notification, other
-  description String?  // 配置描述
-  isActive    Boolean  @default(true) // 是否启用
+  configKey   String   @unique
+  configValue String
+  configType  String
+  description String?
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("system_configs")
 }
 
-// 图床配置表
 model ImageBedConfig {
   id          String   @id @default(cuid())
-  bedName     String   @unique // 图床名称: SM, IMGBB, etc.
-  bedType     String   // 图床类型
-  apiUrl      String   // API地址
-  apiKey      String?  // API密钥
-  authHeader  String?  // 认证头名称
-  isActive    Boolean  @default(true) // 是否启用
-  isDefault   Boolean  @default(false) // 是否为默认图床
-  priority    Int      @default(0) // 优先级
-  description String?  // 描述
+  bedName     String   @unique
+  bedType     String
+  apiUrl      String
+  apiKey      String?
+  authHeader  String?
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+  priority    Int      @default(0)
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("image_bed_configs")
 }
 
-// 通知配置表
 model NotificationConfig {
   id          String   @id @default(cuid())
-  notifyType  String   @unique // 通知类型: wx_robot, email, etc.
-  notifyName  String   // 通知名称
-  webhookUrl  String?  // Webhook地址
-  apiKey      String?  // API密钥
-  isActive    Boolean  @default(true) // 是否启用
-  description String?  // 描述
+  notifyType  String   @unique
+  notifyName  String
+  webhookUrl  String?
+  apiKey      String?
+  isActive    Boolean  @default(true)
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
