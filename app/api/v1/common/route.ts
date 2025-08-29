@@ -16,6 +16,11 @@ interface UploadData {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
+        // 运行时检查，避免构建时执行
+        if (typeof window !== 'undefined' || process.env.NODE_ENV === 'test') {
+            return NextResponse.json(BizResult.fail('', '构建环境下不可执行'));
+        }
+
         // 对于文件上传，需要特殊处理
         const contentType = req.headers.get('content-type');
         

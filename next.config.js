@@ -4,7 +4,7 @@ const nextConfig = {
     experimental: {
         serverComponentsExternalPackages: ['@prisma/client', 'prisma']
     },
-    webpack: (config, { isServer }) => {
+    webpack: (config, { isServer, dev }) => {
         if (isServer) {
             // 对于服务器端，不压缩以避免 Prisma 问题
             config.optimization.minimize = false;
@@ -15,12 +15,19 @@ const nextConfig = {
             '@prisma/client': '@prisma/client',
         });
         
+        // 在构建时忽略某些模块以避免构建错误
+        if (!dev) {
+            config.externals.push('sqlite3');
+        }
+        
         return config;
     },
     reactStrictMode: true,
     // 跳过构建时的静态页面生成，避免 API 路由在构建时被调用
     trailingSlash: false,
     skipTrailingSlashRedirect: true,
+    // 禁用静态优化来避免构建时 API 调用
+    staticPageGenerationTimeout: 1000,
     async redirects() {
         return [
             {

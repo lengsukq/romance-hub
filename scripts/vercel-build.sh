@@ -10,7 +10,13 @@ echo "📦 安装依赖..."
 npm ci
 
 echo "🔧 生成 Prisma 客户端..."
-npx prisma generate
+npx prisma generate --schema=./prisma/schema.prisma
+
+echo "🔧 验证 Prisma 客户端..."
+if [ ! -d "./generated/prisma" ]; then
+  echo "❌ Prisma 客户端生成失败！"
+  exit 1
+fi
 
 echo "🏗️ 构建 Next.js 应用..."
 npm run build

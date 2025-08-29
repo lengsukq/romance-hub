@@ -5,8 +5,9 @@
    "scripts": {
       "dev": "next dev -p 9999",
       "yarn": "yarn dev",
-      "build": "prisma generate && next build",
-      "postinstall": "prisma generate",
+           "build": "prisma generate && next build",
+     "postinstall": "prisma generate",
+     "vercel-build": "prisma generate && next build",
       "start": "next start -p 9999",
       "lint": "next lint",
       "type-check": "tsc --noEmit",
@@ -52,7 +53,7 @@
       "postcss": "^8.4.47",
       "tailwindcss": "^3.4.13"
    },
-   "engines": {
-      "node": ">=18.17.0"
-   }
+     "engines": {
+     "node": ">=22.0.0"
+  }
 }

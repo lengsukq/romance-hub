@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
   "functions": {
     "app/**/*.ts": {
@@ -13,12 +13,12 @@
   "build": {
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
-      "SKIP_ENV_VALIDATION": "1"
+      "SKIP_ENV_VALIDATION": "1",
+      "PRISMA_GENERATE_SKIP_AUTOINSTALL": "false"
     }
   },
   "env": {
-    "NODE_VERSION": "22",
-    "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true"
+    "NODE_VERSION": "22"
   },
   "regions": ["hkg1", "sin1"],
   "rewrites": [
