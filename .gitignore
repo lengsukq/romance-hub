@@ -27,6 +27,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
 
 # vercel
 .vercel
@@ -37,4 +38,17 @@ next-env.d.ts
 /.idea/misc.xml
 /.idea/jsLibraryMappings.xml
 
+# database files
+*.db
+*.sqlite
+*.sqlite3
+/prisma/*.db
+/prisma/*.sqlite
+/prisma/*.sqlite3
+dev.db
+
+# prisma generated files
 /generated/prisma
+
+# development scripts (optional)
+setup-sqlite-dev.ps1
