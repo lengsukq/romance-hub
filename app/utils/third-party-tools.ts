@@ -14,17 +14,17 @@ interface WXMessage {
 }
 
 // 发送文本消息
-export async function sendMsg(msg: string): Promise<void> {
+export async function sendMsg(msg: string, userEmail: string): Promise<void> {
     try {
         // 从数据库获取微信机器人配置
-        const wxConfig = await ConfigService.getNotificationConfig('wx_robot');
+        const wxConfig = await ConfigService.getNotificationConfig('wx_robot', userEmail);
         if (!wxConfig || !wxConfig.webhookUrl) {
             console.error('微信机器人配置未找到或未配置webhook地址');
             return;
         }
 
         // 获取网站URL配置
-        const webUrl = await ConfigService.getSystemConfig('WEB_URL') || '';
+        const webUrl = await ConfigService.getSystemConfig('WEB_URL', userEmail) || '';
 
         const messageBody: WXMessage = {
             msgtype: "text", 

@@ -1,15 +1,19 @@
-import { PrismaClient } from '../../generated/prisma';
+import prisma from './prisma';
+import { UserService } from './ormService';
 
-const prisma = new PrismaClient();
-
-// 配置类型枚举
-export enum ConfigType {
-  IMAGE_BED = 'image_bed',
-  NOTIFICATION = 'notification',
-  OTHER = 'other'
+// 配置接口定义
+export interface SystemConfig {
+  id: string;
+  configKey: string;
+  configValue: string;
+  configType: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  userEmail: string;
 }
 
-// 图床配置接口
 export interface ImageBedConfig {
   id: string;
   bedName: string;
@@ -21,9 +25,11 @@ export interface ImageBedConfig {
   isDefault: boolean;
   priority: number;
   description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  userEmail: string | null;
 }
 
-// 通知配置接口
 export interface NotificationConfig {
   id: string;
   notifyType: string;
@@ -32,26 +38,21 @@ export interface NotificationConfig {
   apiKey: string | null;
   isActive: boolean;
   description: string | null;
-}
-
-// 系统配置接口
-export interface SystemConfig {
-  id: string;
-  configKey: string;
-  configValue: string;
-  configType: string;
-  description?: string;
-  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  userEmail: string | null;
 }
 
 export class ConfigService {
   // 获取系统配置
-  static async getSystemConfig(key: string): Promise<string | null> {
+  static async getSystemConfig(configKey: string, userEmail: string): Promise<string | null> {
     try {
-      const config = await prisma.systemConfig.findFirst({
+      const config = await prisma.systemConfig.findUnique({
         where: {
-          configKey: key,
-          isActive: true
+          configKey_userEmail: {
+            configKey,
+            userEmail
+          }
         }
       });
       return config?.configValue || null;
@@ -61,25 +62,144 @@ export class ConfigService {
     }
   }
 
-  // 设置系统配置
-  static async setSystemConfig(key: string, value: string, type: ConfigType, description?: string): Promise<boolean> {
+  // 获取默认图床配置
+  static async getDefaultImageBed(userEmail: string): Promise<ImageBedConfig | null> {
     try {
+      const bed = await prisma.imageBedConfig.findFirst({
+        where: {
+          userEmail,
+          isDefault: true,
+          isActive: true
+        },
+        orderBy: { priority: 'desc' }
+      });
+      return bed;
+    } catch (error) {
+      console.error('获取默认图床配置失败:', error);
+      return null;
+    }
+  }
+
+  // 获取图床配置
+  static async getImageBedConfig(bedName: string, userEmail: string): Promise<ImageBedConfig | null> {
+    try {
+      const bed = await prisma.imageBedConfig.findUnique({
+        where: {
+          bedName_userEmail: {
+            bedName,
+            userEmail
+          }
+        }
+      });
+      return bed;
+    } catch (error) {
+      console.error('获取图床配置失败:', error);
+      return null;
+    }
+  }
+
+  // 获取通知配置
+  static async getNotificationConfig(notifyType: string, userEmail: string): Promise<NotificationConfig | null> {
+    try {
+      const config = await prisma.notificationConfig.findUnique({
+        where: {
+          notifyType_userEmail: {
+            notifyType,
+            userEmail
+          }
+        }
+      });
+      return config;
+    } catch (error) {
+      console.error('获取通知配置失败:', error);
+      return null;
+    }
+  }
+
+  // 获取所有图床配置
+  static async getAllImageBedConfigs(userEmail: string): Promise<ImageBedConfig[]> {
+    try {
+      return await prisma.imageBedConfig.findMany({
+        where: { userEmail },
+        orderBy: [
+          { isDefault: 'desc' },
+          { priority: 'desc' },
+          { createdAt: 'desc' }
+        ]
+      });
+    } catch (error) {
+      console.error('获取所有图床配置失败:', error);
+      return [];
+    }
+  }
+
+  // 获取所有通知配置
+  static async getAllNotificationConfigs(userEmail: string): Promise<NotificationConfig[]> {
+    try {
+      return await prisma.notificationConfig.findMany({
+        where: { userEmail },
+        orderBy: { createdAt: 'desc' }
+      });
+    } catch (error) {
+      console.error('获取所有通知配置失败:', error);
+      return [];
+    }
+  }
+
+  // 设置系统配置（自动同步到lover）
+  static async setSystemConfig(configKey: string, configValue: string, configType: string, description: string, userEmail: string): Promise<boolean> {
+    try {
+      // 获取lover邮箱
+      const loverEmail = await this.getLoverEmail(userEmail);
+      
+      // 设置用户配置
       await prisma.systemConfig.upsert({
-        where: { configKey: key },
+        where: {
+          configKey_userEmail: {
+            configKey,
+            userEmail
+          }
+        },
         update: {
-          configValue: value,
-          configType: type,
+          configValue,
+          configType,
           description,
           updatedAt: new Date()
         },
         create: {
-          configKey: key,
-          configValue: value,
-          configType: type,
+          configKey,
+          configValue,
+          configType,
           description,
-          isActive: true
+          userEmail
         }
       });
+
+      // 如果有lover，同步到lover
+      if (loverEmail) {
+        await prisma.systemConfig.upsert({
+          where: {
+            configKey_userEmail: {
+              configKey,
+              userEmail: loverEmail
+            }
+          },
+          update: {
+            configValue,
+            configType,
+            description,
+            updatedAt: new Date()
+          },
+          create: {
+            configKey,
+            configValue,
+            configType,
+            description,
+            userEmail: loverEmail
+          }
+        });
+      }
+
       return true;
     } catch (error) {
       console.error('设置系统配置失败:', error);
@@ -87,97 +207,72 @@ export class ConfigService {
     }
   }
 
-  // 获取默认图床配置
-  static async getDefaultImageBed(): Promise<ImageBedConfig | null> {
+  // 设置图床配置（自动同步到lover）
+  static async setImageBedConfig(bedName: string, bedType: string, apiUrl: string, apiKey: string, authHeader: string, isDefault: boolean, priority: number, description: string, userEmail: string): Promise<boolean> {
     try {
-      const config = await prisma.imageBedConfig.findFirst({
-        where: {
-          isDefault: true,
-          isActive: true
-        },
-        orderBy: {
-          priority: 'desc'
-        }
-      });
-      return config;
-    } catch (error) {
-      console.error('获取默认图床配置失败:', error);
-      return null;
-    }
-  }
-
-  // 获取指定图床配置
-  static async getImageBedConfig(bedName: string): Promise<ImageBedConfig | null> {
-    try {
-      const config = await prisma.imageBedConfig.findFirst({
-        where: {
-          bedName,
-          isActive: true
-        }
-      });
-      return config;
-    } catch (error) {
-      console.error('获取图床配置失败:', error);
-      return null;
-    }
-  }
-
-  // 获取所有图床配置
-  static async getAllImageBedConfigs(): Promise<ImageBedConfig[]> {
-    try {
-      const configs = await prisma.imageBedConfig.findMany({
-        where: {
-          isActive: true
-        },
-        orderBy: [
-          { isDefault: 'desc' },
-          { priority: 'desc' }
-        ]
-      });
-      return configs;
-    } catch (error) {
-      console.error('获取所有图床配置失败:', error);
-      return [];
-    }
-  }
-
-  // 设置图床配置
-  static async setImageBedConfig(config: Omit<ImageBedConfig, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> {
-    try {
+      // 获取lover邮箱
+      const loverEmail = await this.getLoverEmail(userEmail);
+      
+      // 设置用户配置
       await prisma.imageBedConfig.upsert({
-        where: { bedName: config.bedName },
+        where: {
+          bedName_userEmail: {
+            bedName,
+            userEmail
+          }
+        },
         update: {
-          bedType: config.bedType,
-          apiUrl: config.apiUrl,
-          apiKey: config.apiKey,
-          authHeader: config.authHeader,
-          isActive: config.isActive,
-          isDefault: config.isDefault,
-          priority: config.priority,
-          description: config.description,
+          bedType,
+          apiUrl,
+          apiKey,
+          authHeader,
+          isDefault,
+          priority,
+          description,
           updatedAt: new Date()
         },
         create: {
-          bedName: config.bedName,
-          bedType: config.bedType,
-          apiUrl: config.apiUrl,
-          apiKey: config.apiKey,
-          authHeader: config.authHeader,
-          isActive: config.isActive,
-          isDefault: config.isDefault,
-          priority: config.priority,
-          description: config.description
+          bedName,
+          bedType,
+          apiUrl,
+          apiKey,
+          authHeader,
+          isDefault,
+          priority,
+          description,
+          userEmail
         }
       });
 
-      // 如果设置为默认图床，需要将其他图床设为非默认
-      if (config.isDefault) {
-        await prisma.imageBedConfig.updateMany({
+      // 如果有lover，同步到lover
+      if (loverEmail) {
+        await prisma.imageBedConfig.upsert({
           where: {
-            bedName: { not: config.bedName }
+            bedName_userEmail: {
+              bedName,
+              userEmail: loverEmail
+            }
           },
-          data: {
-            isDefault: false
+          update: {
+            bedType,
+            apiUrl,
+            apiKey,
+            authHeader,
+            isDefault,
+            priority,
+            description,
+            updatedAt: new Date()
+          },
+          create: {
+            bedName,
+            bedType,
+            apiUrl,
+            apiKey,
+            authHeader,
+            isDefault,
+            priority,
+            description,
+            userEmail: loverEmail
           }
         });
       }
@@ -189,62 +284,64 @@ export class ConfigService {
     }
   }
 
-  // 获取通知配置
-  static async getNotificationConfig(notifyType: string): Promise<NotificationConfig | null> {
+  // 设置通知配置（自动同步到lover）
+  static async setNotificationConfig(notifyType: string, notifyName: string, webhookUrl: string, apiKey: string, description: string, userEmail: string): Promise<boolean> {
     try {
-      const config = await prisma.notificationConfig.findFirst({
-        where: {
-          notifyType,
-          isActive: true
-        }
-      });
-      return config;
-    } catch (error) {
-      console.error('获取通知配置失败:', error);
-      return null;
-    }
-  }
-
-  // 获取所有通知配置
-  static async getAllNotificationConfigs(): Promise<NotificationConfig[]> {
-    try {
-      const configs = await prisma.notificationConfig.findMany({
-        where: {
-          isActive: true
-        },
-        orderBy: {
-          notifyType: 'asc'
-        }
-      });
-      return configs;
-    } catch (error) {
-      console.error('获取所有通知配置失败:', error);
-      return [];
-    }
-  }
-
-  // 设置通知配置
-  static async setNotificationConfig(config: Omit<NotificationConfig, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> {
-    try {
+      // 获取lover邮箱
+      const loverEmail = await this.getLoverEmail(userEmail);
+      
+      // 设置用户配置
       await prisma.notificationConfig.upsert({
-        where: { notifyType: config.notifyType },
+        where: {
+          notifyType_userEmail: {
+            notifyType,
+            userEmail
+          }
+        },
         update: {
-          notifyName: config.notifyName,
-          webhookUrl: config.webhookUrl,
-          apiKey: config.apiKey,
-          isActive: config.isActive,
-          description: config.description,
+          notifyName,
+          webhookUrl,
+          apiKey,
+          description,
           updatedAt: new Date()
         },
         create: {
-          notifyType: config.notifyType,
-          notifyName: config.notifyName,
-          webhookUrl: config.webhookUrl,
-          apiKey: config.apiKey,
-          isActive: config.isActive,
-          description: config.description
+          notifyType,
+          notifyName,
+          webhookUrl,
+          apiKey,
+          description,
+          userEmail
         }
       });
+
+      // 如果有lover，同步到lover
+      if (loverEmail) {
+        await prisma.notificationConfig.upsert({
+          where: {
+            notifyType_userEmail: {
+              notifyType,
+              userEmail: loverEmail
+            }
+          },
+          update: {
+            notifyName,
+            webhookUrl,
+            apiKey,
+            description,
+            updatedAt: new Date()
+          },
+          create: {
+            notifyType,
+            notifyName,
+            webhookUrl,
+            apiKey,
+            description,
+            userEmail: loverEmail
+          }
+        });
+      }
+
       return true;
     } catch (error) {
       console.error('设置通知配置失败:', error);
@@ -253,57 +350,86 @@ export class ConfigService {
   }
 
   // 初始化默认配置
-  static async initializeDefaultConfigs(): Promise<void> {
+  static async initializeDefaultConfigs(userEmail: string): Promise<boolean> {
     try {
-      // 初始化默认图床配置
-      const defaultImageBeds = [
+      // 初始化系统配置
+      const systemConfigs = [
+        { key: 'WEB_URL', value: 'http://localhost:3000', type: 'other', description: '网站URL' },
+        { key: 'UPLOAD_PATH', value: '/uploads', type: 'other', description: '上传路径' }
+      ];
+
+      for (const config of systemConfigs) {
+        await this.setSystemConfig(config.key, config.value, config.type, config.description, userEmail);
+      }
+
+      // 初始化图床配置
+      const imageBedConfigs = [
         {
-          bedName: 'SM',
-          bedType: 'smms',
+          name: 'SM.MS',
+          type: 'smms',
           apiUrl: 'https://sm.ms/api/v2/upload',
-          apiKey: null,
+          apiKey: '',
           authHeader: 'Authorization',
-          isActive: true,
           isDefault: true,
           priority: 100,
           description: 'SM.MS图床'
-        },
-        {
-          bedName: 'IMGBB',
-          bedType: 'imgbb',
-          apiUrl: 'https://api.imgbb.com/1/upload',
-          apiKey: null,
-          authHeader: null,
-          isActive: true,
-          isDefault: false,
-          priority: 50,
-          description: 'ImgBB图床'
         }
       ];
 
-      for (const bed of defaultImageBeds) {
-        await this.setImageBedConfig(bed);
+      for (const bed of imageBedConfigs) {
+        await this.setImageBedConfig(
+          bed.name,
+          bed.type,
+          bed.apiUrl,
+          bed.apiKey,
+          bed.authHeader,
+          bed.isDefault,
+          bed.priority,
+          bed.description,
+          userEmail
+        );
       }
 
-      // 初始化默认通知配置
-      const defaultNotifications = [
+      // 初始化通知配置
+      const notificationConfigs = [
         {
-          notifyType: 'wx_robot',
-          notifyName: '企业微信机器人',
-          webhookUrl: null,
-          apiKey: null,
-          isActive: true,
-          description: '企业微信机器人通知'
+          type: 'wx_robot',
+          name: '微信机器人',
+          webhookUrl: '',
+          apiKey: '',
+          description: '微信机器人通知'
         }
       ];
 
-      for (const notification of defaultNotifications) {
-        await this.setNotificationConfig(notification);
+      for (const notify of notificationConfigs) {
+        await this.setNotificationConfig(
+          notify.type,
+          notify.name,
+          notify.webhookUrl,
+          notify.apiKey,
+          notify.description,
+          userEmail
+        );
       }
 
-      console.log('默认配置初始化完成');
+      return true;
     } catch (error) {
       console.error('初始化默认配置失败:', error);
+      return false;
+    }
+  }
+
+  // 获取lover邮箱
+  private static async getLoverEmail(userEmail: string): Promise<string | null> {
+    try {
+      const user = await prisma.userInfo.findUnique({
+        where: { userEmail },
+        select: { lover: true }
+      });
+      return user?.lover || null;
+    } catch (error) {
+      console.error('获取lover邮箱失败:', error);
+      return null;
     }
   }
 }

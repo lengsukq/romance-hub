@@ -2,6 +2,7 @@
 import BizResult from '@/utils/BizResult';
 import { NextRequest, NextResponse } from 'next/server';
 import { upImgMain } from "@/utils/imageTools";
+import { cookieTools } from '@/utils/cookieTools';
 
 // 请求体接口
 interface CommonRequest {
@@ -49,9 +50,15 @@ async function handleFileUpload(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json(BizResult.fail('', '请选择要上传的文件'));
         }
 
+        // 获取用户邮箱
+        const { userEmail } = cookieTools(req);
+        if (!userEmail) {
+            return NextResponse.json(BizResult.fail('', '请先登录'));
+        }
+
         const uploadData: UploadData = { file };
 
-        const result = await upImgMain(uploadData);
+        const result = await upImgMain(uploadData, userEmail);
 
         if (result.url) {
             return NextResponse.json(BizResult.success({ url: result.url }, result.msg));

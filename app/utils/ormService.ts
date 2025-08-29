@@ -87,6 +87,30 @@ export class UserService {
     });
   }
 
+  // 获取关联者信息
+  static async getLoverInfo(userEmail: string) {
+    const user = await prisma.userInfo.findUnique({
+      where: { userEmail },
+      select: { lover: true }
+    });
+
+    if (!user || !user.lover) {
+      return null;
+    }
+
+    return await prisma.userInfo.findUnique({
+      where: { userEmail: user.lover },
+      select: {
+        username: true,
+        avatar: true,
+        userEmail: true,
+        describeBySelf: true,
+        score: true,
+        registrationTime: true
+      }
+    });
+  }
+
   // 添加积分
   static async addScore(userEmail: string, value: number) {
     return await prisma.userInfo.update({

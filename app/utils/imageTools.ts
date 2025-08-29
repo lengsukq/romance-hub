@@ -14,10 +14,10 @@ interface UploadResponse {
 // 上传函数类型
 type UploadFunction = (fileData: any, config: any) => Promise<UploadResponse>;
 
-export async function upImgMain(fileData: UploadFileData): Promise<UploadResponse> {
+export async function upImgMain(fileData: UploadFileData, userEmail: string): Promise<UploadResponse> {
     try {
         // 从数据库获取默认图床配置
-        const defaultBed = await ConfigService.getDefaultImageBed();
+        const defaultBed = await ConfigService.getDefaultImageBed(userEmail);
         if (!defaultBed) {
             throw new Error('未找到可用的图床配置');
         }

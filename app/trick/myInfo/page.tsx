@@ -22,6 +22,7 @@ import {Notify} from "@/utils/client/notificationUtils";
 import {useRouter} from "next/navigation";
 import {imgUpload} from "@/utils/client/fileTools";
 import UserInfoCard from "@/components/userInfoCard";
+import {post} from "@/utils/client/fetchUtil";
 
 interface UserInfo {
     userId: string;
@@ -62,15 +63,15 @@ export default function App() {
     const getUserInfoAct = async () => {
         await getUserInfo().then(res => {
             if (res.code === 200 && res.data) {
-                // 根据实际接口返回结构，用户信息直接在 res.data 中
                 setUserInfo(res.data);
-                // 暂时设置为 null，如果有关联者信息会在其他地方获取
-                setLoverInfo(null);
                 setEditUserInfo({
                     username: res.data.username || '',
                     avatar: res.data.avatar || '',
                     describeBySelf: res.data.describeBySelf || ''
                 });
+                
+                // 获取关联者信息
+                getLoverInfoAct();
             } else {
                 console.error('获取用户信息失败:', res);
                 Notify.show({type: 'warning', message: '获取用户信息失败'});
@@ -79,6 +80,23 @@ export default function App() {
             console.error('API调用失败:', error);
             Notify.show({type: 'warning', message: '网络请求失败'});
         })
+    }
+
+    const getLoverInfoAct = async () => {
+        try {
+            const res = await post('/api/v1/user', {
+                action: 'lover'
+            });
+            if (res.code === 200 && res.data) {
+                setLoverInfo(res.data);
+            } else {
+                console.log('未找到关联者信息或关联者未注册');
+                setLoverInfo(null);
+            }
+        } catch (error) {
+            console.error('获取关联者信息失败:', error);
+            setLoverInfo(null);
+        }
     }
 
     const logoutAct = async () => {
@@ -119,12 +137,24 @@ export default function App() {
             
             <Divider className="my-4" />
             
-            {loverInfo && (
+            {loverInfo ? (
                 <UserInfoCard 
                     userInfo={loverInfo} 
                     onOpen={() => {}} 
                     isLover={true} 
                 />
+            ) : (
+                <Card className="mb-5">
+                    <CardHeader>
+                        <h4 className="font-bold text-large">关联者信息</h4>
+                    </CardHeader>
+                    <CardBody>
+                        <div className="text-center text-gray-500">
+                            <p>关联者账号尚未注册或信息不可用</p>
+                            <p className="text-sm mt-2">关联邮箱: {userInfo.lover}</p>
+                        </div>
+                    </CardBody>
+                </Card>
             )}
 
             <Card className="mt-5">

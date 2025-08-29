@@ -33,6 +33,7 @@ interface ImageBedConfig {
     isDefault: boolean;
     priority: number;
     description?: string;
+    userEmail?: string; // 新增：用于标识是否是用户级别的配置
 }
 
 interface NotificationConfig {
@@ -43,6 +44,7 @@ interface NotificationConfig {
     apiKey?: string;
     isActive: boolean;
     description?: string;
+    userEmail?: string; // 新增：用于标识是否是用户级别的配置
 }
 
 interface SystemConfig {
@@ -117,6 +119,9 @@ export default function ConfigPage() {
             Notify.show({ type: 'warning', message: '初始化配置失败' });
         }
     };
+
+    // 移除手动同步功能，因为现在是自动同步的
+    // const handleSyncToLover = async () => { ... }
 
     const handleEditImageBed = (bed: ImageBedConfig) => {
         setEditingImageBed(bed);
@@ -197,6 +202,15 @@ export default function ConfigPage() {
                 </Button>
             </div>
 
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">配置说明</h3>
+                <p className="text-blue-700 text-sm">
+                    • 配置会自动与关联者保持一致<br/>
+                    • 当您修改配置时，关联者的配置会自动同步更新<br/>
+                    • 确保情侣双方始终使用相同的配置
+                </p>
+            </div>
+
             <Tabs aria-label="配置管理">
                 <Tab key="image-beds" title="图床配置">
                     <Card>
@@ -215,6 +229,7 @@ export default function ConfigPage() {
                                                     <Chip color={bed.isActive ? "success" : "default"} size="sm">
                                                         {bed.isActive ? "启用" : "禁用"}
                                                     </Chip>
+
                                                 </div>
                                                 <p className="text-sm text-gray-600 mb-2">{bed.description}</p>
                                                 <p className="text-sm text-gray-500">API: {bed.apiUrl}</p>
@@ -248,6 +263,7 @@ export default function ConfigPage() {
                                                     <Chip color={notification.isActive ? "success" : "default"} size="sm">
                                                         {notification.isActive ? "启用" : "禁用"}
                                                     </Chip>
+
                                                 </div>
                                                 <p className="text-sm text-gray-600 mb-2">{notification.description}</p>
                                                 <p className="text-sm text-gray-500">类型: {notification.notifyType}</p>

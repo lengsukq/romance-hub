@@ -10,7 +10,7 @@ import { UserInfo, LoginParams, RegisterParams, BaseResponse } from '@/types';
 
 // 请求体接口
 interface UserRequest {
-    action: 'login' | 'register' | 'logout' | 'info' | 'update' | 'score';
+    action: 'login' | 'register' | 'logout' | 'info' | 'update' | 'score' | 'lover';
     data?: any;
 }
 
@@ -55,6 +55,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             
             case 'score':
                 return await handleGetScore(req);
+            
+            case 'lover':
+                return await handleGetLoverInfo(req);
             
             default:
                 return NextResponse.json(BizResult.fail('', '不支持的操作类型'));
@@ -275,5 +278,27 @@ async function handleGetScore(req: NextRequest): Promise<NextResponse> {
     } catch (error) {
         console.error('获取积分失败:', error);
         return NextResponse.json(BizResult.fail('', '获取积分失败'));
+    }
+}
+
+// 获取关联者信息
+async function handleGetLoverInfo(req: NextRequest): Promise<NextResponse> {
+    try {
+        const { userEmail } = cookieTools(req);
+        
+        if (!userEmail) {
+            return NextResponse.json(BizResult.fail('', '请先登录'));
+        }
+        
+        const result = await UserService.getLoverInfo(userEmail);
+        
+        if (result) {
+            return NextResponse.json(BizResult.success(result, '获取关联者信息成功'));
+        } else {
+            return NextResponse.json(BizResult.fail('', '未找到关联者信息'));
+        }
+    } catch (error) {
+        console.error('获取关联者信息失败:', error);
+        return NextResponse.json(BizResult.fail('', '获取关联者信息失败'));
     }
 }
