@@ -351,6 +351,255 @@ npm run db:mysql     # 切换到MySQL
 npm run db:postgresql # 切换到PostgreSQL
 ```
 
+## 🚨 常见问题与解决方案
+
+### 🔍 快速故障排除表
+
+| 问题症状 | 可能原因 | 快速解决 |
+|---------|---------|---------|
+| 🚫 Prisma Studio 报错 | 客户端损坏 | `taskkill /f /im node.exe` → 重新生成客户端 |
+| 🚫 数据库连接失败 | 环境变量未设置 | 运行 `.\setup-sqlite-dev.ps1` |
+| 🚫 端口 9999 被占用 | 进程未正常结束 | `netstat -ano \| findstr :9999` → 杀死进程 |
+| 🚫 npm install 失败 | 依赖冲突 | 删除 `node_modules` → 重新安装 |
+| 🚫 图片上传失败 | 图床配置错误 | 检查 `DRAWING_BED` 和对应 API Key |
+| 🚫 微信通知不工作 | Webhook URL 错误 | 验证 `WX_ROBOT_URL` 格式 |
+| 🚫 TypeScript 错误 | 类型定义过期 | `npm run db:generate` 更新类型 |
+| 🚫 页面白屏 | 数据库未初始化 | `npm run db:push` 创建表结构 |
+
+### ❌ Prisma Studio 运行错误
+
+**问题描述**: 运行 `npm run db:studio` 时出现以下错误：
+```
+Invalid `STUDIO_EMBED_BUILD<"u"&&STUDIO_EMBED_BUILD?lMe():require(...)` invocation
+Cannot fetch data from service: fetch failed
+```
+
+**解决方案**:
+```bash
+# 1. 停止所有 Node 进程
+taskkill /f /im node.exe
+
+# 2. 删除损坏的 Prisma 客户端
+Remove-Item -Recurse -Force .\generated\prisma -ErrorAction SilentlyContinue
+
+# 3. 重新生成 Prisma 客户端
+$env:DATABASE_URL="file:./dev.db"; npm run db:generate
+
+# 4. 推送数据库 schema
+$env:DATABASE_URL="file:./dev.db"; npm run db:push
+
+# 5. 重新启动 Prisma Studio
+npm run db:studio
+```
+
+### ❌ 环境变量配置问题
+
+**问题描述**: 无法创建 `.env.local` 文件或环境变量未生效
+
+**解决方案**:
+```bash
+# 方法1: 使用开发脚本设置环境变量
+.\setup-sqlite-dev.ps1
+
+# 方法2: 手动在 PowerShell 中设置
+$env:DATABASE_URL="file:./dev.db"
+$env:DATABASE_PROVIDER="sqlite"
+
+# 方法3: 创建 .env 文件（如果 .env.local 被忽略）
+echo 'DATABASE_URL="file:./dev.db"' > .env
+echo 'DATABASE_PROVIDER="sqlite"' >> .env
+```
+
+### ❌ SQLite 数据库文件找不到
+
+**问题描述**: 提示数据库文件不存在或无法连接
+
+**解决方案**:
+```bash
+# 1. 检查数据库文件是否存在
+Test-Path ./prisma/dev.db
+
+# 2. 如果文件不存在，推送 schema 创建数据库
+npm run db:push
+
+# 3. 验证数据库连接
+node -e "const { PrismaClient } = require('./generated/prisma'); const prisma = new PrismaClient(); prisma.userInfo.count().then(count => console.log('连接成功，用户数:', count)).catch(console.error).finally(() => prisma.$disconnect());"
+```
+
+### ❌ 数据库切换失败
+
+**问题描述**: 运行 `npm run db:mysql` 或其他数据库切换命令失败
+
+**解决方案**:
+```bash
+# 1. 手动切换数据库
+node scripts/switch-database.js sqlite
+
+# 2. 重新生成客户端
+npm run db:generate
+
+# 3. 推送 schema
+npm run db:push
+```
+
+### ❌ 依赖安装问题
+
+**问题描述**: `npm install` 过程中出现依赖冲突或安装失败
+
+**解决方案**:
+```bash
+# 1. 清理缓存
+npm cache clean --force
+
+# 2. 删除 node_modules 和 package-lock.json
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+Remove-Item package-lock.json -ErrorAction SilentlyContinue
+
+# 3. 重新安装
+npm install
+
+# 4. 如果仍有问题，使用 yarn
+yarn install
+```
+
+### ❌ 端口占用问题
+
+**问题描述**: 启动项目时提示端口 9999 已被占用
+
+**解决方案**:
+```bash
+# 1. 查找占用端口的进程
+netstat -ano | findstr :9999
+
+# 2. 杀死占用进程（替换 PID）
+taskkill /f /pid <PID>
+
+# 3. 或使用不同端口启动
+next dev -p 3000
+```
+
+### ❌ TypeScript 类型错误
+
+**问题描述**: 编译时出现 TypeScript 类型错误
+
+**解决方案**:
+```bash
+# 1. 重新生成 Prisma 客户端（更新类型定义）
+npm run db:generate
+
+# 2. 类型检查
+npm run type-check
+
+# 3. 如果是开发环境，可以暂时跳过类型检查
+npm run dev -- --no-type-check
+```
+
+### ❌ 图片上传失败
+
+**问题描述**: 图片上传到图床失败
+
+**解决方案**:
+1. **检查图床配置**:
+   ```bash
+   # 检查环境变量是否正确设置
+   echo $env:DRAWING_BED
+   echo $env:SM_TOKEN      # 如果使用 SM 图床
+   echo $env:IMGBB_API     # 如果使用 IMGBB 图床
+   ```
+
+2. **SM图床问题**:
+   - 确认 Token 是否有效：访问 https://smms.app/
+   - 检查图片大小是否超过限制（5MB）
+   - 确认图片格式是否支持
+
+3. **IMGBB图床问题**:
+   - 确认 API Key 是否有效：访问 https://imgbb.com/
+   - 检查每日上传限额
+
+### ❌ 微信机器人通知失败
+
+**问题描述**: 企业微信机器人无法发送通知
+
+**解决方案**:
+1. **检查 Webhook URL**:
+   ```bash
+   # 确认环境变量设置
+   echo $env:WX_ROBOT_URL
+   ```
+
+2. **测试 Webhook**:
+   ```bash
+   # 使用 curl 测试（PowerShell）
+   curl -X POST -H "Content-Type: application/json" -d '{"msgtype":"text","text":{"content":"测试消息"}}' $env:WX_ROBOT_URL
+   ```
+
+3. **常见问题**:
+   - Webhook URL 格式错误
+   - 机器人被管理员禁用
+   - 发送频率过高被限制
+
+### 🔧 快速诊断脚本
+
+我们为您提供了快速诊断脚本：
+
+```powershell
+# 运行诊断脚本
+.\setup-sqlite-dev.ps1
+```
+
+该脚本会自动：
+- ✅ 检查环境变量设置
+- ✅ 验证数据库文件存在
+- ✅ 显示可用命令
+- ✅ 提供数据库状态信息
+
+### 🚀 开发环境一键设置
+
+对于 Windows 用户，我们提供了一键设置脚本：
+
+```powershell
+# 下载项目后，直接运行：
+.\setup-sqlite-dev.ps1
+
+# 然后启动开发服务器：
+npm run dev
+```
+
+这个脚本会自动：
+- ✅ 设置 SQLite 环境变量
+- ✅ 检查数据库文件状态  
+- ✅ 显示所有可用命令
+- ✅ 提供完整的开发环境信息
+
+### ⚡ 极速启动（零配置）
+
+如果您只想快速体验项目：
+
+```bash
+# 1. 克隆并进入项目
+git clone https://github.com/lengsukq/love-trick.git && cd love-trick
+
+# 2. 安装依赖
+npm install
+
+# 3. 一键启动（自动使用 SQLite）
+npm run dev
+```
+
+**就这么简单！** 项目会自动：
+- 🗄️ 使用 SQLite 数据库（无需配置）
+- 🔧 自动生成 Prisma 客户端
+- 📦 自动创建数据库表结构
+- 🌐 在 http://localhost:9999 启动服务
+
+### 📞 获取帮助
+
+如果以上解决方案都无法解决您的问题：
+
+1. 🐛 [提交 Issue](https://github.com/lengsukq/love-trick/issues) - 详细描述问题和错误信息
+2. 📖 [查看完整文档](https://blog.lengsu.top/article/love-trick)
+3. 💬 加入讨论群获取实时帮助
+
 ## 📂 项目结构
 
 ```
