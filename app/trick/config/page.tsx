@@ -334,7 +334,7 @@ export default function ConfigPage() {
                             <Input
                                 label="优先级"
                                 type="number"
-                                value={editingImageBed.priority || 0}
+                                value={(editingImageBed.priority || 0).toString()}
                                 onChange={(e) => setEditingImageBed(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
                             />
                             <Textarea

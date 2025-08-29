@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BizResult } from '@/utils/BizResult';
+import BizResult from '@/utils/BizResult';
 import { ConfigService } from '@/utils/configService';
 
 // 请求体接口

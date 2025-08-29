@@ -1,3 +1,5 @@
+import { ConfigService } from './configService';
+
 // 随机图片API响应接口
 interface RandomImageResponse {
     imgurl: string;

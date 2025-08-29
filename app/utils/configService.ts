@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -15,12 +15,12 @@ export interface ImageBedConfig {
   bedName: string;
   bedType: string;
   apiUrl: string;
-  apiKey?: string;
-  authHeader?: string;
+  apiKey: string | null;
+  authHeader: string | null;
   isActive: boolean;
   isDefault: boolean;
   priority: number;
-  description?: string;
+  description: string | null;
 }
 
 // 通知配置接口
@@ -28,10 +28,10 @@ export interface NotificationConfig {
   id: string;
   notifyType: string;
   notifyName: string;
-  webhookUrl?: string;
-  apiKey?: string;
+  webhookUrl: string | null;
+  apiKey: string | null;
   isActive: boolean;
-  description?: string;
+  description: string | null;
 }
 
 // 系统配置接口
@@ -261,7 +261,9 @@ export class ConfigService {
           bedName: 'SM',
           bedType: 'smms',
           apiUrl: 'https://sm.ms/api/v2/upload',
+          apiKey: null,
           authHeader: 'Authorization',
+          isActive: true,
           isDefault: true,
           priority: 100,
           description: 'SM.MS图床'
@@ -270,6 +272,9 @@ export class ConfigService {
           bedName: 'IMGBB',
           bedType: 'imgbb',
           apiUrl: 'https://api.imgbb.com/1/upload',
+          apiKey: null,
+          authHeader: null,
+          isActive: true,
           isDefault: false,
           priority: 50,
           description: 'ImgBB图床'
@@ -285,6 +290,9 @@ export class ConfigService {
         {
           notifyType: 'wx_robot',
           notifyName: '企业微信机器人',
+          webhookUrl: null,
+          apiKey: null,
+          isActive: true,
           description: '企业微信机器人通知'
         }
       ];
