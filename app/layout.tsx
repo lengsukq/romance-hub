@@ -4,8 +4,8 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
-    title: '登录 | love-trick',
-    description: 'love-trick',
+    title: '登录 | RomanceHub',
+    description: 'RomanceHub - 情侣任务管理系统',
 };
 
 interface RootLayoutProps {

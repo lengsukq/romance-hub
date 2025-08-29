@@ -2,8 +2,8 @@ import React from "react";
 import {TrickProviders} from "./trickProviders";
 
 export const metadata = {
-    title: '首页 | love-trick',
-    description: 'love-trick',
+    title: '首页 | RomanceHub',
+    description: 'RomanceHub - 情侣任务管理系统',
 }
 
 interface RootLayoutProps {

@@ -42,7 +42,7 @@ export function generateDatabaseUrl(provider: DatabaseProvider, options: any = {
       const {
         host = 'localhost',
         port = 3306,
-        database = 'love_trick',
+        database = 'romance_hub',
         username = 'root',
         password = ''
       } = options;
@@ -52,7 +52,7 @@ export function generateDatabaseUrl(provider: DatabaseProvider, options: any = {
       const {
         host: pgHost = 'localhost',
         port: pgPort = 5432,
-        database: pgDatabase = 'love_trick',
+        database: pgDatabase = 'romance_hub',
         username: pgUsername = 'postgres',
         password: pgPassword = ''
       } = options;

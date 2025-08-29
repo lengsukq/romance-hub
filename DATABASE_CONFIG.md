@@ -22,7 +22,7 @@ DATABASE_URL=mysql://username:password@localhost:3306/database_name
 # 或者使用环境变量拼接
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
-MYSQL_DATABASE=love_trick
+MYSQL_DATABASE=romance_hub
 MYSQL_USER=root
 MYSQL_PASSWORD=your_password
 DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
@@ -37,7 +37,7 @@ DATABASE_URL=postgresql://username:password@localhost:5432/database_name
 # 或者使用环境变量拼接
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_DATABASE=love_trick
+POSTGRES_DATABASE=romance_hub
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_password
 DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}

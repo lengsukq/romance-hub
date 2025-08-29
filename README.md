@@ -1,4 +1,4 @@
-# 💕 Love Trick - 情侣任务管理系统
+# 💕 RomanceHub - 情侣任务管理系统
 
 > 💝 给女朋友写的专属情侣任务和商城系统 | 纯H5页面 | 完全免费部署 | 无需服务器  
 > 🚀 React-Next.js全栈项目，让爱情更有趣！
@@ -7,8 +7,8 @@
 [![React](https://img.shields.io/badge/React-19.1.1-blue?logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6.2-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.15.0-green?logo=prisma)](https://www.prisma.io/)
-[![GitHub stars](https://img.shields.io/github/stars/lengsukq/love-trick?style=social)](https://github.com/lengsukq/love-trick/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/lengsukq/love-trick?style=social)](https://github.com/lengsukq/love-trick/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/lengsukq/romance-hub?style=social)](https://github.com/lengsukq/romance-hub/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/lengsukq/romance-hub?style=social)](https://github.com/lengsukq/romance-hub/network/members)
 
 ## 🚀 快速开始
 
@@ -16,8 +16,8 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/lengsukq/love-trick.git
-cd love-trick
+git clone https://github.com/lengsukq/romance-hub.git
+cd romance-hub
 
 # 2. 安装依赖
 npm install
@@ -101,7 +101,7 @@ npm run dev
 ![sql.png](readmeImg%2Fsql.png)
 
 ## 📚 无需服务器，0成本搭建教程 
-🔗 [详细教程](https://blog.lengsu.top/article/love-trick)
+🔗 [详细教程](https://blog.lengsu.top/article/romance-hub)
 
 ## ⚙️ 环境配置
 
@@ -201,17 +201,17 @@ npm run db:postgresql
 ### 1. 构建或拉取镜像
 ```bash
 # 构建本地镜像（需要先进入项目目录）
-docker build -t love-trick .
+docker build -t romance-hub .
 
 # 或拉取远程镜像
-docker pull queensu/love-trick
+docker pull queensu/romance-hub
 ```
 
 ### 2. 运行容器
 
 #### SQLite模式（推荐新手）
 ```bash
-docker run -d -p 9999:9999 --name love-trick \
+docker run -d -p 9999:9999 --name romance-hub \
   -e DATABASE_PROVIDER=sqlite \
   -e DATABASE_URL=file:./dev.db \
   -e JWT_SECRET_KEY=your_jwt_secret_key \
@@ -219,39 +219,39 @@ docker run -d -p 9999:9999 --name love-trick \
   -e SM_TOKEN=your_sm_token \
   -e WX_ROBOT_URL=your_webhook_url \
   -v $(pwd)/data:/app/data \
-  love-trick
+  romance-hub
 ```
 
 #### MySQL模式（生产环境推荐）
 ```bash
-docker run -d -p 9999:9999 --name love-trick \
+docker run -d -p 9999:9999 --name romance-hub \
   -e DATABASE_PROVIDER=mysql \
   -e DATABASE_URL=mysql://username:password@host:port/database \
   -e JWT_SECRET_KEY=your_jwt_secret_key \
   -e DRAWING_BED=SM \
   -e SM_TOKEN=your_sm_token \
   -e WX_ROBOT_URL=your_webhook_url \
-  love-trick
+  romance-hub
 ```
 
 #### PostgreSQL模式
 ```bash
-docker run -d -p 9999:9999 --name love-trick \
+docker run -d -p 9999:9999 --name romance-hub \
   -e DATABASE_PROVIDER=postgresql \
   -e DATABASE_URL=postgresql://username:password@host:port/database \
   -e JWT_SECRET_KEY=your_jwt_secret_key \
   -e DRAWING_BED=SM \
   -e SM_TOKEN=your_sm_token \
   -e WX_ROBOT_URL=your_webhook_url \
-  love-trick
+  romance-hub
 ```
 
 ## 🚀 开发启动流程
 
 ### 1. 克隆项目
 ```bash
-git clone https://github.com/your-username/love-trick.git
-cd love-trick
+git clone https://github.com/your-username/romance-hub.git
+cd romance-hub
 ```
 
 ### 2. 安装依赖
@@ -577,7 +577,7 @@ npm run dev
 
 ```bash
 # 1. 克隆并进入项目
-git clone https://github.com/lengsukq/love-trick.git && cd love-trick
+git clone https://github.com/lengsukq/romance-hub.git && cd romance-hub
 
 # 2. 安装依赖
 npm install
@@ -596,14 +596,14 @@ npm run dev
 
 如果以上解决方案都无法解决您的问题：
 
-1. 🐛 [提交 Issue](https://github.com/lengsukq/love-trick/issues) - 详细描述问题和错误信息
-2. 📖 [查看完整文档](https://blog.lengsu.top/article/love-trick)
+1. 🐛 [提交 Issue](https://github.com/lengsukq/romance-hub/issues) - 详细描述问题和错误信息
+2. 📖 [查看完整文档](https://blog.lengsu.top/article/romance-hub)
 3. 💬 加入讨论群获取实时帮助
 
 ## 📂 项目结构
 
 ```
-love-trick/
+romance-hub/
 ├── app/                    # Next.js 13+ App Router
 │   ├── api/               # API路由
 │   │   └── v1/           # API版本
@@ -644,10 +644,10 @@ love-trick/
 
 ## 📞 支持与反馈
 
-- 🐛 [报告Bug](https://github.com/lengsukq/love-trick/issues)
-- 💡 [功能建议](https://github.com/lengsukq/love-trick/issues)
-- 📖 [查看文档](https://blog.lengsu.top/article/love-trick)
-- 🌐 [在线体验](https://love-trick.lengsu.top/)
+- 🐛 [报告Bug](https://github.com/lengsukq/romance-hub/issues)
+- 💡 [功能建议](https://github.com/lengsukq/romance-hub/issues)
+- 📖 [查看文档](https://blog.lengsu.top/article/romance-hub)
+- 🌐 [在线体验](https://romance-hub.lengsu.top/)
 
 ## 👨‍💻 关于作者
 

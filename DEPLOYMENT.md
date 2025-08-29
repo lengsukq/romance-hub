@@ -138,4 +138,4 @@ npm run type-check
 如果遇到部署问题：
 1. 查看 [Vercel 官方文档](https://vercel.com/docs)
 2. 检查项目的 [常见问题](./README.md#常见问题与解决方案)
-3. 提交 [Issue](https://github.com/lengsukq/love-trick/issues)
+3. 提交 [Issue](https://github.com/lengsukq/romance-hub/issues)

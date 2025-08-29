@@ -1,8 +1,8 @@
 import React from "react";
 
 export const metadata = {
-    title: '我的信息 | love-trick',
-    description: 'love-trick',
+    title: '我的信息 | RomanceHub',
+    description: 'RomanceHub - 情侣任务管理系统',
 }
 
 interface MyInfoLayoutProps {
