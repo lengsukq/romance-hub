@@ -13,7 +13,7 @@ import {useEffect, useState} from "react";
 import {imgUpload} from "@/utils/client/fileTools";
 import {eMailInvalidFn, isInvalidFn, sameInvalidFn} from "@/utils/client/dataTools";
 import {userRegister} from "@/utils/client/apihttp";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 
 interface RegisterProps {
     openKey: boolean;

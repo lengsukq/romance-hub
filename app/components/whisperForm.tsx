@@ -2,7 +2,7 @@ import {Button, Card, CardBody, CardFooter, CardHeader, Input, Textarea,} from "
 import React, {useEffect, useState} from "react";
 import {isInvalidFn} from "@/utils/client/dataTools";
 import {addWhisper} from "@/utils/client/apihttp";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import FavButton from "@/components/buttonCom/FavButton";
 import { WhisperItem } from "@/types";
 

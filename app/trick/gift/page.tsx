@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import {getMyGift, showGift, useGift} from "@/utils/client/apihttp";
 import GiftList from "@/components/giftList";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import {useDispatch, useSelector} from "react-redux";
 import SearchModal from "@/components/searchModal";
 import {closeSearch} from "@/store/myGiftStore";

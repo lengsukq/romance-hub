@@ -12,34 +12,55 @@ interface ClientCookie {
 
 export async function middleware(request: NextRequest) {
     try {
+        // 获取 cookie
         const reqCookie = request.cookies.get('cookie');
         if (!reqCookie) {
-            return Response.json(BizResult.fail('', '请登录后使用'))
+            console.log('中间件: 未找到 cookie');
+            return Response.json(BizResult.fail('', '请登录后使用'));
         }
         
-        const clientCookie: ClientCookie = JSON.parse(reqCookie.value);
-        const serverCookie = (await cookies()).get(clientCookie.name);
-        const pastDate = new Date(Date.now() - 86400000).toUTCString();
+        // 解析 cookie
+        let clientCookie: ClientCookie;
+        try {
+            clientCookie = JSON.parse(reqCookie.value);
+        } catch (parseError) {
+            console.log('中间件: cookie 解析失败', parseError);
+            return Response.json(BizResult.fail('', '请重新登录'));
+        }
 
-        if (!serverCookie || clientCookie.value !== serverCookie.value) {
+        // 检查服务端 cookie
+        const serverCookie = (await cookies()).get(clientCookie.name);
+        if (!serverCookie) {
+            console.log('中间件: 服务端未找到对应 cookie');
+            return Response.json(BizResult.fail('', '请重新登录'));
+        }
+
+        // 验证 cookie 值
+        if (clientCookie.value !== serverCookie.value) {
+            console.log('中间件: cookie 值不匹配');
+            const pastDate = new Date(Date.now() - 86400000).toUTCString();
             return Response.json(BizResult.fail('', '身份验证失败，请重新登录'), {
                 status: 200,
                 headers: {'Set-Cookie': `cookie=;Expires=${pastDate};`},
-            })
+            });
         }
         
+        // 检查过期时间
         const cookieDate = dayjs(clientCookie.expires);
-        if (cookieDate.isAfter(dayjs())) {
-            return NextResponse.next()
-        } else {
+        if (cookieDate.isBefore(dayjs())) {
+            console.log('中间件: cookie 已过期');
+            const pastDate = new Date(Date.now() - 86400000).toUTCString();
             return Response.json(BizResult.fail('', '登录过期'), {
                 status: 200,
                 headers: {'Set-Cookie': `cookie=;Expires=${pastDate};`},
-            })
+            });
         }
+        
+        console.log('中间件: 验证通过');
+        return NextResponse.next();
     } catch (e) {
         console.log('中间件报错:', e);
-        return Response.json(BizResult.fail(''))
+        return Response.json(BizResult.fail('', '服务器错误，请重试'));
     }
 }
 
@@ -47,13 +68,13 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
+         * 明确指定需要中间件保护的 API 路径
+         * 排除 /api/v1/user (用户认证相关 API)
          */
-        '/api/((?!user).*)',
-        // '/((?!/uuuu|_next/static|_next/image|favicon.ico).*)',
+        '/api/v1/gift/:path*',
+        '/api/v1/task/:path*',
+        '/api/v1/whisper/:path*',
+        '/api/v1/favourite/:path*',
+        '/api/v1/common/:path*',
     ],
 }

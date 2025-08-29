@@ -2,7 +2,7 @@
 import React, {useState} from "react";
 import {postTask} from "@/utils/client/apihttp";
 import TaskInfoCom from "@/components/taskInfo";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import {isInvalidFn} from "@/utils/client/dataTools";
 import {imgUpload} from "@/utils/client/fileTools";
 

@@ -3,7 +3,7 @@ import React, {useEffect, useState} from "react";
 import WhisperForm from "@/components/whisperForm";
 import {addFav, getMyWhisper} from "@/utils/client/apihttp";
 import NoDataCom from "@/components/noDataCom";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import { WhisperItem } from "@/types";
 
 export default function App() {

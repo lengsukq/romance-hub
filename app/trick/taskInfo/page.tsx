@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import {getTaskInfo, deleteTask, addFav} from "@/utils/client/apihttp";
 import TaskInfoCom from "@/components/taskInfo";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import {useRouter, useSearchParams} from "next/navigation";
 import ConfirmBox from "@/components/confirmBox";
 

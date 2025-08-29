@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-        serverComponentsExternalPackages: ['@prisma/client', 'prisma']
-    },
+    serverExternalPackages: ['@prisma/client', 'prisma'],
     webpack: (config) => {
         // 处理 Prisma 客户端
         config.externals.push({
@@ -27,11 +25,8 @@ const nextConfig = {
             },
         ];
     },
-    // 环境变量
-    env: {
-        DATABASE_URL: process.env.DATABASE_URL,
-        DATABASE_PROVIDER: process.env.DATABASE_PROVIDER,
-    },
+    // 移除手动环境变量配置，让 Next.js 自动处理 .env.local 文件
+    // Next.js 会自动加载 .env.local 文件中的环境变量
 }
 
 module.exports = nextConfig

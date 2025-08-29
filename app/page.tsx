@@ -3,7 +3,7 @@ import React, {useState, ChangeEvent} from "react";
 import {useRouter} from 'next/navigation'
 import {Input, Button, Avatar} from "@heroui/react";
 import {loginApi} from "@/utils/client/apihttp";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import Register from "@/components/register";
 
 interface LoginResponse {

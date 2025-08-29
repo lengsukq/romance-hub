@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import GiftList from "@/components/giftList";
 import {addFav, getFav} from "@/utils/client/apihttp";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import NoDataCom from "@/components/noDataCom";
 
 interface GiftItem {

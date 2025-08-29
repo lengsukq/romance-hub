@@ -1,5 +1,5 @@
 'use client'
-import { Notify } from 'react-vant';
+import { Notify } from './notificationUtils';
 
 // 基础响应接口
 interface BaseResponse {

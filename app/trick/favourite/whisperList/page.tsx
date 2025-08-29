@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import WhisperForm from "@/components/whisperForm";
 import {addFav, getFav} from "@/utils/client/apihttp";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import NoDataCom from "@/components/noDataCom";
 import { WhisperItem } from "@/types";
 

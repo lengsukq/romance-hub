@@ -4,7 +4,7 @@ import {Avatar, Button, Card, CardBody, CardFooter, CardHeader, Input, Switch} f
 import {imgUpload} from "@/utils/client/fileTools";
 import {UpImg} from "@/components/icon/upImg";
 import {addGift} from "@/utils/client/apihttp";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import {isInvalidFn, numberInvalidFn} from "@/utils/client/dataTools";
 
 export default function App() {

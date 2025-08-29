@@ -2,10 +2,10 @@
 import React, {useEffect, useState} from "react";
 import {Button, Card, CardBody, Input, Slider, Textarea} from "@heroui/react";
 import {isInvalidFn} from "../utils/client/dataTools";
-import {Uploader} from "react-vant";
 import {TrashCan} from "@/components/icon/trashCan";
 import {getScore} from "@/utils/client/apihttp";
 import FavButton from "@/components/buttonCom/FavButton";
+import CustomUploader from "@/components/CustomUploader";
 
 interface TaskInfoProps {
     favId?: string | null;
@@ -78,11 +78,11 @@ export default function TaskInfoCom({
             </Card>
             <Card className="mb-5">
                 <CardBody className="flex justify-center">
-                    {isPost ? <Uploader
+                    {isPost ? <CustomUploader
                             upload={vantUpload}
                             resultType={'dataUrl'}
                             onDelete={imgUploadDelete}/>
-                        : <Uploader
+                        : <CustomUploader
                             value={defaultValue}
                             deletable={false}
                             showUpload={false}

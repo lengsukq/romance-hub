@@ -18,7 +18,7 @@ import {
     ModalHeader,
     useDisclosure
 } from "@heroui/react";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import {useRouter} from "next/navigation";
 import {imgUpload} from "@/utils/client/fileTools";
 import UserInfoCard from "@/components/userInfoCard";

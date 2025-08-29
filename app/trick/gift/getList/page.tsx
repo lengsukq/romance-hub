@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import {addFav, exchangeGift, getGiftList} from "@/utils/client/apihttp";
 import GiftList from "@/components/giftList";
-import {Notify} from "react-vant";
+import {Notify} from "@/utils/client/notificationUtils";
 import {closeSearch} from "@/store/myGiftStore";
 import {useDispatch} from "react-redux";
 import NoDataCom from "@/components/noDataCom";
