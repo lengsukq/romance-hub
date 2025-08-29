@@ -1,32 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "installCommand": "npm install",
-  "functions": {
-    "app/**/*.ts": {
-      "runtime": "nodejs22.x"
-    },
-    "app/**/*.js": {
-      "runtime": "nodejs22.x"
-    }
-  },
-  "build": {
-    "env": {
-      "NEXT_TELEMETRY_DISABLED": "1",
-      "SKIP_ENV_VALIDATION": "1",
-      "PRISMA_GENERATE_SKIP_AUTOINSTALL": "false"
-    }
-  },
-  "env": {
-    "NODE_VERSION": "22"
-  },
-  "regions": ["hkg1", "sin1"],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",

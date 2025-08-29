@@ -7,7 +7,6 @@
       "yarn": "yarn dev",
            "build": "prisma generate && next build",
      "postinstall": "prisma generate",
-     "vercel-build": "prisma generate && next build",
       "start": "next start -p 9999",
       "lint": "next lint",
       "type-check": "tsc --noEmit",
