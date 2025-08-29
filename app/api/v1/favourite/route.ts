@@ -1,4 +1,3 @@
-'use server'
 import BizResult from '@/utils/BizResult';
 import { FavouriteService } from '@/utils/ormService';
 import { cookieTools } from "@/utils/cookieTools";
@@ -25,6 +24,11 @@ interface FavouriteListData {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
+        // 运行时检查，避免构建时执行
+        if (typeof req.json !== 'function') {
+            return NextResponse.json(BizResult.fail('', '无效的请求'));
+        }
+
         const body: FavouriteRequest = await req.json();
         const { action, data } = body;
 
@@ -45,6 +49,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         console.error('收藏API错误:', error);
         return NextResponse.json(BizResult.fail('', '系统异常'));
     }
+}
+
+// 导出 GET 方法以避免构建时错误
+export async function GET(): Promise<NextResponse> {
+    return NextResponse.json(BizResult.fail('', '请使用 POST 方法'));
 }
 
 // 添加收藏
