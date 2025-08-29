@@ -104,3 +104,50 @@ model FavouriteList {
   @@unique([userEmail, collectionId, collectionType])
   @@map("favourite_list")
 }
+
+// 配置管理表
+model SystemConfig {
+  id          String   @id @default(cuid())
+  configKey   String   @unique // 配置键名
+  configValue String   // 配置值
+  configType  String   // 配置类型: image_bed, notification, other
+  description String?  // 配置描述
+  isActive    Boolean  @default(true) // 是否启用
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_configs")
+}
+
+// 图床配置表
+model ImageBedConfig {
+  id          String   @id @default(cuid())
+  bedName     String   @unique // 图床名称: SM, IMGBB, etc.
+  bedType     String   // 图床类型
+  apiUrl      String   // API地址
+  apiKey      String?  // API密钥
+  authHeader  String?  // 认证头名称
+  isActive    Boolean  @default(true) // 是否启用
+  isDefault   Boolean  @default(false) // 是否为默认图床
+  priority    Int      @default(0) // 优先级
+  description String?  // 描述
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("image_bed_configs")
+}
+
+// 通知配置表
+model NotificationConfig {
+  id          String   @id @default(cuid())
+  notifyType  String   @unique // 通知类型: wx_robot, email, etc.
+  notifyName  String   // 通知名称
+  webhookUrl  String?  // Webhook地址
+  apiKey      String?  // API密钥
+  isActive    Boolean  @default(true) // 是否启用
+  description String?  // 描述
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("notification_configs")
+}

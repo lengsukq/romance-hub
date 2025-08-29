@@ -28,6 +28,14 @@ npm run dev
 
 🎉 打开 http://localhost:9999 开始你的爱情之旅！
 
+### 📋 使用步骤
+
+1. **初始化配置**: 访问 `/trick/config` 页面，点击"初始化默认配置"
+2. **配置图床**: 在"图床配置"标签页中设置API密钥（SM图床或IMGBB）
+3. **配置通知**: 在"通知配置"标签页中设置企业微信机器人Webhook地址
+4. **注册账号**: 回到首页，点击登录页面的圆形大图进行双账号注册
+5. **开始使用**: 注册完成后即可使用所有功能
+
 ## ✨ 核心功能
 
 🔐 **用户系统**
@@ -105,6 +113,19 @@ npm run dev
 
 ## ⚙️ 环境配置
 
+> 💡 **重要更新**: 项目已支持数据库配置管理，可通过Web界面管理图床和通知配置，无需手动编辑环境变量！
+
+### 🎛️ 配置管理方式
+
+#### 方式一：Web界面配置（推荐）
+1. 启动项目后访问 `/trick/config` 进入配置管理页面
+2. 点击"初始化默认配置"按钮
+3. 在"图床配置"标签页中设置API密钥等信息
+4. 在"通知配置"标签页中设置Webhook地址
+5. 在"系统配置"标签页中设置网站URL等
+
+#### 方式二：环境变量配置（传统方式）
+
 ### 创建.env.local文件
 
 在项目根目录创建`.env.local`文件，配置以下环境变量：
@@ -179,6 +200,36 @@ npm run db:mysql
 npm run db:postgresql
 ```
 
+## 🎛️ 配置管理系统
+
+### 数据库配置表结构
+项目新增了完整的配置管理系统，支持通过数据库存储和管理配置：
+
+#### 系统配置表 (`SystemConfig`)
+- 存储通用系统配置，如网站URL、JWT密钥等
+- 支持配置类型分类和描述
+
+#### 图床配置表 (`ImageBedConfig`)
+- 支持多种图床服务配置
+- 可设置默认图床、优先级、启用状态
+- 支持动态添加新的图床服务
+
+#### 通知配置表 (`NotificationConfig`)
+- 支持多种通知方式配置
+- 可配置Webhook地址、API密钥等
+- 支持启用/禁用控制
+
+### 配置管理API
+- `/api/v1/config` - 提供完整的配置CRUD操作
+- 支持图床、通知、系统配置的统一管理
+- 提供初始化默认配置功能
+
+### 配置管理页面
+- 访问路径：`/trick/config`
+- 提供可视化的配置管理界面
+- 支持实时编辑和保存配置
+- 分标签页管理不同类型配置
+
 ## 🔄 项目迭代状态
 
 ### ✅ 已完成优化
@@ -189,6 +240,9 @@ npm run db:postgresql
 - ✅ **Cookie安全优化** - 服务器端二次校验
 - ✅ **类型安全** - 全面TypeScript化
 - ✅ **中间件验证** - 路由级别的安全保护
+- ✅ **配置管理系统** - 数据库配置管理，支持Web界面操作
+- ✅ **双账号注册** - 支持一次性注册两个关联账号
+- ✅ **表单验证优化** - 改进注册页面验证逻辑，提升用户体验
 
 ### 🚧 持续改进中
 - 🔄 接口参数校验完善
@@ -196,9 +250,11 @@ npm run db:postgresql
 - 🔄 错误处理机制增强
 - 🔄 性能优化和缓存策略
 
-## 🐳 Docker 部署
+## 🚀 部署指南
 
-### 1. 构建或拉取镜像
+### 🐳 Docker 部署（推荐）
+
+#### 1. 构建或拉取镜像
 ```bash
 # 构建本地镜像（需要先进入项目目录）
 docker build -t romance-hub .
@@ -207,44 +263,64 @@ docker build -t romance-hub .
 docker pull queensu/romance-hub
 ```
 
-### 2. 运行容器
+#### 2. 运行容器
 
-#### SQLite模式（推荐新手）
+##### SQLite模式（推荐新手）
 ```bash
 docker run -d -p 9999:9999 --name romance-hub \
   -e DATABASE_PROVIDER=sqlite \
   -e DATABASE_URL=file:./dev.db \
   -e JWT_SECRET_KEY=your_jwt_secret_key \
-  -e DRAWING_BED=SM \
-  -e SM_TOKEN=your_sm_token \
-  -e WX_ROBOT_URL=your_webhook_url \
   -v $(pwd)/data:/app/data \
   romance-hub
 ```
 
-#### MySQL模式（生产环境推荐）
+##### MySQL模式（生产环境推荐）
 ```bash
 docker run -d -p 9999:9999 --name romance-hub \
   -e DATABASE_PROVIDER=mysql \
   -e DATABASE_URL=mysql://username:password@host:port/database \
   -e JWT_SECRET_KEY=your_jwt_secret_key \
-  -e DRAWING_BED=SM \
-  -e SM_TOKEN=your_sm_token \
-  -e WX_ROBOT_URL=your_webhook_url \
   romance-hub
 ```
 
-#### PostgreSQL模式
+##### PostgreSQL模式
 ```bash
 docker run -d -p 9999:9999 --name romance-hub \
   -e DATABASE_PROVIDER=postgresql \
   -e DATABASE_URL=postgresql://username:password@host:port/database \
   -e JWT_SECRET_KEY=your_jwt_secret_key \
-  -e DRAWING_BED=SM \
-  -e SM_TOKEN=your_sm_token \
-  -e WX_ROBOT_URL=your_webhook_url \
   romance-hub
 ```
+
+> 💡 **注意**: Docker部署后，可通过Web界面配置图床和通知设置，无需在环境变量中配置。
+
+### ☁️ Vercel 部署
+
+#### 1. 准备部署
+1. Fork 本项目到你的GitHub账户
+2. 注册 [Vercel](https://vercel.com) 账户
+3. 在Vercel中导入你的GitHub仓库
+
+#### 2. 环境变量配置
+在Vercel项目设置中添加以下环境变量：
+```bash
+DATABASE_PROVIDER=postgresql
+DATABASE_URL=your_postgresql_connection_string
+JWT_SECRET_KEY=your_jwt_secret_key
+```
+
+#### 3. 数据库设置
+- 推荐使用 [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
+- 或使用 [Neon](https://neon.tech)、[Supabase](https://supabase.com) 等PostgreSQL服务
+
+#### 4. 部署完成
+- 部署完成后，访问你的Vercel域名
+- 进入 `/trick/config` 配置图床和通知设置
+
+### 🐙 GitHub Pages 部署
+
+由于项目使用Next.js API Routes，GitHub Pages不支持服务端功能。建议使用Vercel或其他支持Node.js的平台部署。
 
 ## 🚀 开发启动流程
 
@@ -607,14 +683,28 @@ romance-hub/
 ├── app/                    # Next.js 13+ App Router
 │   ├── api/               # API路由
 │   │   └── v1/           # API版本
+│   │       ├── config/   # 配置管理API
+│   │       ├── user/     # 用户管理API
+│   │       ├── task/     # 任务管理API
+│   │       ├── gift/     # 礼物管理API
+│   │       ├── whisper/  # 留言管理API
+│   │       └── favourite/ # 收藏管理API
 │   ├── components/        # React组件
 │   ├── hooks/            # 自定义Hooks
 │   ├── store/            # Redux状态管理
 │   ├── trick/            # 应用页面
+│   │   ├── config/       # 配置管理页面
+│   │   ├── myInfo/       # 个人信息页面
+│   │   ├── gift/         # 礼物管理页面
+│   │   ├── postTask/     # 发布任务页面
+│   │   └── whisper/      # 留言管理页面
 │   ├── types/            # TypeScript类型定义
 │   └── utils/            # 工具函数
+│       ├── configService.ts # 配置管理服务
+│       ├── imageTools.ts    # 图片上传工具
+│       └── third-party-tools.ts # 第三方服务工具
 ├── prisma/               # Prisma数据库配置
-│   ├── schema.prisma    # 主schema文件
+│   ├── schema.prisma    # 主schema文件（包含配置管理表）
 │   ├── schema.mysql.prisma     # MySQL schema
 │   ├── schema.postgresql.prisma # PostgreSQL schema
 │   └── schema.sqlite.prisma    # SQLite schema
@@ -622,6 +712,25 @@ romance-hub/
 ├── public/               # 静态资源
 └── generated/            # Prisma生成的客户端
 ```
+
+## 🆕 最新功能
+
+### 🎛️ 配置管理系统
+- **数据库配置存储**: 图床、通知等配置存储在数据库中，支持动态管理
+- **Web界面管理**: 访问 `/trick/config` 进行可视化配置管理
+- **多图床支持**: 支持SM图床、IMGBB图床，可动态添加新图床
+- **通知配置**: 支持企业微信机器人等多种通知方式
+
+### 👥 双账号注册
+- **一次性注册**: 支持同时注册两个关联账号
+- **共享密码**: 两个账号使用相同密码，便于情侣使用
+- **互相关联**: 自动建立账号间的关联关系
+- **完整信息**: 每个账号都有独立的头像、昵称、邮箱和个人描述
+
+### 🎨 用户体验优化
+- **表单验证改进**: 注册页面不再初次加载时显示红色错误
+- **交互反馈**: 只有用户交互后才显示验证错误
+- **加载状态**: 完善的加载动画和状态提示
 
 ## 🤝 贡献指南
 
