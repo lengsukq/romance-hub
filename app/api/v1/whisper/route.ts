@@ -30,11 +30,6 @@ interface DeleteWhisperData {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
-        // 运行时检查，避免构建时执行
-        if (typeof window !== 'undefined' || process.env.NODE_ENV === 'test') {
-            return NextResponse.json(BizResult.fail('', '构建环境下不可执行'));
-        }
-
         const body: WhisperRequest = await req.json();
         const { action, data } = body;
 
