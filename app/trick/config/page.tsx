@@ -16,11 +16,14 @@ import {
     ModalBody,
     ModalFooter,
     useDisclosure,
+    Avatar,
     Tabs,
     Tab
 } from "@heroui/react";
 import { Notify } from "@/utils/client/notificationUtils";
 import { post } from "@/utils/client/fetchUtil";
+import { getUserInfo, updateUserInfo } from "@/utils/client/apihttp";
+import { imgUpload } from "@/utils/client/fileTools";
 
 interface ImageBedConfig {
     id: string;
@@ -29,7 +32,6 @@ interface ImageBedConfig {
     apiUrl: string;
     apiKey?: string;
     authHeader?: string;
-    isActive: boolean;
     isDefault: boolean;
     priority: number;
     description?: string;
@@ -42,7 +44,6 @@ interface NotificationConfig {
     notifyName: string;
     webhookUrl?: string;
     apiKey?: string;
-    isActive: boolean;
     description?: string;
     userEmail?: string; // 新增：用于标识是否是用户级别的配置
 }
@@ -51,11 +52,30 @@ interface SystemConfig {
     WEB_URL?: string;
 }
 
+interface UserInfo {
+    userId: string;
+    userEmail: string;
+    username: string;
+    avatar: string;
+    lover: string;
+    describeBySelf: string;
+    score: number;
+    registrationTime: string;
+}
+
 export default function ConfigPage() {
     const [imageBeds, setImageBeds] = useState<ImageBedConfig[]>([]);
     const [notifications, setNotifications] = useState<NotificationConfig[]>([]);
     const [systemConfigs, setSystemConfigs] = useState<SystemConfig>({});
     const [loading, setLoading] = useState(false);
+    
+    // 用户信息
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const [editUserInfo, setEditUserInfo] = useState({
+        username: '',
+        avatar: '',
+        describeBySelf: ''
+    });
     
     // 图床配置编辑
     const { isOpen: isImageBedOpen, onOpen: onImageBedOpen, onClose: onImageBedClose } = useDisclosure();
@@ -64,10 +84,59 @@ export default function ConfigPage() {
     // 通知配置编辑
     const { isOpen: isNotificationOpen, onOpen: onNotificationOpen, onClose: onNotificationClose } = useDisclosure();
     const [editingNotification, setEditingNotification] = useState<Partial<NotificationConfig>>({});
+    
+    // 新增配置状态
+    const [isAddingImageBed, setIsAddingImageBed] = useState(false);
+    const [isAddingNotification, setIsAddingNotification] = useState(false);
+    const [newImageBed, setNewImageBed] = useState<Partial<ImageBedConfig>>({});
+    const [newNotification, setNewNotification] = useState<Partial<NotificationConfig>>({});
+    
+
 
     useEffect(() => {
         loadConfigs();
+        loadUserInfo();
     }, []);
+
+    const loadUserInfo = async () => {
+        try {
+            const res = await getUserInfo();
+            if (res.code === 200 && res.data) {
+                setUserInfo(res.data);
+                setEditUserInfo({
+                    username: res.data.username || '',
+                    avatar: res.data.avatar || '',
+                    describeBySelf: res.data.describeBySelf || ''
+                });
+            }
+        } catch (error) {
+            console.error('获取用户信息失败:', error);
+        }
+    };
+
+    const handleSaveUserInfo = async () => {
+        try {
+            const res = await updateUserInfo(editUserInfo);
+            if (res.code === 200) {
+                Notify.show({ type: 'success', message: res.msg });
+                loadUserInfo();
+            } else {
+                Notify.show({ type: 'warning', message: res.msg });
+            }
+        } catch (error) {
+            console.error('更新用户信息失败:', error);
+            Notify.show({ type: 'warning', message: '更新用户信息失败' });
+        }
+    };
+
+    const upAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            const img = await imgUpload(event);
+            setEditUserInfo(prev => ({...prev, avatar: img}));
+        } catch (error) {
+            console.error('Avatar upload failed:', error);
+        }
+    };
 
     const loadConfigs = async () => {
         setLoading(true);
@@ -130,9 +199,23 @@ export default function ConfigPage() {
 
     const handleSaveImageBed = async () => {
         try {
+            if (!editingImageBed.bedName || !editingImageBed.bedType || !editingImageBed.apiUrl) {
+                Notify.show({ type: 'warning', message: '请填写完整的图床配置信息' });
+                return;
+            }
+            
             const res = await post('/api/v1/config', {
                 action: 'update_image_bed',
-                data: editingImageBed
+                data: {
+                    bedName: editingImageBed.bedName,
+                    bedType: editingImageBed.bedType,
+                    apiUrl: editingImageBed.apiUrl,
+                    apiKey: editingImageBed.apiKey || '',
+                    authHeader: editingImageBed.authHeader || '',
+                    isDefault: editingImageBed.isDefault || false,
+                    priority: editingImageBed.priority || 0,
+                    description: editingImageBed.description || ''
+                }
             });
             if (res.code === 200) {
                 Notify.show({ type: 'success', message: res.msg });
@@ -154,9 +237,20 @@ export default function ConfigPage() {
 
     const handleSaveNotification = async () => {
         try {
+            if (!editingNotification.notifyType || !editingNotification.notifyName) {
+                Notify.show({ type: 'warning', message: '请填写完整的通知配置信息' });
+                return;
+            }
+            
             const res = await post('/api/v1/config', {
                 action: 'update_notification',
-                data: editingNotification
+                data: {
+                    notifyType: editingNotification.notifyType,
+                    notifyName: editingNotification.notifyName,
+                    webhookUrl: editingNotification.webhookUrl || '',
+                    apiKey: editingNotification.apiKey || '',
+                    description: editingNotification.description || ''
+                }
             });
             if (res.code === 200) {
                 Notify.show({ type: 'success', message: res.msg });
@@ -193,6 +287,71 @@ export default function ConfigPage() {
         }
     };
 
+    const handleAddImageBed = async () => {
+        try {
+            if (!newImageBed.bedName || !newImageBed.bedType || !newImageBed.apiUrl) {
+                Notify.show({ type: 'warning', message: '请填写完整的图床配置信息' });
+                return;
+            }
+            
+            const res = await post('/api/v1/config', {
+                action: 'update_image_bed',
+                data: {
+                    bedName: newImageBed.bedName,
+                    bedType: newImageBed.bedType,
+                    apiUrl: newImageBed.apiUrl,
+                    apiKey: newImageBed.apiKey || '',
+                    authHeader: newImageBed.authHeader || '',
+                    isDefault: newImageBed.isDefault || false,
+                    priority: newImageBed.priority || 0,
+                    description: newImageBed.description || ''
+                }
+            });
+            if (res.code === 200) {
+                Notify.show({ type: 'success', message: res.msg });
+                setIsAddingImageBed(false);
+                setNewImageBed({});
+                loadConfigs();
+            } else {
+                Notify.show({ type: 'warning', message: res.msg });
+            }
+        } catch (error) {
+            console.error('添加图床配置失败:', error);
+            Notify.show({ type: 'warning', message: '添加图床配置失败' });
+        }
+    };
+
+    const handleAddNotification = async () => {
+        try {
+            if (!newNotification.notifyType || !newNotification.notifyName) {
+                Notify.show({ type: 'warning', message: '请填写完整的通知配置信息' });
+                return;
+            }
+            
+            const res = await post('/api/v1/config', {
+                action: 'update_notification',
+                data: {
+                    notifyType: newNotification.notifyType,
+                    notifyName: newNotification.notifyName,
+                    webhookUrl: newNotification.webhookUrl || '',
+                    apiKey: newNotification.apiKey || '',
+                    description: newNotification.description || ''
+                }
+            });
+            if (res.code === 200) {
+                Notify.show({ type: 'success', message: res.msg });
+                setIsAddingNotification(false);
+                setNewNotification({});
+                loadConfigs();
+            } else {
+                Notify.show({ type: 'warning', message: res.msg });
+            }
+        } catch (error) {
+            console.error('添加通知配置失败:', error);
+            Notify.show({ type: 'warning', message: '添加通知配置失败' });
+        }
+    };
+
     return (
         <div className="p-5 space-y-6">
             <div className="flex justify-between items-center">
@@ -212,102 +371,315 @@ export default function ConfigPage() {
             </div>
 
             <Tabs aria-label="配置管理">
-                <Tab key="image-beds" title="图床配置">
-                    <Card>
-                        <CardHeader>
-                            <h3 className="text-lg font-semibold">图床配置</h3>
-                        </CardHeader>
-                        <CardBody>
-                            <div className="space-y-4">
-                                {imageBeds.map((bed) => (
-                                    <div key={bed.id} className="border rounded-lg p-4">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <h4 className="font-semibold">{bed.bedName}</h4>
-                                                    {bed.isDefault && <Chip color="primary" size="sm">默认</Chip>}
-                                                    <Chip color={bed.isActive ? "success" : "default"} size="sm">
-                                                        {bed.isActive ? "启用" : "禁用"}
-                                                    </Chip>
-
-                                                </div>
-                                                <p className="text-sm text-gray-600 mb-2">{bed.description}</p>
-                                                <p className="text-sm text-gray-500">API: {bed.apiUrl}</p>
-                                                <p className="text-sm text-gray-500">类型: {bed.bedType}</p>
-                                                <p className="text-sm text-gray-500">优先级: {bed.priority}</p>
+                <Tab key="user-info" title="信息编辑">
+                    <div className="space-y-6">
+                        {/* 个人信息编辑 */}
+                        <Card>
+                            <CardHeader>
+                                <h3 className="text-lg font-semibold">个人信息编辑</h3>
+                            </CardHeader>
+                            <CardBody>
+                                {userInfo && (
+                                    <div className="space-y-4">
+                                        {/* 头像上传 */}
+                                        <div className="flex justify-center">
+                                            <div className="text-center">
+                                                <input 
+                                                    type="file" 
+                                                    name="file" 
+                                                    className="hidden" 
+                                                    id="editUpload"
+                                                    onChange={upAvatar}
+                                                />
+                                                <label htmlFor="editUpload" className="cursor-pointer">
+                                                    <Avatar 
+                                                        isBordered 
+                                                        src={editUserInfo.avatar} 
+                                                        className="w-24 h-24 text-large"
+                                                    />
+                                                </label>
+                                                <p className="text-sm text-gray-500 mt-2">点击头像更换</p>
                                             </div>
-                                            <Button size="sm" onClick={() => handleEditImageBed(bed)}>
-                                                编辑
+                                        </div>
+                                        
+                                        {/* 用户信息表单 */}
+                                        <div className="space-y-4">
+                                            <Input
+                                                value={editUserInfo.username}
+                                                onChange={(e) => setEditUserInfo(prev => ({...prev, username: e.target.value}))}
+                                                label="昵称"
+                                                placeholder="请输入昵称"
+                                            />
+                                            
+                                            <Input
+                                                value={editUserInfo.describeBySelf}
+                                                onChange={(e) => setEditUserInfo(prev => ({...prev, describeBySelf: e.target.value}))}
+                                                label="个人描述"
+                                                placeholder="请输入个人描述"
+                                            />
+                                            
+                                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                <span>❤️ {userInfo.score}</span>
+                                                <span>注册时间: {userInfo.registrationTime}</span>
+                                            </div>
+                                            
+                                            <Button 
+                                                color="primary" 
+                                                onClick={handleSaveUserInfo}
+                                                className="w-full"
+                                            >
+                                                保存修改
                                             </Button>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        </CardBody>
-                    </Card>
+                                )}
+                            </CardBody>
+                        </Card>
+                    </div>
                 </Tab>
 
-                <Tab key="notifications" title="通知配置">
-                    <Card>
-                        <CardHeader>
-                            <h3 className="text-lg font-semibold">通知配置</h3>
-                        </CardHeader>
-                        <CardBody>
-                            <div className="space-y-4">
-                                {notifications.map((notification) => (
-                                    <div key={notification.id} className="border rounded-lg p-4">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <h4 className="font-semibold">{notification.notifyName}</h4>
-                                                    <Chip color={notification.isActive ? "success" : "default"} size="sm">
-                                                        {notification.isActive ? "启用" : "禁用"}
-                                                    </Chip>
-
+                <Tab key="system-config" title="配置编辑">
+                    <div className="space-y-6">
+                        {/* 图床配置 */}
+                        <Card>
+                            <CardHeader className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold">图床配置</h3>
+                                <Button 
+                                    size="sm" 
+                                    color="primary" 
+                                    onClick={() => setIsAddingImageBed(!isAddingImageBed)}
+                                >
+                                    {isAddingImageBed ? '取消' : '添加图床'}
+                                </Button>
+                            </CardHeader>
+                            <CardBody>
+                                <div className="space-y-4">
+                                    {/* 新增图床配置表单 */}
+                                    {isAddingImageBed && (
+                                        <div className="border-2 border-dashed border-blue-200 rounded-lg p-4 bg-blue-50">
+                                            <h4 className="font-semibold text-blue-800 mb-3">新增图床配置</h4>
+                                            <div className="space-y-3">
+                                                <Input
+                                                    label="图床名称"
+                                                    value={newImageBed.bedName || ''}
+                                                    onChange={(e) => setNewImageBed(prev => ({ ...prev, bedName: e.target.value }))}
+                                                    placeholder="如: SM, IMGBB"
+                                                />
+                                                <Input
+                                                    label="图床类型"
+                                                    value={newImageBed.bedType || ''}
+                                                    onChange={(e) => setNewImageBed(prev => ({ ...prev, bedType: e.target.value }))}
+                                                    placeholder="如: smms, imgbb"
+                                                />
+                                                <Input
+                                                    label="API地址"
+                                                    value={newImageBed.apiUrl || ''}
+                                                    onChange={(e) => setNewImageBed(prev => ({ ...prev, apiUrl: e.target.value }))}
+                                                    placeholder="图床API地址"
+                                                />
+                                                <Input
+                                                    label="API密钥"
+                                                    value={newImageBed.apiKey || ''}
+                                                    onChange={(e) => setNewImageBed(prev => ({ ...prev, apiKey: e.target.value }))}
+                                                    placeholder="API密钥（可选）"
+                                                />
+                                                <Input
+                                                    label="认证头"
+                                                    value={newImageBed.authHeader || ''}
+                                                    onChange={(e) => setNewImageBed(prev => ({ ...prev, authHeader: e.target.value }))}
+                                                    placeholder="认证头名称（可选）"
+                                                />
+                                                <Input
+                                                    label="优先级"
+                                                    type="number"
+                                                    value={(newImageBed.priority || 0).toString()}
+                                                    onChange={(e) => setNewImageBed(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
+                                                />
+                                                <Textarea
+                                                    label="描述"
+                                                    value={newImageBed.description || ''}
+                                                    onChange={(e) => setNewImageBed(prev => ({ ...prev, description: e.target.value }))}
+                                                    placeholder="图床描述"
+                                                />
+                                                                                                 <div className="flex gap-4">
+                                                     <Switch
+                                                         isSelected={newImageBed.isDefault}
+                                                         onValueChange={(value) => setNewImageBed(prev => ({ ...prev, isDefault: value }))}
+                                                     >
+                                                         设为默认
+                                                     </Switch>
+                                                 </div>
+                                                <div className="flex gap-2">
+                                                    <Button 
+                                                        color="primary" 
+                                                        onClick={handleAddImageBed}
+                                                        className="flex-1"
+                                                    >
+                                                        添加图床
+                                                    </Button>
+                                                    <Button 
+                                                        variant="flat" 
+                                                        onClick={() => {
+                                                            setIsAddingImageBed(false);
+                                                            setNewImageBed({});
+                                                        }}
+                                                        className="flex-1"
+                                                    >
+                                                        取消
+                                                    </Button>
                                                 </div>
-                                                <p className="text-sm text-gray-600 mb-2">{notification.description}</p>
-                                                <p className="text-sm text-gray-500">类型: {notification.notifyType}</p>
-                                                {notification.webhookUrl && (
-                                                    <p className="text-sm text-gray-500">Webhook: {notification.webhookUrl}</p>
-                                                )}
                                             </div>
-                                            <Button size="sm" onClick={() => handleEditNotification(notification)}>
-                                                编辑
+                                        </div>
+                                    )}
+                                    
+                                    {/* 现有图床配置列表 */}
+                                    {imageBeds.map((bed) => (
+                                        <div key={bed.id} className="border rounded-lg p-4">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                                                                     <div className="flex items-center gap-2 mb-2">
+                                                     <h4 className="font-semibold">{bed.bedName}</h4>
+                                                     {bed.isDefault && <Chip color="primary" size="sm">默认</Chip>}
+                                                 </div>
+                                                    <p className="text-sm text-gray-600 mb-2">{bed.description}</p>
+                                                    <p className="text-sm text-gray-500">API: {bed.apiUrl}</p>
+                                                    <p className="text-sm text-gray-500">类型: {bed.bedType}</p>
+                                                    <p className="text-sm text-gray-500">优先级: {bed.priority}</p>
+                                                </div>
+                                                <Button size="sm" onClick={() => handleEditImageBed(bed)}>
+                                                    编辑
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardBody>
+                        </Card>
+
+                        {/* 通知配置 */}
+                        <Card>
+                            <CardHeader className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold">通知配置</h3>
+                                <Button 
+                                    size="sm" 
+                                    color="primary" 
+                                    onClick={() => setIsAddingNotification(!isAddingNotification)}
+                                >
+                                    {isAddingNotification ? '取消' : '添加通知'}
+                                </Button>
+                            </CardHeader>
+                            <CardBody>
+                                <div className="space-y-4">
+                                    {/* 新增通知配置表单 */}
+                                    {isAddingNotification && (
+                                        <div className="border-2 border-dashed border-green-200 rounded-lg p-4 bg-green-50">
+                                            <h4 className="font-semibold text-green-800 mb-3">新增通知配置</h4>
+                                            <div className="space-y-3">
+                                                <Input
+                                                    label="通知类型"
+                                                    value={newNotification.notifyType || ''}
+                                                    onChange={(e) => setNewNotification(prev => ({ ...prev, notifyType: e.target.value }))}
+                                                    placeholder="如: wx_robot, email"
+                                                />
+                                                <Input
+                                                    label="通知名称"
+                                                    value={newNotification.notifyName || ''}
+                                                    onChange={(e) => setNewNotification(prev => ({ ...prev, notifyName: e.target.value }))}
+                                                    placeholder="通知名称"
+                                                />
+                                                <Input
+                                                    label="Webhook地址"
+                                                    value={newNotification.webhookUrl || ''}
+                                                    onChange={(e) => setNewNotification(prev => ({ ...prev, webhookUrl: e.target.value }))}
+                                                    placeholder="Webhook地址（可选）"
+                                                />
+                                                <Input
+                                                    label="API密钥"
+                                                    value={newNotification.apiKey || ''}
+                                                    onChange={(e) => setNewNotification(prev => ({ ...prev, apiKey: e.target.value }))}
+                                                    placeholder="API密钥（可选）"
+                                                />
+                                                <Textarea
+                                                    label="描述"
+                                                    value={newNotification.description || ''}
+                                                    onChange={(e) => setNewNotification(prev => ({ ...prev, description: e.target.value }))}
+                                                    placeholder="通知描述"
+                                                />
+                                                
+                                                <div className="flex gap-2">
+                                                    <Button 
+                                                        color="primary" 
+                                                        onClick={handleAddNotification}
+                                                        className="flex-1"
+                                                    >
+                                                        添加通知
+                                                    </Button>
+                                                    <Button 
+                                                        variant="flat" 
+                                                        onClick={() => {
+                                                            setIsAddingNotification(false);
+                                                            setNewNotification({});
+                                                        }}
+                                                        className="flex-1"
+                                                    >
+                                                        取消
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {/* 现有通知配置列表 */}
+                                    {notifications.map((notification) => (
+                                        <div key={notification.id} className="border rounded-lg p-4">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                                                                     <div className="flex items-center gap-2 mb-2">
+                                                     <h4 className="font-semibold">{notification.notifyName}</h4>
+                                                 </div>
+                                                    <p className="text-sm text-gray-600 mb-2">{notification.description}</p>
+                                                    <p className="text-sm text-gray-500">类型: {notification.notifyType}</p>
+                                                    {notification.webhookUrl && (
+                                                        <p className="text-sm text-gray-500">Webhook: {notification.webhookUrl}</p>
+                                                    )}
+                                                </div>
+                                                <Button size="sm" onClick={() => handleEditNotification(notification)}>
+                                                    编辑
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardBody>
+                        </Card>
+
+                        {/* 系统配置 */}
+                        <Card>
+                            <CardHeader>
+                                <h3 className="text-lg font-semibold">系统配置</h3>
+                            </CardHeader>
+                            <CardBody>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">网站URL</label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                value={systemConfigs.WEB_URL || ''}
+                                                onChange={(e) => setSystemConfigs(prev => ({ ...prev, WEB_URL: e.target.value }))}
+                                                placeholder="请输入网站URL"
+                                            />
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => handleUpdateSystemConfig('WEB_URL', systemConfigs.WEB_URL || '')}
+                                            >
+                                                保存
                                             </Button>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardBody>
-                    </Card>
-                </Tab>
-
-                <Tab key="system" title="系统配置">
-                    <Card>
-                        <CardHeader>
-                            <h3 className="text-lg font-semibold">系统配置</h3>
-                        </CardHeader>
-                        <CardBody>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">网站URL</label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={systemConfigs.WEB_URL || ''}
-                                            onChange={(e) => setSystemConfigs(prev => ({ ...prev, WEB_URL: e.target.value }))}
-                                            placeholder="请输入网站URL"
-                                        />
-                                        <Button 
-                                            size="sm" 
-                                            onClick={() => handleUpdateSystemConfig('WEB_URL', systemConfigs.WEB_URL || '')}
-                                        >
-                                            保存
-                                        </Button>
                                     </div>
                                 </div>
-                            </div>
-                        </CardBody>
-                    </Card>
+                            </CardBody>
+                        </Card>
+                    </div>
                 </Tab>
             </Tabs>
 
@@ -359,20 +731,14 @@ export default function ConfigPage() {
                                 onChange={(e) => setEditingImageBed(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="图床描述"
                             />
-                            <div className="flex gap-4">
-                                <Switch
-                                    isSelected={editingImageBed.isActive}
-                                    onValueChange={(value) => setEditingImageBed(prev => ({ ...prev, isActive: value }))}
-                                >
-                                    启用
-                                </Switch>
-                                <Switch
-                                    isSelected={editingImageBed.isDefault}
-                                    onValueChange={(value) => setEditingImageBed(prev => ({ ...prev, isDefault: value }))}
-                                >
-                                    设为默认
-                                </Switch>
-                            </div>
+                                                         <div className="flex gap-4">
+                                 <Switch
+                                     isSelected={editingImageBed.isDefault}
+                                     onValueChange={(value) => setEditingImageBed(prev => ({ ...prev, isDefault: value }))}
+                                 >
+                                     设为默认
+                                 </Switch>
+                             </div>
                         </div>
                     </ModalBody>
                     <ModalFooter>
@@ -422,12 +788,7 @@ export default function ConfigPage() {
                                 onChange={(e) => setEditingNotification(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="通知描述"
                             />
-                            <Switch
-                                isSelected={editingNotification.isActive}
-                                onValueChange={(value) => setEditingNotification(prev => ({ ...prev, isActive: value }))}
-                            >
-                                启用
-                            </Switch>
+                            
                         </div>
                     </ModalBody>
                     <ModalFooter>
@@ -438,8 +799,10 @@ export default function ConfigPage() {
                             保存
                         </Button>
                     </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </div>
-    );
-}
+                                 </ModalContent>
+             </Modal>
+
+
+         </div>
+     );
+ }

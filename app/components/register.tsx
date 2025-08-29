@@ -116,9 +116,11 @@ export default function Register ({openKey, keyToFalse, onKeyDown = () => ''}: R
         <>
             <Modal
                 classNames={{
-                    body: "pb-0",
+                    body: "pb-0 overflow-y-auto max-h-[70vh] sm:max-h-[80vh]",
+                    base: "max-h-[85vh] sm:max-h-[90vh] w-[95vw] sm:w-auto",
+                    wrapper: "items-start pt-5 sm:pt-10"
                 }}
-                size="full"
+                size="2xl"
                 hideCloseButton={true}
                 placement={"center"}
                 isOpen={isOpen}
@@ -133,7 +135,7 @@ export default function Register ({openKey, keyToFalse, onKeyDown = () => ''}: R
                                     将同时为您和关联者创建账号，两个账号使用相同密码，便于情侣间互动使用
                                 </p>
                             </ModalHeader>
-                            <ModalBody>
+                            <ModalBody className="overflow-y-auto px-4">
                                 {/* 主账号信息 */}
                                 <div className="space-y-4">
                                     <h4 className="text-md font-semibold text-primary">主账号信息</h4>

@@ -48,6 +48,10 @@ export default function App() {
     const router = useRouter();
     const {isOpen, onOpen, onClose} = useDisclosure();
     
+    const handleConfigClick = () => {
+        router.push('/trick/config');
+    };
+    
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [loverInfo, setLoverInfo] = useState<LoverInfo | null>(null);
     const [editUserInfo, setEditUserInfo] = useState({
@@ -133,7 +137,7 @@ export default function App() {
 
     return (
         <div className={"p-5"}>
-            <UserInfoCard userInfo={userInfo} onOpen={onOpen} />
+            <UserInfoCard userInfo={userInfo} onOpen={handleConfigClick} />
             
             <Divider className="my-4" />
             

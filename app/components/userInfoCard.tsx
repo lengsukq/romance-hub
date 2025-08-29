@@ -44,7 +44,7 @@ export default function UserInfoCard ({
                             size="sm"
                             variant={"bordered"}
                             onClick={onOpen}>
-                            编辑
+                            配置
                         </Button>
                     </CardHeader>
                     <CardBody className="px-3 py-0 text-small text-default-400">
