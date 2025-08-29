@@ -29,6 +29,10 @@ export interface RegisterParams extends LoginParams {
   describeBySelf: string;
   lover: string;
   avatar?: string;
+  // 新增关联者信息字段
+  loverUsername?: string;
+  loverAvatar?: string;
+  loverDescribeBySelf?: string;
 }
 
 // 任务相关类型

@@ -107,12 +107,21 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
     }
 }
 
-// 处理注册
+// 处理注册（双账号注册）
 async function handleRegister(data: RegisterData): Promise<NextResponse> {
-    const { userEmail, username, password, describeBySelf, lover, avatar: imgURL } = data;
+    const { 
+        userEmail, username, password, describeBySelf, lover, avatar: imgURL,
+        loverUsername, loverAvatar: loverImgURL, loverDescribeBySelf 
+    } = data;
     
+    // 验证基本字段
     if (!userEmail || !username || !password || !describeBySelf || !lover) {
         return NextResponse.json(BizResult.fail('', '请检查注册信息是否填写正确'));
+    }
+    
+    // 验证关联者信息
+    if (!loverUsername || !loverDescribeBySelf) {
+        return NextResponse.json(BizResult.fail('', '请填写完整的关联者信息'));
     }
     
     if (userEmail === lover) {
@@ -120,25 +129,45 @@ async function handleRegister(data: RegisterData): Promise<NextResponse> {
     }
     
     try {
-        // 检查用户是否已存在
+        // 检查主账号用户是否已存在
         const existingUser = await UserService.checkUserExists(userEmail, username);
-        
         if (existingUser) {
-            return NextResponse.json(BizResult.fail('', '用户已存在'));
+            return NextResponse.json(BizResult.fail('', '主账号用户已存在'));
         }
         
-        const avatar = imgURL ? imgURL : await randomImages();
+        // 检查关联者账号是否已存在
+        const existingLover = await UserService.checkUserExists(lover, loverUsername);
+        if (existingLover) {
+            return NextResponse.json(BizResult.fail('', '关联者账号已存在'));
+        }
         
-        await UserService.createUser({
-            userEmail,
-            username,
-            password,
-            avatar,
-            describeBySelf,
-            lover
-        });
+        // 生成默认头像
+        const avatar = imgURL ? imgURL : await randomImages();
+        const loverAvatar = loverImgURL ? loverImgURL : await randomImages();
+        
+        // 同时创建两个账号
+        await Promise.all([
+            // 创建主账号
+            UserService.createUser({
+                userEmail,
+                username,
+                password,
+                avatar,
+                describeBySelf,
+                lover
+            }),
+            // 创建关联者账号
+            UserService.createUser({
+                userEmail: lover,
+                username: loverUsername,
+                password, // 使用相同密码
+                avatar: loverAvatar,
+                describeBySelf: loverDescribeBySelf,
+                lover: userEmail // 互相关联
+            })
+        ]);
 
-        return NextResponse.json(BizResult.success('', '注册成功'));
+        return NextResponse.json(BizResult.success('', '双账号注册成功'));
     } catch (error) {
         console.error('注册失败:', error);
         return NextResponse.json(BizResult.fail('', '注册失败'));
