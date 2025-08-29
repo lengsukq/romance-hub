@@ -61,15 +61,23 @@ export default function App() {
 
     const getUserInfoAct = async () => {
         await getUserInfo().then(res => {
-            if (res.code === 200) {
-                setUserInfo(res.data.userInfo);
-                setLoverInfo(res.data.loverInfo);
+            if (res.code === 200 && res.data) {
+                // 根据实际接口返回结构，用户信息直接在 res.data 中
+                setUserInfo(res.data);
+                // 暂时设置为 null，如果有关联者信息会在其他地方获取
+                setLoverInfo(null);
                 setEditUserInfo({
-                    username: res.data.userInfo.username,
-                    avatar: res.data.userInfo.avatar,
-                    describeBySelf: res.data.userInfo.describeBySelf
+                    username: res.data.username || '',
+                    avatar: res.data.avatar || '',
+                    describeBySelf: res.data.describeBySelf || ''
                 });
+            } else {
+                console.error('获取用户信息失败:', res);
+                Notify.show({type: 'warning', message: '获取用户信息失败'});
             }
+        }).catch(error => {
+            console.error('API调用失败:', error);
+            Notify.show({type: 'warning', message: '网络请求失败'});
         })
     }
 

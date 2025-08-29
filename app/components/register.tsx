@@ -30,10 +30,33 @@ export default function Register ({openKey, keyToFalse, onKeyDown = () => ''}: R
     const [password2, setPassword2] = useState('')
     const [describeBySelf, setDescribeBySelf] = useState('')
     const [lover, setLover] = useState('')
+    
+    // 添加touched状态追踪用户是否与字段交互过
+    const [touched, setTouched] = useState({
+        username: false,
+        userEmail: false,
+        lover: false,
+        describeBySelf: false,
+        password: false,
+        password2: false
+    })
 
     const upAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const img = await imgUpload(event);
         setAvatar(img);
+    }
+
+    // 处理字段的blur事件（失去焦点时标记为touched）
+    const handleBlur = (fieldName: keyof typeof touched) => {
+        setTouched(prev => ({
+            ...prev,
+            [fieldName]: true
+        }));
+    }
+
+    // 检查是否应该显示验证错误（只有在touched后才显示）
+    const shouldShowError = (fieldName: keyof typeof touched, isInvalid: boolean) => {
+        return touched[fieldName] && isInvalid;
     }
 
     useEffect(() => {
@@ -84,64 +107,70 @@ export default function Register ({openKey, keyToFalse, onKeyDown = () => ''}: R
                                     </label>
                                 </div>
                                 <Input
-                                    isInvalid={isInvalidFn(username)}
-                                    color={isInvalidFn(username) ? "danger" : "success"}
-                                    errorMessage={isInvalidFn(username) && "请输入昵称"}
+                                    isInvalid={shouldShowError('username', isInvalidFn(username))}
+                                    color={shouldShowError('username', isInvalidFn(username)) ? "danger" : "default"}
+                                    errorMessage={shouldShowError('username', isInvalidFn(username)) && "请输入昵称"}
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
+                                    onBlur={() => handleBlur('username')}
                                     autoFocus
                                     label="昵称"
                                     placeholder="请输入昵称"
                                     variant="bordered"
                                 />
                                 <Input
-                                    isInvalid={eMailInvalidFn(userEmail)}
-                                    color={eMailInvalidFn(userEmail) ? "danger" : "success"}
-                                    errorMessage={eMailInvalidFn(userEmail) && "请输入正确的邮箱"}
+                                    isInvalid={shouldShowError('userEmail', eMailInvalidFn(userEmail))}
+                                    color={shouldShowError('userEmail', eMailInvalidFn(userEmail)) ? "danger" : "default"}
+                                    errorMessage={shouldShowError('userEmail', eMailInvalidFn(userEmail)) && "请输入正确的邮箱"}
                                     value={userEmail}
                                     onChange={(e) => setUserEmail(e.target.value)}
+                                    onBlur={() => handleBlur('userEmail')}
                                     label="邮箱"
                                     placeholder="请输入邮箱"
                                     variant="bordered"
                                 />
                                 <Input
-                                    isInvalid={eMailInvalidFn(lover)}
-                                    color={eMailInvalidFn(lover) ? "danger" : "success"}
-                                    errorMessage={eMailInvalidFn(lover) && "请输入正确的邮箱"}
+                                    isInvalid={shouldShowError('lover', eMailInvalidFn(lover))}
+                                    color={shouldShowError('lover', eMailInvalidFn(lover)) ? "danger" : "default"}
+                                    errorMessage={shouldShowError('lover', eMailInvalidFn(lover)) && "请输入正确的邮箱"}
                                     value={lover}
                                     onChange={(e) => setLover(e.target.value)}
+                                    onBlur={() => handleBlur('lover')}
                                     label="关联者邮箱"
                                     placeholder="请输入关联者邮箱"
                                     variant="bordered"
                                 />
                                 <Input
-                                    isInvalid={isInvalidFn(describeBySelf)}
-                                    color={isInvalidFn(describeBySelf) ? "danger" : "success"}
-                                    errorMessage={isInvalidFn(describeBySelf) && "请输入一言"}
+                                    isInvalid={shouldShowError('describeBySelf', isInvalidFn(describeBySelf))}
+                                    color={shouldShowError('describeBySelf', isInvalidFn(describeBySelf)) ? "danger" : "default"}
+                                    errorMessage={shouldShowError('describeBySelf', isInvalidFn(describeBySelf)) && "请输入一言"}
                                     value={describeBySelf}
                                     onChange={(e) => setDescribeBySelf(e.target.value)}
+                                    onBlur={() => handleBlur('describeBySelf')}
                                     label="一言"
                                     placeholder="请输入一言"
                                     variant="bordered"
                                 />
                                 <Input
-                                    isInvalid={isInvalidFn(password)}
-                                    color={isInvalidFn(password) ? "danger" : "success"}
-                                    errorMessage={isInvalidFn(password) && "请输入密码"}
+                                    isInvalid={shouldShowError('password', isInvalidFn(password))}
+                                    color={shouldShowError('password', isInvalidFn(password)) ? "danger" : "default"}
+                                    errorMessage={shouldShowError('password', isInvalidFn(password)) && "请输入密码"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    onBlur={() => handleBlur('password')}
                                     label="密码"
                                     placeholder="请输入密码"
                                     variant="bordered"
                                     type="password"
                                 />
                                 <Input
-                                    isInvalid={sameInvalidFn(password2, password)}
-                                    color={sameInvalidFn(password2, password) ? "danger" : "success"}
-                                    errorMessage={sameInvalidFn(password2, password) && "请再次输入一致的密码"}
+                                    isInvalid={shouldShowError('password2', sameInvalidFn(password2, password))}
+                                    color={shouldShowError('password2', sameInvalidFn(password2, password)) ? "danger" : "default"}
+                                    errorMessage={shouldShowError('password2', sameInvalidFn(password2, password)) && "请再次输入一致的密码"}
                                     value={password2}
                                     onChange={(e) => setPassword2(e.target.value)}
-                                    label="密码"
+                                    onBlur={() => handleBlur('password2')}
+                                    label="确认密码"
                                     placeholder="请再次输入一致的密码"
                                     variant="bordered"
                                     type="password"
