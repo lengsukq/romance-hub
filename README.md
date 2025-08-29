@@ -35,6 +35,7 @@ npm run dev
 3. **配置通知**: 在"通知配置"标签页中设置企业微信机器人Webhook地址
 4. **注册账号**: 回到首页，点击登录页面的圆形大图进行双账号注册
 5. **开始使用**: 注册完成后即可使用所有功能
+6. **配置同步**: 配置会自动与关联者保持一致，无需手动同步
 
 ## ✨ 核心功能
 
@@ -83,9 +84,9 @@ npm run dev
 - **系统配置**: 网站URL等基础配置管理
 - **Web界面管理**: 访问 `/trick/config` 进行可视化配置
 - **数据库存储**: 所有配置存储在数据库中，支持动态管理
-- **用户级别配置**: 配置分为用户级别和全局级别，用户级别配置优先
-- **关联者一致性**: 用户级别的配置必须与关联者保持一致，自动同步
-- **强制同步**: 配置修改时自动同步到关联者，确保情侣双方配置一致
+- **用户级别配置**: 每个用户都有独立的配置
+- **关联者一致性**: 配置会自动与关联者保持一致
+- **自动同步**: 配置修改时自动同步到关联者，确保情侣双方配置一致
 
 ***
 ![mainImg.png](readmeImg%2FmainImg.png)
@@ -137,7 +138,7 @@ npm run dev
 
 ## ⚙️ 环境配置
 
-> 💡 **重要更新**: 项目已支持数据库配置管理，可通过Web界面管理图床和通知配置，无需手动编辑环境变量！
+> 💡 **重要更新**: 项目已支持数据库配置管理，可通过Web界面管理图床和通知配置，无需手动编辑环境变量！配置会自动与关联者保持一致。
 
 ### 🎛️ 配置管理方式
 
@@ -147,6 +148,7 @@ npm run dev
 3. 在"图床配置"标签页中设置API密钥等信息
 4. 在"通知配置"标签页中设置Webhook地址
 5. 在"系统配置"标签页中设置网站URL等
+6. 配置会自动与关联者保持一致，无需手动同步
 
 #### 方式二：环境变量配置（传统方式）
 
@@ -239,59 +241,58 @@ npm run db:postgresql
 #### 系统配置表 (`SystemConfig`)
 - 存储通用系统配置，如网站URL、JWT密钥等
 - 支持配置类型分类和描述
-- **用户级别配置**: 每个用户可以有独立的配置，优先于全局配置
-- **强制一致性**: 用户配置自动与关联者保持一致
+- **用户级别配置**: 每个用户都有独立的配置
+- **自动同步**: 用户配置自动与关联者保持一致
 
 #### 图床配置表 (`ImageBedConfig`)
 - 支持多种图床服务配置
 - 可设置默认图床、优先级、启用状态
 - 支持动态添加新的图床服务
 - 配置字段包括：bedName、bedType、apiUrl、apiKey、authHeader等
-- **用户级别配置**: 每个用户可以有独立的图床配置，优先于全局配置
-- **强制一致性**: 用户配置自动与关联者保持一致
+- **用户级别配置**: 每个用户都有独立的图床配置
+- **自动同步**: 用户配置自动与关联者保持一致
 
 #### 通知配置表 (`NotificationConfig`)
 - 支持多种通知方式配置
 - 可配置Webhook地址、API密钥等
 - 支持启用/禁用控制
 - 配置字段包括：notifyType、notifyName、webhookUrl、apiKey等
-- **用户级别配置**: 每个用户可以有独立的通知配置，优先于全局配置
-- **强制一致性**: 用户配置自动与关联者保持一致
+- **用户级别配置**: 每个用户都有独立的通知配置
+- **自动同步**: 用户配置自动与关联者保持一致
 
 ### 配置管理API
 - `/api/v1/config` - 提供完整的配置CRUD操作
 - 支持图床、通知、系统配置的统一管理
 - 提供初始化默认配置功能
-- **自动同步**: 配置修改时自动同步到关联者
+- **自动同步**: 配置修改时自动同步到关联者，确保情侣双方配置一致
 
 ### 配置管理页面
 - 访问路径：`/trick/config`
 - 提供可视化的配置管理界面
 - 支持实时编辑和保存配置
 - 分标签页管理不同类型配置
-- **新增功能**:
-  - 显示配置级别（用户配置/全局配置）
+- **核心功能**:
+  - 用户级别配置管理
   - 自动同步配置到关联者
   - 配置说明和最佳实践提示
 
-### 配置优先级机制
-1. **用户级别配置** - 最高优先级，仅对当前用户和关联者有效
-2. **全局配置** - 默认配置，对所有用户有效
-3. **系统默认值** - 当没有配置时的兜底方案
+### 配置管理机制
+1. **用户级别配置** - 每个用户都有独立的配置
+2. **自动同步** - 配置修改时自动同步到关联者
+3. **一致性保证** - 确保情侣双方始终使用相同的配置
 
 ### 关联者配置一致性
-- **强制一致性**: 用户级别的配置必须与关联者保持一致
 - **自动同步**: 配置修改时自动同步到关联者账号
 - **配置一致性**: 确保情侣双方始终使用相同的图床和通知配置
 - **无需手动操作**: 系统自动维护配置一致性
 
 ### 用户页面支持
 - **个人信息页面** (`/trick/myInfo`) 已支持头像上传功能
-- 头像上传自动使用配置的图床服务（优先用户配置，其次全局配置）
+- 头像上传自动使用配置的图床服务
 - 支持实时预览和编辑个人信息
 - **关联者信息显示**: 自动获取并显示关联者的详细信息
 - 用户操作会触发相应的通知（如果配置了通知服务）
-- **配置一致性**: 用户与关联者必须使用相同的图床和通知配置
+- **配置一致性**: 用户与关联者使用相同的图床和通知配置
 
 ## 🔄 项目迭代状态
 
@@ -310,8 +311,8 @@ npm run db:postgresql
 - ✅ **图床配置支持** - 用户页面头像上传自动使用配置的图床服务
 - ✅ **智能通知集成** - 任务、礼物、留言操作自动触发通知
 - ✅ **用户级别配置** - 支持用户级别的图床和通知配置管理
-- ✅ **关联者配置一致性** - 配置必须与关联者保持一致，自动同步
-- ✅ **强制同步机制** - 配置修改时自动同步到关联者账号
+- ✅ **关联者配置一致性** - 配置自动与关联者保持一致
+- ✅ **自动同步机制** - 配置修改时自动同步到关联者账号
 - ✅ **关联者信息显示** - 用户页面显示关联者的详细信息
 
 ### 🚧 持续改进中
@@ -497,6 +498,195 @@ npm run db:mysql     # 切换到MySQL
 npm run db:postgresql # 切换到PostgreSQL
 ```
 
+## 🔄 本地开发数据库结构更新流程
+
+### 📝 修改数据库结构后的标准操作流程
+
+当您在本地开发中修改了 `prisma/schema.prisma` 文件后，需要按以下步骤更新数据库：
+
+#### 1. 开发环境（推荐使用 `db:push`）
+
+```bash
+# 1. 重新生成Prisma客户端（更新TypeScript类型）
+npm run db:generate
+
+# 2. 推送schema变更到数据库
+npm run db:push
+
+# 3. 验证数据库结构
+npm run db:studio
+```
+
+#### 2. 生产环境（推荐使用 `db:migrate`）
+
+```bash
+# 1. 创建数据库迁移文件
+npm run db:migrate
+
+# 2. 重新生成Prisma客户端
+npm run db:generate
+
+# 3. 应用迁移到数据库
+npm run db:migrate:deploy
+```
+
+### 🎯 不同场景的操作指南
+
+#### 🔧 场景一：新增表或字段
+```bash
+# 1. 修改 prisma/schema.prisma 文件
+# 2. 生成客户端和推送变更
+npm run db:generate && npm run db:push
+# 3. 重启开发服务器
+npm run dev
+```
+
+#### 🔧 场景二：修改字段类型或约束
+```bash
+# 1. 修改 prisma/schema.prisma 文件
+# 2. 推送变更（可能需要接受数据丢失）
+npm run db:push --accept-data-loss
+# 3. 重新生成客户端
+npm run db:generate
+```
+
+#### 🔧 场景三：删除表或字段
+```bash
+# 1. 修改 prisma/schema.prisma 文件
+# 2. 推送变更（会丢失相关数据）
+npm run db:push --accept-data-loss
+# 3. 重新生成客户端
+npm run db:generate
+```
+
+#### 🔧 场景四：同步多个数据库schema文件
+```bash
+# 1. 修改主schema文件 prisma/schema.prisma
+# 2. 同步到其他数据库schema文件
+node scripts/sync-schemas.js
+# 3. 重新生成客户端
+npm run db:generate
+```
+
+### ⚠️ 重要注意事项
+
+#### 数据安全
+- **开发环境**: 使用 `npm run db:push` 快速更新，但可能丢失数据
+- **生产环境**: 使用 `npm run db:migrate` 创建迁移文件，保留数据变更历史
+- **重要数据**: 更新前请备份数据库
+
+#### 常见问题解决
+
+**问题1**: 推送schema时提示数据丢失
+```bash
+# 解决方案：明确接受数据丢失
+npm run db:push --accept-data-loss
+```
+
+**问题2**: 类型错误或客户端过期
+```bash
+# 解决方案：重新生成客户端
+npm run db:generate
+```
+
+**问题3**: 数据库连接失败
+```bash
+# 解决方案：检查环境变量和数据库状态
+npm run db:studio
+```
+
+### 🚀 快速开发工作流
+
+#### 日常开发流程
+```bash
+# 1. 修改schema文件
+vim prisma/schema.prisma
+
+# 2. 快速更新数据库（开发环境）
+npm run db:generate && npm run db:push
+
+# 3. 重启开发服务器
+npm run dev
+```
+
+#### 完整开发流程
+```bash
+# 1. 修改schema文件
+# 2. 同步所有数据库schema
+node scripts/sync-schemas.js
+
+# 3. 更新数据库结构
+npm run db:generate && npm run db:push
+
+# 4. 验证数据库结构
+npm run db:studio
+
+# 5. 重启开发服务器
+npm run dev
+```
+
+### 📊 数据库状态检查
+
+```bash
+# 检查数据库连接
+npm run db:studio
+
+# 查看数据库表结构
+npm run db:pull
+
+# 验证Prisma客户端
+npm run db:generate
+```
+
+### 🎯 数据库结构变更最佳实践
+
+#### 📋 变更前准备
+1. **备份数据**: 重要数据变更前请备份数据库
+2. **测试环境**: 先在测试环境验证变更
+3. **记录变更**: 记录所有schema变更内容
+
+#### 🔄 变更流程
+1. **修改schema**: 编辑 `prisma/schema.prisma` 文件
+2. **同步schema**: 运行 `node scripts/sync-schemas.js` 同步多数据库schema
+3. **更新数据库**: 运行 `npm run db:generate && npm run db:push`
+4. **验证变更**: 使用 `npm run db:studio` 检查数据库结构
+5. **测试功能**: 重启开发服务器并测试相关功能
+
+#### ⚡ 快速命令组合
+```bash
+# 一键更新数据库结构（开发环境）
+npm run db:generate && npm run db:push && npm run dev
+
+# 一键同步所有schema并更新
+node scripts/sync-schemas.js && npm run db:generate && npm run db:push
+
+# 一键重置数据库（谨慎使用）
+npm run db:reset && npm run db:generate && npm run db:push
+```
+
+#### 🚨 常见错误及解决方案
+
+**错误1**: `P1012: Error validating datasource db`
+```bash
+# 原因：环境变量未设置或数据库连接失败
+# 解决：检查 DATABASE_URL 环境变量
+echo $env:DATABASE_URL
+```
+
+**错误2**: `P3007: The requested preview features are not yet allowed`
+```bash
+# 原因：Prisma版本不兼容
+# 解决：更新Prisma版本或调整schema语法
+npm update prisma
+```
+
+**错误3**: `P2002: Unique constraint failed`
+```bash
+# 原因：唯一约束冲突
+# 解决：检查数据或调整约束条件
+npm run db:studio  # 查看数据
+```
+
 ## 🚨 常见问题与解决方案
 
 ### 🔍 快速故障排除表
@@ -511,6 +701,8 @@ npm run db:postgresql # 切换到PostgreSQL
 | 🚫 微信通知不工作 | Webhook URL 错误 | 验证 `WX_ROBOT_URL` 格式 |
 | 🚫 TypeScript 错误 | 类型定义过期 | `npm run db:generate` 更新类型 |
 | 🚫 页面白屏 | 数据库未初始化 | `npm run db:push` 创建表结构 |
+| 🚫 数据库结构错误 | Schema变更未同步 | `npm run db:generate && npm run db:push` |
+| 🚫 多数据库不一致 | Schema文件不同步 | `node scripts/sync-schemas.js` |
 
 ### ❌ Prisma Studio 运行错误
 
@@ -683,6 +875,37 @@ npm run dev -- --no-type-check
    - Webhook URL 格式错误
    - 机器人被管理员禁用
    - 发送频率过高被限制
+
+### ❌ 数据库结构变更失败
+
+**问题描述**: 修改schema后无法更新数据库结构
+
+**解决方案**:
+1. **检查schema语法**:
+   ```bash
+   # 验证schema文件语法
+   npx prisma validate
+   ```
+
+2. **强制推送变更**:
+   ```bash
+   # 接受数据丢失并推送变更
+   npm run db:push --accept-data-loss
+   ```
+
+3. **重置数据库**:
+   ```bash
+   # 完全重置数据库（谨慎使用）
+   npm run db:reset
+   npm run db:generate
+   npm run db:push
+   ```
+
+4. **常见问题**:
+   - Schema语法错误
+   - 数据库连接失败
+   - 约束冲突
+   - 数据类型不兼容
 
 ### 🔧 快速诊断脚本
 
