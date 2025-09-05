@@ -53,7 +53,7 @@ interface SystemConfig {
 }
 
 interface UserInfo {
-    userId: string;
+    userId: number;
     userEmail: string;
     username: string;
     avatar: string;

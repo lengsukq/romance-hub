@@ -31,7 +31,7 @@ interface CreateGiftData {
 
 // 更新礼物数据
 interface UpdateGiftData {
-    giftId: string;
+    giftId: number;
     giftName?: string;
     giftDetail?: string;
     needScore?: number;
@@ -42,12 +42,12 @@ interface UpdateGiftData {
 
 // 礼物操作参数
 interface GiftOperationData {
-    giftId: string;
+    giftId: number;
 }
 
 // 礼物显示/隐藏参数
 interface GiftShowData {
-    giftId: string;
+    giftId: number;
     isShow: boolean;
 }
 

@@ -55,7 +55,7 @@ export async function getScore(userEmail: string): Promise<ScoreResult[]> {
 export async function getTaskDetail(taskId: string, userEmail?: string): Promise<any[]> {
     try {
         const { TaskService } = await import('./ormService');
-        const task = await TaskService.getTaskDetail(taskId);
+        const task = await TaskService.getTaskDetail(Number(taskId));
         
         if (!task) {
             return [];
@@ -65,7 +65,7 @@ export async function getTaskDetail(taskId: string, userEmail?: string): Promise
         
         // 如果提供了用户邮箱，检查收藏状态
         if (userEmail) {
-            const favourite = await TaskService.checkTaskFavourite(taskId, userEmail);
+            const favourite = await TaskService.checkTaskFavourite(Number(taskId), userEmail);
             result = {
                 ...result,
                 favId: favourite?.favId || null,
@@ -84,7 +84,7 @@ export async function getTaskDetail(taskId: string, userEmail?: string): Promise
 export async function getGiftScore(giftId: string): Promise<any[]> {
     try {
         const { GiftService } = await import('./ormService');
-        const gift = await GiftService.getGiftDetail(giftId);
+        const gift = await GiftService.getGiftDetail(Number(giftId));
         
         if (!gift) {
             return [];
@@ -118,6 +118,6 @@ export async function getWhisper(eMail: string, searchWords: string = ''): Promi
         return result;
     } catch (e) {
         console.error('获取留言列表失败:', e);
-        throw new Error(`获取留言列表失败: ${e}`);
+        throw new Error(`获取留言失败: ${e}`);
     }
 }

@@ -12,7 +12,7 @@ interface FavouriteRequest {
 
 // 添加/移除收藏参数
 interface FavouriteOperationData {
-    collectionId: string;
+    collectionId: number;
     collectionType: 'gift' | 'task' | 'whisper';
 }
 
@@ -67,14 +67,14 @@ async function handleAddFavourite(req: NextRequest, data: FavouriteOperationData
         }
 
         // 检查是否已经收藏
-        const existingFav = await FavouriteService.checkFavouriteExists(userEmail, collectionId, collectionType);
+        const existingFav = await FavouriteService.checkFavouriteExists(userEmail, collectionId.toString(), collectionType);
 
         if (existingFav) {
             return NextResponse.json(BizResult.fail('', '已经收藏过了'));
         }
 
         // 验证收藏对象是否存在
-        const itemExists = await FavouriteService.validateCollectionItem(collectionId, collectionType);
+        const itemExists = await FavouriteService.validateCollectionItem(collectionId.toString(), collectionType);
 
         if (!itemExists) {
             return NextResponse.json(BizResult.fail('', '收藏对象不存在'));
@@ -83,7 +83,7 @@ async function handleAddFavourite(req: NextRequest, data: FavouriteOperationData
         // 添加收藏
         const result = await FavouriteService.addFavourite({
             userEmail,
-            collectionId,
+            collectionId: collectionId.toString(),
             collectionType
         });
 
@@ -111,14 +111,14 @@ async function handleRemoveFavourite(req: NextRequest, data: FavouriteOperationD
         }
 
         // 检查收藏是否存在
-        const existingFav = await FavouriteService.checkFavouriteExists(userEmail, collectionId, collectionType);
+        const existingFav = await FavouriteService.checkFavouriteExists(userEmail, collectionId.toString(), collectionType);
 
         if (!existingFav) {
             return NextResponse.json(BizResult.fail('', '尚未收藏'));
         }
 
         // 移除收藏
-        await FavouriteService.removeFavourite(userEmail, collectionId, collectionType);
+        await FavouriteService.removeFavourite(userEmail, collectionId.toString(), collectionType);
 
         return NextResponse.json(BizResult.success('', '取消收藏成功'));
 

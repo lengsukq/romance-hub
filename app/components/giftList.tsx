@@ -2,7 +2,7 @@ import {Avatar, Button, Card, CardBody, CardFooter, CardHeader} from "@heroui/re
 import FavButton from "@/components/buttonCom/FavButton";
 
 interface GiftItem {
-    giftId: string;
+    giftId: number;
     giftImg: string;
     giftName: string;
     needScore: number;
@@ -12,7 +12,7 @@ interface GiftItem {
     isShow: number;
     use?: number;
     used?: number;
-    favId?: string | null;
+    favId?: number | null;
     collectionName?: string;
     creationTime?: string;
 }

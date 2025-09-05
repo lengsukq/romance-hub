@@ -15,13 +15,13 @@ export function cookieTools(request: NextRequest): CookieData {
             // 解密cookie的value
             console.log('解密cookie的value', decryptData(cookie.value));
             const decryptedData = decryptData(cookie.value);
-            return decryptedData || { userEmail: '', userId: '', userName: '', lover: '' };
+            return decryptedData || { userEmail: '', userId: 0, userName: '', lover: '' };
         } catch (error) {
             console.error('解析cookie失败：', error);
-            return { userEmail: '', userId: '', userName: '', lover: '' };
+            return { userEmail: '', userId: 0, userName: '', lover: '' };
         }
     } else {
-        return { userEmail: '', userId: '', userName: '', lover: '' };
+        return { userEmail: '', userId: 0, userName: '', lover: '' };
     }
 }
 

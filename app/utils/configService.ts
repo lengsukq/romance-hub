@@ -2,7 +2,7 @@ import prisma from './prisma';
 import { UserService } from './ormService';
 
 // 配置接口定义
-export interface SystemConfig {
+export interface systemconfig {
   id: string;
   configKey: string;
   configValue: string;
@@ -14,7 +14,7 @@ export interface SystemConfig {
   userEmail: string;
 }
 
-export interface ImageBedConfig {
+export interface imagebedconfig {
   id: string;
   bedName: string;
   bedType: string;
@@ -30,7 +30,7 @@ export interface ImageBedConfig {
   userEmail: string | null;
 }
 
-export interface NotificationConfig {
+export interface notificationconfig {
   id: string;
   notifyType: string;
   notifyName: string;
@@ -50,8 +50,8 @@ export class ConfigService {
       const config = await prisma.systemConfig.findUnique({
         where: {
           configKey_userEmail: {
-            configKey,
-            userEmail
+            configKey: configKey,
+            userEmail: userEmail
           }
         }
       });
@@ -63,17 +63,26 @@ export class ConfigService {
   }
 
   // 获取默认图床配置
-  static async getDefaultImageBed(userEmail: string): Promise<ImageBedConfig | null> {
+  static async getDefaultImageBed(userEmail: string): Promise<imagebedconfig | null> {
     try {
       const bed = await prisma.imageBedConfig.findFirst({
         where: {
-          userEmail,
+          userEmail: userEmail,
           isDefault: true,
           isActive: true
         },
         orderBy: { priority: 'desc' }
       });
-      return bed;
+      
+      if (!bed) {
+        return null;
+      }
+      
+      // 将id从number转换为string
+      return {
+        ...bed,
+        id: bed.id.toString()
+      };
     } catch (error) {
       console.error('获取默认图床配置失败:', error);
       return null;
@@ -81,17 +90,26 @@ export class ConfigService {
   }
 
   // 获取图床配置
-  static async getImageBedConfig(bedName: string, userEmail: string): Promise<ImageBedConfig | null> {
+  static async getImageBedConfig(bedName: string, userEmail: string): Promise<imagebedconfig | null> {
     try {
       const bed = await prisma.imageBedConfig.findUnique({
         where: {
           bedName_userEmail: {
-            bedName,
-            userEmail
+            bedName: bedName,
+            userEmail: userEmail
           }
         }
       });
-      return bed;
+      
+      if (!bed) {
+        return null;
+      }
+      
+      // 将id从number转换为string
+      return {
+        ...bed,
+        id: bed.id.toString()
+      };
     } catch (error) {
       console.error('获取图床配置失败:', error);
       return null;
@@ -99,17 +117,26 @@ export class ConfigService {
   }
 
   // 获取通知配置
-  static async getNotificationConfig(notifyType: string, userEmail: string): Promise<NotificationConfig | null> {
+  static async getNotificationConfig(notifyType: string, userEmail: string): Promise<notificationconfig | null> {
     try {
       const config = await prisma.notificationConfig.findUnique({
         where: {
           notifyType_userEmail: {
-            notifyType,
-            userEmail
+            notifyType: notifyType,
+            userEmail: userEmail
           }
         }
       });
-      return config;
+      
+      if (!config) {
+        return null;
+      }
+      
+      // 将id从number转换为string
+      return {
+        ...config,
+        id: config.id.toString()
+      };
     } catch (error) {
       console.error('获取通知配置失败:', error);
       return null;
@@ -117,16 +144,22 @@ export class ConfigService {
   }
 
   // 获取所有图床配置
-  static async getAllImageBedConfigs(userEmail: string): Promise<ImageBedConfig[]> {
+  static async getAllImageBedConfigs(userEmail: string): Promise<imagebedconfig[]> {
     try {
-      return await prisma.imageBedConfig.findMany({
-        where: { userEmail },
+      const beds = await prisma.imageBedConfig.findMany({
+        where: { userEmail: userEmail },
         orderBy: [
           { isDefault: 'desc' },
           { priority: 'desc' },
           { createdAt: 'desc' }
         ]
       });
+      
+      // 将所有bed的id从number转换为string
+      return beds.map(bed => ({
+        ...bed,
+        id: bed.id.toString()
+      }));
     } catch (error) {
       console.error('获取所有图床配置失败:', error);
       return [];
@@ -134,12 +167,18 @@ export class ConfigService {
   }
 
   // 获取所有通知配置
-  static async getAllNotificationConfigs(userEmail: string): Promise<NotificationConfig[]> {
+  static async getAllNotificationConfigs(userEmail: string): Promise<notificationconfig[]> {
     try {
-      return await prisma.notificationConfig.findMany({
-        where: { userEmail },
+      const configs = await prisma.notificationConfig.findMany({
+        where: { userEmail: userEmail },
         orderBy: { createdAt: 'desc' }
       });
+      
+      // 将所有config的id从number转换为string
+      return configs.map(config => ({
+        ...config,
+        id: config.id.toString()
+      }));
     } catch (error) {
       console.error('获取所有通知配置失败:', error);
       return [];
@@ -156,22 +195,22 @@ export class ConfigService {
       await prisma.systemConfig.upsert({
         where: {
           configKey_userEmail: {
-            configKey,
-            userEmail
+            configKey: configKey,
+            userEmail: userEmail
           }
         },
         update: {
-          configValue,
-          configType,
+          configValue: configValue,
+          configType: configType,
           description,
           updatedAt: new Date()
         },
         create: {
-          configKey,
-          configValue,
-          configType,
+          configKey: configKey,
+          configValue: configValue,
+          configType: configType,
           description,
-          userEmail
+          userEmail: userEmail
         }
       });
 
@@ -180,20 +219,20 @@ export class ConfigService {
         await prisma.systemConfig.upsert({
           where: {
             configKey_userEmail: {
-              configKey,
+              configKey: configKey,
               userEmail: loverEmail
             }
           },
           update: {
-            configValue,
-            configType,
+            configValue: configValue,
+            configType: configType,
             description,
             updatedAt: new Date()
           },
           create: {
-            configKey,
-            configValue,
-            configType,
+            configKey: configKey,
+            configValue: configValue,
+            configType: configType,
             description,
             userEmail: loverEmail
           }
@@ -217,30 +256,30 @@ export class ConfigService {
       await prisma.imageBedConfig.upsert({
         where: {
           bedName_userEmail: {
-            bedName,
-            userEmail
+            bedName: bedName,
+            userEmail: userEmail
           }
         },
         update: {
-          bedType,
-          apiUrl,
-          apiKey,
-          authHeader,
-          isDefault,
+          bedType: bedType,
+          apiUrl: apiUrl,
+          apiKey: apiKey,
+          authHeader: authHeader,
+          isDefault: isDefault,
           priority,
           description,
           updatedAt: new Date()
         },
         create: {
-          bedName,
-          bedType,
-          apiUrl,
-          apiKey,
-          authHeader,
-          isDefault,
+          bedName: bedName,
+          bedType: bedType,
+          apiUrl: apiUrl,
+          apiKey: apiKey,
+          authHeader: authHeader,
+          isDefault: isDefault,
           priority,
           description,
-          userEmail
+          userEmail: userEmail
         }
       });
 
@@ -249,27 +288,27 @@ export class ConfigService {
         await prisma.imageBedConfig.upsert({
           where: {
             bedName_userEmail: {
-              bedName,
+              bedName: bedName,
               userEmail: loverEmail
             }
           },
           update: {
-            bedType,
-            apiUrl,
-            apiKey,
-            authHeader,
-            isDefault,
+            bedType: bedType,
+            apiUrl: apiUrl,
+            apiKey: apiKey,
+            authHeader: authHeader,
+            isDefault: isDefault,
             priority,
             description,
             updatedAt: new Date()
           },
           create: {
-            bedName,
-            bedType,
-            apiUrl,
-            apiKey,
-            authHeader,
-            isDefault,
+            bedName: bedName,
+            bedType: bedType,
+            apiUrl: apiUrl,
+            apiKey: apiKey,
+            authHeader: authHeader,
+            isDefault: isDefault,
             priority,
             description,
             userEmail: loverEmail
@@ -285,7 +324,7 @@ export class ConfigService {
   }
 
   // 设置通知配置（自动同步到lover）
-  static async setNotificationConfig(notifyType: string, notifyName: string, webhookUrl: string, apiKey: string, description: string, userEmail: string): Promise<boolean> {
+  static async setNotificationConfig(notifyType: string, notifyName: string, webHookUrl: string, apiKey: string, description: string, userEmail: string): Promise<boolean> {
     try {
       // 获取lover邮箱
       const loverEmail = await this.getLoverEmail(userEmail);
@@ -294,24 +333,24 @@ export class ConfigService {
       await prisma.notificationConfig.upsert({
         where: {
           notifyType_userEmail: {
-            notifyType,
-            userEmail
+            notifyType: notifyType,
+            userEmail: userEmail
           }
         },
         update: {
-          notifyName,
-          webhookUrl,
-          apiKey,
+          notifyName: notifyName,
+          webhookUrl: webHookUrl,
+          apiKey: apiKey,
           description,
           updatedAt: new Date()
         },
         create: {
-          notifyType,
-          notifyName,
-          webhookUrl,
-          apiKey,
+          notifyType: notifyType,
+          notifyName: notifyName,
+          webhookUrl: webHookUrl,
+          apiKey: apiKey,
           description,
-          userEmail
+          userEmail: userEmail
         }
       });
 
@@ -320,22 +359,22 @@ export class ConfigService {
         await prisma.notificationConfig.upsert({
           where: {
             notifyType_userEmail: {
-              notifyType,
+              notifyType: notifyType,
               userEmail: loverEmail
             }
           },
           update: {
-            notifyName,
-            webhookUrl,
-            apiKey,
+            notifyName: notifyName,
+            webhookUrl: webHookUrl,
+            apiKey: apiKey,
             description,
             updatedAt: new Date()
           },
           create: {
-            notifyType,
-            notifyName,
-            webhookUrl,
-            apiKey,
+            notifyType: notifyType,
+            notifyName: notifyName,
+            webhookUrl: webHookUrl,
+            apiKey: apiKey,
             description,
             userEmail: loverEmail
           }
@@ -423,7 +462,7 @@ export class ConfigService {
   private static async getLoverEmail(userEmail: string): Promise<string | null> {
     try {
       const user = await prisma.userInfo.findUnique({
-        where: { userEmail },
+        where: { userEmail: userEmail },
         select: { lover: true }
       });
       return user?.lover || null;

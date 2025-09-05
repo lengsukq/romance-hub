@@ -1,21 +1,38 @@
 import prisma from './prisma';
+import { PasswordUtils } from './passwordUtils';
 
 // 用户相关ORM操作
 export class UserService {
   // 用户登录
   static async login(username: string, password: string) {
-    return await prisma.userInfo.findFirst({
+    // 先根据用户名查找用户
+    const user = await prisma.userInfo.findFirst({
       where: {
-        username,
-        password
+        username
       },
       select: {
         userId: true,
         userEmail: true,
         lover: true,
-        score: true
+        score: true,
+        password: true
       }
     });
+
+    if (!user) {
+      return null;
+    }
+
+    // 验证密码
+    const isPasswordValid = await PasswordUtils.verifyPassword(password, user.password);
+    
+    if (!isPasswordValid) {
+      return null;
+    }
+
+    // 返回用户信息（不包含密码）
+    const { password: _, ...userInfo } = user;
+    return userInfo;
   }
 
   // 用户注册 - 检查用户是否存在
@@ -42,8 +59,14 @@ export class UserService {
     describeBySelf: string;
     lover: string;
   }) {
+    // 加密密码
+    const hashedPassword = await PasswordUtils.hashPassword(data.password);
+    
     return await prisma.userInfo.create({
-      data
+      data: {
+        ...data,
+        password: hashedPassword
+      }
     });
   }
 
@@ -192,18 +215,18 @@ export class TaskService {
   }
 
   // 获取任务详情
-  static async getTaskDetail(taskId: string) {
+  static async getTaskDetail(taskId: number) {
     return await prisma.taskList.findUnique({
       where: { taskId }
     });
   }
 
   // 检查任务收藏状态
-  static async checkTaskFavourite(taskId: string, userEmail: string) {
+  static async checkTaskFavourite(taskId: number, userEmail: string) {
     return await prisma.favouriteList.findFirst({
       where: {
         userEmail,
-        collectionId: taskId,
+        collectionId: taskId.toString(),
         collectionType: 'task'
       }
     });
@@ -227,7 +250,7 @@ export class TaskService {
   }
 
   // 检查任务权限
-  static async checkTaskPermission(taskId: string) {
+  static async checkTaskPermission(taskId: number) {
     return await prisma.taskList.findUnique({
       where: { taskId },
       select: {
@@ -238,7 +261,7 @@ export class TaskService {
   }
 
   // 更新任务
-  static async updateTask(taskId: string, data: {
+  static async updateTask(taskId: number, data: {
     taskStatus?: string;
     taskName?: string;
     taskDesc?: string;
@@ -252,7 +275,7 @@ export class TaskService {
   }
 
   // 删除任务
-  static async deleteTask(taskId: string) {
+  static async deleteTask(taskId: number) {
     return await prisma.taskList.delete({
       where: { taskId }
     });
@@ -316,7 +339,7 @@ export class GiftService {
   }
 
   // 获取礼物详情
-  static async getGiftDetail(giftId: string) {
+  static async getGiftDetail(giftId: number) {
     return await prisma.giftList.findUnique({
       where: { giftId },
       include: {
@@ -345,7 +368,7 @@ export class GiftService {
   }
 
   // 检查礼物权限
-  static async checkGiftPermission(giftId: string) {
+  static async checkGiftPermission(giftId: number) {
     return await prisma.giftList.findUnique({
       where: { giftId },
       select: {
@@ -355,7 +378,7 @@ export class GiftService {
   }
 
   // 更新礼物
-  static async updateGift(giftId: string, data: {
+  static async updateGift(giftId: number, data: {
     giftName?: string;
     giftDetail?: string;
     needScore?: number;
@@ -370,7 +393,7 @@ export class GiftService {
   }
 
   // 获取礼物信息（用于兑换检查）
-  static async getGiftForExchange(giftId: string) {
+  static async getGiftForExchange(giftId: number) {
     return await prisma.giftList.findUnique({
       where: { 
         giftId,
@@ -386,7 +409,7 @@ export class GiftService {
   }
 
   // 减少礼物库存
-  static async decrementGiftStock(giftId: string) {
+  static async decrementGiftStock(giftId: number) {
     return await prisma.giftList.update({
       where: { giftId },
       data: {
@@ -398,7 +421,7 @@ export class GiftService {
   }
 
   // 上架/下架礼物
-  static async toggleGiftShow(giftId: string, isShow: boolean) {
+  static async toggleGiftShow(giftId: number, isShow: boolean) {
     return await prisma.giftList.update({
       where: { giftId },
       data: { isShow }
@@ -445,11 +468,11 @@ export class WhisperService {
   }
 
   // 检查留言收藏状态
-  static async checkWhisperFavourite(whisperId: string, userEmail: string) {
+  static async checkWhisperFavourite(whisperId: number, userEmail: string) {
     return await prisma.favouriteList.findFirst({
       where: {
         userEmail,
-        collectionId: whisperId,
+        collectionId: whisperId.toString(),
         collectionType: 'whisper'
       }
     });
@@ -476,7 +499,7 @@ export class WhisperService {
   }
 
   // 检查留言权限
-  static async checkWhisperPermission(whisperId: string) {
+  static async checkWhisperPermission(whisperId: number) {
     return await prisma.whisperList.findUnique({
       where: { whisperId },
       select: {
@@ -486,7 +509,7 @@ export class WhisperService {
   }
 
   // 删除留言
-  static async deleteWhisper(whisperId: string) {
+  static async deleteWhisper(whisperId: number) {
     return await prisma.whisperList.delete({
       where: { whisperId }
     });
@@ -511,20 +534,25 @@ export class FavouriteService {
 
   // 验证收藏对象是否存在
   static async validateCollectionItem(collectionId: string, collectionType: string) {
+    const numericId = parseInt(collectionId, 10);
+    if (isNaN(numericId)) {
+      return null;
+    }
+    
     switch (collectionType) {
       case 'task':
         return await prisma.taskList.findUnique({
-          where: { taskId: collectionId },
+          where: { taskId: numericId },
           select: { taskId: true }
         });
       case 'gift':
         return await prisma.giftList.findUnique({
-          where: { giftId: collectionId },
+          where: { giftId: numericId },
           select: { giftId: true }
         });
       case 'whisper':
         return await prisma.whisperList.findUnique({
-          where: { whisperId: collectionId },
+          where: { whisperId: numericId },
           select: { whisperId: true }
         });
       default:
@@ -565,7 +593,7 @@ export class FavouriteService {
     });
 
     // 获取任务详情
-    const taskIds = favourites.map(fav => fav.collectionId);
+    const taskIds = favourites.map(fav => parseInt(fav.collectionId, 10)).filter(id => !isNaN(id));
     const tasks = await prisma.taskList.findMany({
       where: {
         taskId: { in: taskIds },
@@ -583,7 +611,7 @@ export class FavouriteService {
     // 合并收藏信息和任务信息
     return favourites.map(fav => ({
       ...fav,
-      task: tasks.find(task => task.taskId === fav.collectionId)
+      task: tasks.find(task => task.taskId === parseInt(fav.collectionId, 10))
     })).filter(item => item.task);
   }
 
@@ -598,7 +626,7 @@ export class FavouriteService {
     });
 
     // 获取礼物详情
-    const giftIds = favourites.map(fav => fav.collectionId);
+    const giftIds = favourites.map(fav => parseInt(fav.collectionId, 10)).filter(id => !isNaN(id));
     const gifts = await prisma.giftList.findMany({
       where: {
         giftId: { in: giftIds },
@@ -616,7 +644,7 @@ export class FavouriteService {
     // 合并收藏信息和礼物信息
     return favourites.map(fav => ({
       ...fav,
-      gift: gifts.find(gift => gift.giftId === fav.collectionId)
+      gift: gifts.find(gift => gift.giftId === parseInt(fav.collectionId, 10))
     })).filter(item => item.gift);
   }
 
@@ -631,7 +659,7 @@ export class FavouriteService {
     });
 
     // 获取留言详情
-    const whisperIds = favourites.map(fav => fav.collectionId);
+    const whisperIds = favourites.map(fav => parseInt(fav.collectionId, 10)).filter(id => !isNaN(id));
     const whispers = await prisma.whisperList.findMany({
       where: {
         whisperId: { in: whisperIds },
@@ -649,7 +677,7 @@ export class FavouriteService {
     // 合并收藏信息和留言信息
     return favourites.map(fav => ({
       ...fav,
-      whisper: whispers.find(whisper => whisper.whisperId === fav.collectionId)
+      whisper: whispers.find(whisper => whisper.whisperId === parseInt(fav.collectionId, 10))
     })).filter(item => item.whisper);
   }
 }

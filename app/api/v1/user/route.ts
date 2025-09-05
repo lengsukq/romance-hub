@@ -1,6 +1,7 @@
 'use server'
 import BizResult from '@/utils/BizResult';
 import { UserService } from '@/utils/ormService';
+import { PasswordUtils } from '@/utils/passwordUtils';
 import { cookies } from 'next/headers';
 import { cookieTools, encryptData } from "@/utils/cookieTools";
 import dayjs from "dayjs";
@@ -76,6 +77,12 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
         return NextResponse.json(BizResult.fail('', '用户名或密码不能为空'));
     }
 
+    // 验证密码格式
+    const passwordStrength = PasswordUtils.checkPasswordStrength(password);
+    if (!passwordStrength.isValid) {
+        return NextResponse.json(BizResult.fail('', '密码格式不正确'));
+    }
+
     try {
         const result = await UserService.login(username, password);
 
@@ -129,6 +136,12 @@ async function handleRegister(data: RegisterData): Promise<NextResponse> {
     
     if (userEmail === lover) {
         return NextResponse.json(BizResult.fail('', '用户邮箱与关联者邮箱不可相同'));
+    }
+
+    // 验证密码强度
+    const passwordStrength = PasswordUtils.checkPasswordStrength(password);
+    if (!passwordStrength.isValid) {
+        return NextResponse.json(BizResult.fail('', passwordStrength.message));
     }
     
     try {

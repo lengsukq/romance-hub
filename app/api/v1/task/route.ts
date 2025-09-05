@@ -29,7 +29,7 @@ interface CreateTaskData {
 
 // 更新任务数据
 interface UpdateTaskData {
-    taskId: string;
+    taskId: number;
     taskStatus?: string;
     taskName?: string;
     taskDesc?: string;
@@ -39,7 +39,7 @@ interface UpdateTaskData {
 
 // 任务详情参数
 interface TaskDetailData {
-    taskId: string;
+    taskId: number;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

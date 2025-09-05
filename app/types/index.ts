@@ -9,7 +9,7 @@ export interface BaseResponse<T = any> {
 
 // 用户相关类型
 export interface UserInfo {
-  userId: string;
+  userId: number;
   userEmail: string;
   lover: string;
   score: number;
@@ -37,7 +37,7 @@ export interface RegisterParams extends LoginParams {
 
 // 任务相关类型
 export interface TaskItem {
-  taskId: string;
+  taskId: number;
   taskName: string;
   creationTime: string;
   taskImage: string[];
@@ -58,11 +58,11 @@ export interface TaskParams {
 }
 
 export interface TaskInfoParams {
-  taskId: string;
+  taskId: number;
 }
 
 export interface TaskStateParams {
-  taskId: string;
+  taskId: number;
   taskStatus: number;
 }
 
@@ -76,7 +76,7 @@ export interface PostTaskParams {
 
 // 礼物相关类型
 export interface GiftItem {
-  giftId: string;
+  giftId: number;
   giftName: string;
   giftDesc: string;
   giftImage: string;
@@ -98,7 +98,7 @@ export interface GiftParams {
 }
 
 export interface GiftOperationParams {
-  giftId: string;
+  giftId: number;
   isShow?: boolean;
 }
 
@@ -109,7 +109,7 @@ export interface GiftQueryParams {
 
 // 留言相关类型
 export interface WhisperItem {
-  whisperId: string;
+  whisperId: number;
   title?: string;
   content: string;
   fromUserId: string;
@@ -119,7 +119,7 @@ export interface WhisperItem {
   userName: string;
   creationTime: string;
   isRead?: boolean;
-  favId?: string | null;
+  favId?: number | null;
 }
 
 export interface WhisperParams {
@@ -133,7 +133,7 @@ export interface WhisperQueryParams {
 
 // 收藏相关类型
 export interface FavouriteParams {
-  collectionId: string;
+  collectionId: number;
   collectionType: 'gift' | 'task' | 'whisper';
 }
 
@@ -142,8 +142,8 @@ export interface FavouriteQueryParams {
 }
 
 export interface FavouriteItem {
-  favouriteId: string;
-  collectionId: string;
+  favouriteId: number;
+  collectionId: number;
   collectionType: 'gift' | 'task' | 'whisper';
   userId: string;
   creationTime: string;
@@ -241,7 +241,7 @@ export interface DBInsertResult {
 // Cookie工具相关类型
 export interface CookieData {
   userEmail: string;
-  userId: string;
+  userId: number;
   userName: string;
   lover: string;
 }

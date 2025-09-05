@@ -9,7 +9,7 @@ datasource db {
 }
 
 model UserInfo {
-  userId            String          @id @default(cuid())
+  userId            Int             @id @default(autoincrement())
   userEmail         String          @unique
   username          String
   password          String
@@ -29,7 +29,7 @@ model UserInfo {
 }
 
 model TaskList {
-  taskId         String    @id @default(cuid())
+  taskId         Int       @id @default(autoincrement())
   publisherEmail String
   receiverEmail  String?
   taskName       String
@@ -47,7 +47,7 @@ model TaskList {
 }
 
 model GiftList {
-  giftId         String   @id @default(cuid())
+  giftId         Int      @id @default(autoincrement())
   publisherEmail String
   giftImg        String?
   giftName       String
@@ -62,7 +62,7 @@ model GiftList {
 }
 
 model WhisperList {
-  whisperId      String    @id @default(cuid())
+  whisperId      Int       @id @default(autoincrement())
   publisherEmail String
   toUserEmail    String?
   title          String?
@@ -76,7 +76,7 @@ model WhisperList {
 }
 
 model FavouriteList {
-  favId          String   @id @default(cuid())
+  favId          Int      @id @default(autoincrement())
   userEmail      String
   collectionId   String
   collectionType String
@@ -89,7 +89,7 @@ model FavouriteList {
 
 // 配置管理表
 model SystemConfig {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   configKey   String   // 配置键名
   configValue String   // 配置值
   configType  String   // 配置类型: image_bed, notification, other
@@ -105,7 +105,7 @@ model SystemConfig {
 
 // 图床配置表
 model ImageBedConfig {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   bedName     String   // 图床名称: SM, IMGBB, etc.
   bedType     String   // 图床类型
   apiUrl      String   // API地址
@@ -125,7 +125,7 @@ model ImageBedConfig {
 
 // 通知配置表
 model NotificationConfig {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   notifyType  String   // 通知类型: wx_robot, email, etc.
   notifyName  String   // 通知名称
   webhookUrl  String?  // Webhook地址

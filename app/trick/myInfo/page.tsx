@@ -25,7 +25,7 @@ import UserInfoCard from "@/components/userInfoCard";
 import {post} from "@/utils/client/fetchUtil";
 
 interface UserInfo {
-    userId: string;
+    userId: number;
     userEmail: string;
     username: string;
     avatar: string;

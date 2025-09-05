@@ -16,7 +16,7 @@ interface LoginParams {
 
 // 用户信息接口
 interface UserInfo {
-  userId: string;
+  userId: number;
   userEmail: string;
   lover: string;
   score: number;
@@ -32,12 +32,12 @@ interface TaskParams {
 
 // 任务详情参数接口
 interface TaskInfoParams {
-  taskId: string;
+  taskId: number;
 }
 
 // 任务状态更新参数接口
 interface TaskStateParams {
-  taskId: string;
+  taskId: number;
   taskStatus: number;
 }
 
@@ -63,7 +63,7 @@ interface GiftParams {
 
 // 礼物操作参数接口
 interface GiftOperationParams {
-  giftId: string;
+  giftId: number;
   isShow?: boolean;
 }
 
@@ -80,7 +80,7 @@ interface WhisperQueryParams {
 
 // 收藏参数接口
 interface FavouriteParams {
-  collectionId: string;
+  collectionId: number;
   collectionType: 'gift' | 'task' | 'whisper';
 }
 
@@ -213,7 +213,7 @@ export async function getGiftList(params: { searchWords?: string }): Promise<Bas
 }
 
 // 兑换礼物
-export async function exchangeGift(params: { giftId: string }): Promise<BaseResponse> {
+export async function exchangeGift(params: { giftId: number }): Promise<BaseResponse> {
     return await post(`/api/v1/gift`, {
         action: 'exchange',
         data: params
@@ -222,14 +222,14 @@ export async function exchangeGift(params: { giftId: string }): Promise<BaseResp
 
 // 上架，下架礼物
 export async function showGift(params: GiftOperationParams): Promise<BaseResponse> {
-    return await post(`/api/v1/gift`, {
+    return post(`/api/v1/gift`, {
         action: 'show',
         data: params
     });
 }
 
 // 使用礼物
-export async function useGift(params: { giftId: string }): Promise<BaseResponse> {
+export async function useGift(params: { giftId: number }): Promise<BaseResponse> {
     return await post(`/api/v1/gift`, {
         action: 'use',
         data: params

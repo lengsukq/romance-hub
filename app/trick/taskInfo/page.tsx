@@ -7,23 +7,24 @@ import {useRouter, useSearchParams} from "next/navigation";
 import ConfirmBox from "@/components/confirmBox";
 
 interface TaskDetail {
-    taskId: string;
+    taskId: number;
     taskName: string;
     taskDetail: string;
     taskReward: string;
     taskScore: number;
     taskStatus: string;
     taskImg: string;
-    favId?: string | null;
+    favId?: number | null;
 }
 
 export default function App() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const taskId = searchParams.get('taskId') || '';
+    const taskIdParam = searchParams.get('taskId') || '';
+    const taskId = taskIdParam ? parseInt(taskIdParam, 10) : 0;
     
     const [taskDetail, setTaskDetail] = useState<TaskDetail>({
-        taskId: '',
+        taskId: 0,
         taskName: '',
         taskDetail: '',
         taskReward: '',

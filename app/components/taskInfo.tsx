@@ -8,7 +8,7 @@ import FavButton from "@/components/buttonCom/FavButton";
 import CustomUploader from "@/components/CustomUploader";
 
 interface TaskInfoProps {
-    favId?: string | null;
+    favId?: number | null;
     isPost?: boolean;
     taskDetail?: string;
     taskName?: string;

@@ -10,7 +10,7 @@ interface LoginResponse {
   code: number;
   msg: string;
   data: {
-    userId: string;
+    userId: number;
     userEmail: string;
     lover: string;
     score: number;
@@ -19,7 +19,7 @@ interface LoginResponse {
 
 interface UserInfo {
   username: string;
-  userId: string;
+  userId: number;
   userEmail: string;
   lover: string;
   score: number;

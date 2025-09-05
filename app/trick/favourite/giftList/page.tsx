@@ -6,7 +6,7 @@ import {Notify} from "@/utils/client/notificationUtils";
 import NoDataCom from "@/components/noDataCom";
 
 interface GiftItem {
-    giftId: string;
+    giftId: number;
     giftName: string;
     giftImg: string;
     needScore: number;
@@ -14,7 +14,7 @@ interface GiftItem {
     remained: number;
     redeemed: number;
     isShow: number;
-    favId?: string | null;
+    favId?: number | null;
     collectionName?: string;
     creationTime?: string;
 }

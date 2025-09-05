@@ -10,7 +10,7 @@ import NoDataCom from "@/components/noDataCom";
 import { RootState } from "@/store/store";
 
 interface GiftItem {
-    giftId: string;
+    giftId: number;
     giftName: string;
     giftImg: string;
     needScore: number;

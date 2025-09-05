@@ -25,7 +25,7 @@ interface CreateWhisperData {
 
 // 删除留言参数
 interface DeleteWhisperData {
-    whisperId: string;
+    whisperId: number;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
