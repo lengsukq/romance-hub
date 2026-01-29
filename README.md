@@ -1,105 +1,1016 @@
-# 项目简介
-情侣之间发布任务，接受任务
+# 💕 RomanceHub - 情侣任务管理系统
 
-## 实现功能
+> 💝 给女朋友写的专属情侣任务和商城系统 | 纯H5页面 | 完全免费部署 | 无需服务器  
+> 🚀 React-Next.js全栈项目，让爱情更有趣！
 
-1. 用户注册登录、发布任务 （注册点击登录页圆形大图）
-2. 类商品交易系统，获取积分后可以直接兑换礼物（商品），也可以上架自己的礼物给对方兑换 
-3. 上传图片完全不占用服务器空间，使用第三方图床，让家庭自建服务器也能实现高清大图 
-4. 积分系统，发布完成任务都能加减积分  
-5. 拥有留言功能，可以给对方留言
-6. 发布接受完成任务以及使用礼物都会有微信企业机器人通知
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.1.1-blue?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6.2-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.15.0-green?logo=prisma)](https://www.prisma.io/)
+[![GitHub stars](https://img.shields.io/github/stars/lengsukq/romance-hub?style=social)](https://github.com/lengsukq/romance-hub/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/lengsukq/romance-hub?style=social)](https://github.com/lengsukq/romance-hub/network/members)
+
+## 🚀 快速开始
+
+想要快速体验？只需3步：
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/lengsukq/romance-hub.git
+cd romance-hub
+
+# 2. 安装依赖
+npm install
+
+# 3. 配置环境变量（创建 .env.local 文件）
+# 4. 启动项目
+npm run dev
+```
+
+🎉 打开 http://localhost:9999 开始你的爱情之旅！
+
+### 📋 使用步骤
+
+1. **初始化配置**: 访问 `/trick/config` 页面，点击"初始化默认配置"
+2. **配置图床**: 在"图床配置"标签页中设置API密钥（支持SM图床、IMGBB等）
+3. **配置通知**: 在"通知配置"标签页中设置企业微信机器人Webhook地址
+4. **注册账号**: 回到首页，点击登录页面的圆形大图进行双账号注册
+5. **开始使用**: 注册完成后即可使用所有功能
+6. **配置同步**: 配置会自动与关联者保持一致，无需手动同步
+
+## ✨ 核心功能
+
+🔐 **用户系统**
+- 用户注册登录（注册点击登录页圆形大图）
+- 个人信息管理与情侣绑定
+- 头像上传支持（自动使用配置的图床服务）
+
+🎯 **任务系统**
+- 发布任务给对方
+- 接受并完成任务
+- 任务状态追踪
+- 任务完成自动通知（支持企业微信机器人）
+
+🏪 **积分商城**
+- 类商品交易系统，完成任务获取积分
+- 积分兑换礼物（商品）
+- 上架自己的礼物给对方兑换
+- 礼物使用自动通知
+
+📸 **图片管理**
+- 支持SM图床、IMGBB图床
+- 完全不占用服务器空间
+- 让家庭自建服务器也能实现高清大图存储
+- 自动使用配置的默认图床服务
+
+💬 **留言功能**
+- 给对方留言表达心意
+- 留言状态管理
+- 留言发送自动通知
+
+🤖 **智能通知系统**
+- **企业微信机器人通知**: 发布/接受/完成任务时自动通知
+- **使用礼物时自动通知**: 礼物兑换和使用状态同步
+- **留言通知**: 新留言到达时及时提醒
+- **配置化管理**: 支持通过Web界面配置通知设置
+- **多种通知类型**: 支持文本消息、链接跳转等
+
+❤️ **收藏系统**
+- 收藏喜欢的任务、礼物、留言
+- 个人收藏管理
+
+🎛️ **配置管理系统**
+- **图床配置**: 支持SM图床、IMGBB图床，可动态添加新图床
+- **通知配置**: 支持企业微信机器人等多种通知方式
+- **系统配置**: 网站URL等基础配置管理
+- **Web界面管理**: 访问 `/trick/config` 进行可视化配置
+- **数据库存储**: 所有配置存储在数据库中，支持动态管理
+- **用户级别配置**: 每个用户都有独立的配置
+- **关联者一致性**: 配置会自动与关联者保持一致
+- **自动同步**: 配置修改时自动同步到关联者，确保情侣双方配置一致
+
 ***
 ![mainImg.png](readmeImg%2FmainImg.png)
-## 无需服务器，0成本搭建教程 
-https://blog.lengsu.top/article/love-trick
 
+## 🏗️ 技术架构
 
-### 数据库表结构
+### 前端技术栈
+- **Next.js 16.1.6** - React全栈框架，支持SSR/SSG
+- **React 19.1.1** - 用户界面库
+- **TypeScript 5.6.2** - 完全类型安全的项目（100% TypeScript）
+- **Tailwind CSS** - 原子化CSS框架
+- **Framer Motion** - 动画库
+- **React Redux** - 状态管理
+- **Sonner** - 现代化通知组件
+
+### 后端技术栈
+- **Next.js API Routes** - 服务端API接口
+- **Prisma ORM 6.15.0** - 现代化数据库访问层
+- **JWT** - 身份认证
+- **中间件验证** - 路由安全保护
+
+### 数据库支持
+🗄️ **PostgreSQL** - 使用 Prisma ORM 连接 PostgreSQL 数据库
+- **Neon** - 使用 Neon 云数据库服务（推荐）
+- **高性能** - 支持连接池和优化查询
+- **类型安全** - 通过 Prisma 提供完整的类型安全
+
+### 外部集成
+- **图床服务** - 支持多种图床服务（SM图床、IMGBB图床等，支持高清图片上传）
+- **企业微信机器人** - 实时消息推送，任务状态同步
+- **配置管理系统** - 数据库驱动的配置存储和管理
+
+## 📊 数据库模型
+
+### 核心数据表
+- **UserInfo** - 用户信息表
+- **TaskList** - 任务列表表  
+- **GiftList** - 礼物列表表
+- **WhisperList** - 留言列表表
+- **FavouriteList** - 收藏列表表
+- **SystemConfig** - 系统配置表
+- **ImageBedConfig** - 图床配置表
+- **NotificationConfig** - 通知配置表
 
 ![sql.png](readmeImg%2Fsql.png)
 
-### 本地根目录创建.env.local文件，配置必要数据
-```text
-MYSQL_HOST= 数据库ip
-MYSQL_PORT= 数据库端口
-MYSQL_DATABASE= 数据库名
-MYSQL_USER= 数据库用户名
-MYSQL_PASSWORD= 数据库密码
-WX_ROBOT_URL= 企业微信机器人的url 如：https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=11111111-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-JWT_SECRET_KEY= xxxxxxx cookie加密密钥，随便写
-DRAWING_BED = BilibiliDaily 图床选择：SM：sm图床 BilibiliDaily：哔哩哔哩动态或专栏 BilibiliCover：哔哩哔哩视频封面 IMGBB：IMGBB 图床 TG ：Telegraph
-SM_TOKEN = SM图床注册后获取的API 地址：https://smms.app/
-BILIBILI_SESSDATA = 登录bilibili后获取的sessdata 参考：https://www.yuque.com/xlzy520/blog/fydq8g?
-BILIBILI_CSRF = 同上
-IMGBB_API = IMGBB图床API 地址：https://imgbb.com/
-TG_URL = https://<你的代理地址>/https://telegra.ph     telegra的代理地址，因为国内无法访问，所以需要添加一个代理地址 参考https://github.com/ymyuuu/Cloudflare-Workers-Proxy
-```
-图床选择一个后填写相关的值即可其他没选的可以不填，选择b站相关的图床，BILIBILI_SESSDATA和BILIBILI_CSRF必须都要填
-如果要使用b站视频封面上传，需要取消注释postTask/page文件中的某行代码（转base64）
+## 📚 无需服务器，0成本搭建教程 
+🔗 [详细教程](https://blog.lengsu.top/article/romance-hub)
 
-## 仍旧存在的一些缺陷（任会慢慢改进）
-* sql语句不够严谨
-* 未将cookie进行服务器端二次校验(已优化)
-* 某些接口没有进行二次校验就写入数据库
-* 部分功能缺少二次确认逻辑
+## ⚙️ 环境配置
 
-## docker构建/拉取运行
-1. 构建镜像or拉取镜像
-```shell
-#构建本地镜像（需要先进入项目目录）
-docker build -t love-trick .
-#拉取远程镜像
-docker pull queensu/love-trick
-```
-2. 运行容器
-```shell
-docker run -d -p 9999:9999 --name love-trick \
-  -e MYSQL_HOST=你的数据库ip地址 \
-  -e MYSQL_PORT=你的数据库端口 \
-  -e MYSQL_DATABASE=你的数据库名称 \
-  -e MYSQL_USER=你的数据库用户名 \
-  -e MYSQL_PASSWORD=你的数据库用户密码 \
-  -e WX_ROBOT_URL=你的微信机器人地址 \
-  -e JWT_SECRET_KEY=你的cookie加密密钥 \
-  -e DRAWING_BED=你选择的图床 \
-  -e SM_TOKEN=SM的TOKEN \
-  -e BILIBILI_SESSDATA=哔哩哔哩账号的SESSDATA \
-  -e BILIBILI_CSRF=哔哩哔哩账号的CSRF \
-  -e IMGBB_API=IMGBB的TOKEN \
-  -e WEB_URL=你的部署成功后的网站地址 \
-  love-trick
+> 💡 **重要更新**: 项目已支持数据库配置管理，可通过Web界面管理图床和通知配置，无需手动编辑环境变量！配置会自动与关联者保持一致。现在只需要配置数据库连接和JWT密钥即可。
+
+### 🎛️ 配置管理方式
+
+#### 方式一：Web界面配置（推荐）
+1. 启动项目后访问 `/trick/config` 进入配置管理页面
+2. 点击"初始化默认配置"按钮
+3. 在"图床配置"标签页中设置API密钥等信息
+4. 在"通知配置"标签页中设置Webhook地址
+5. 在"系统配置"标签页中设置网站URL等
+6. 配置会自动与关联者保持一致，无需手动同步
+
+#### 方式二：环境变量配置（仅数据库和安全配置）
+
+### 创建.env.local文件
+
+在项目根目录创建`.env.local`文件，配置以下环境变量：
+
+```bash
+# ===========================================
+# 🗄️ 数据库配置 (Database Configuration)
+# ===========================================
+
+# PostgreSQL 数据库连接URL (Neon)
+# 格式: postgresql://username:password@host:port/database?sslmode=require
+DATABASE_URL=postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require
+
+# ===========================================
+# 🔐 安全配置 (Security Configuration)
+# ===========================================
+
+# JWT密钥 - 用于cookie加密，请替换为复杂的随机字符串
+JWT_SECRET_KEY=your_super_secret_jwt_key_here
+
+# ===========================================
+# 💡 重要提示
+# ===========================================
+# 图床和通知配置已移至Web界面管理
+# 访问 /trick/config 进行配置，无需在此设置环境变量
 ```
 
-## 开发启动流程
-1. 安装依赖
-```shell
-yarn
-```
-2. 启动项目
-```shell
-yarn dve
-```
-3. 访问项目地址
-```text
-http://localhost:9999/
+### 📝 配置说明
+
+#### 数据库配置
+- **PostgreSQL**: 项目已全面迁移到 PostgreSQL
+- **Neon 数据库**: 使用 Neon 云数据库服务，支持连接池和自动扩展
+- **Prisma ORM**: 使用 Prisma 进行数据库操作，支持迁移和类型安全
+- **连接字符串格式**: `postgresql://username:password@host:port/database?sslmode=require`
+  - 请从 Neon 控制台获取您的实际连接字符串
+  - 确保使用连接池 URL（通常包含 `-pooler` 后缀）
+
+#### 图床配置
+- 支持多种图床服务配置，包括**SM图床**和**IMGBB图床**
+- **SM图床**：注册 https://smms.app/ 获取API Token
+- **IMGBB图床**：注册 https://imgbb.com/ 获取API Key
+- **推荐使用Web界面配置**，更加灵活和易管理
+- 支持动态添加新的图床服务
+
+#### 通知配置
+- **企业微信机器人**：支持实时任务状态通知
+- **Webhook配置**：通过Web界面设置机器人Webhook地址
+- **自动通知**：任务发布、接受、完成时自动发送通知
+- **礼物通知**：礼物兑换和使用状态同步通知
+- **留言通知**：新留言到达时及时提醒
+
+#### 数据库迁移
+项目使用 Prisma 进行数据库迁移：
+```bash
+# 创建数据库迁移
+npm run db:migrate
+
+# 推送schema到数据库（开发环境）
+npm run db:push
+
+# 重置数据库（谨慎使用）
+npm run db:reset
 ```
 
-## 发布到生产环境
+#### 配置管理说明
+- **环境变量**: 只需要配置数据库连接和JWT密钥
+- **图床配置**: 通过Web界面 `/trick/config` 管理，支持多种图床服务
+- **通知配置**: 通过Web界面 `/trick/config` 管理，支持企业微信机器人等
+- **自动同步**: 配置会自动与关联者保持一致
 
-1. 安装依赖 
-```shell
-yarn
+## 🎛️ 配置管理系统
+
+### 数据库配置表结构
+项目新增了完整的配置管理系统，支持通过数据库存储和管理配置：
+
+#### 系统配置表 (`SystemConfig`)
+- 存储通用系统配置，如网站URL、JWT密钥等
+- 支持配置类型分类和描述
+- **用户级别配置**: 每个用户都有独立的配置
+- **自动同步**: 用户配置自动与关联者保持一致
+
+#### 图床配置表 (`ImageBedConfig`)
+- 支持多种图床服务配置
+- 可设置默认图床、优先级、启用状态
+- 支持动态添加新的图床服务
+- 配置字段包括：bedName、bedType、apiUrl、apiKey、authHeader等
+- **用户级别配置**: 每个用户都有独立的图床配置
+- **自动同步**: 用户配置自动与关联者保持一致
+
+#### 通知配置表 (`NotificationConfig`)
+- 支持多种通知方式配置
+- 可配置Webhook地址、API密钥等
+- 支持启用/禁用控制
+- 配置字段包括：notifyType、notifyName、webhookUrl、apiKey等
+- **用户级别配置**: 每个用户都有独立的通知配置
+- **自动同步**: 用户配置自动与关联者保持一致
+
+### 配置管理API
+- `/api/v1/config` - 提供完整的配置CRUD操作
+- 支持图床、通知、系统配置的统一管理
+- 提供初始化默认配置功能
+- **自动同步**: 配置修改时自动同步到关联者，确保情侣双方配置一致
+- **Web界面管理**: 无需手动编辑环境变量，所有配置通过Web界面管理
+
+### 配置管理页面
+- 访问路径：`/trick/config`
+- 提供可视化的配置管理界面
+- 支持实时编辑和保存配置
+- 分标签页管理不同类型配置
+- **核心功能**:
+  - 用户级别配置管理
+  - 自动同步配置到关联者
+  - 配置说明和最佳实践提示
+  - 无需手动编辑环境变量
+
+### 配置管理机制
+1. **用户级别配置** - 每个用户都有独立的配置
+2. **自动同步** - 配置修改时自动同步到关联者
+3. **一致性保证** - 确保情侣双方始终使用相同的配置
+4. **Web界面管理** - 无需手动编辑环境变量，所有配置通过Web界面管理
+
+### 关联者配置一致性
+- **自动同步**: 配置修改时自动同步到关联者账号
+- **配置一致性**: 确保情侣双方始终使用相同的图床和通知配置
+- **无需手动操作**: 系统自动维护配置一致性
+- **Web界面管理**: 所有配置通过Web界面管理，无需手动编辑环境变量
+
+### 用户页面支持
+- **个人信息页面** (`/trick/myInfo`) 已支持头像上传功能
+- 头像上传自动使用配置的图床服务
+- 支持实时预览和编辑个人信息
+- **关联者信息显示**: 自动获取并显示关联者的详细信息
+- 用户操作会触发相应的通知（如果配置了通知服务）
+- **配置一致性**: 用户与关联者使用相同的图床和通知配置
+- **Web界面配置**: 所有图床和通知配置通过Web界面管理
+
+## 🔄 项目迭代状态
+
+### ✅ 已完成优化
+- ✅ **数据库架构升级** - 从原生SQL迁移到Prisma ORM
+- ✅ **PostgreSQL 数据库** - 全面迁移到 PostgreSQL，使用 Neon 云数据库
+- ✅ **Next.js 16升级** - 升级到最新版本，性能更优，默认使用 Turbopack
+- ✅ **100% TypeScript 转换** - 所有配置文件已转换为 TypeScript，完全类型安全
+- ✅ **React 19升级** - 最新React特性支持
+- ✅ **Cookie安全优化** - 服务器端二次校验
+- ✅ **类型安全** - 全面TypeScript化
+- ✅ **中间件验证** - 路由级别的安全保护
+- ✅ **配置管理系统** - 数据库配置管理，支持Web界面操作
+- ✅ **双账号注册** - 支持一次性注册两个关联账号
+- ✅ **表单验证优化** - 改进注册页面验证逻辑，提升用户体验
+- ✅ **通知系统升级** - 使用Sonner组件，支持多种通知类型
+- ✅ **图床配置支持** - 用户页面头像上传自动使用配置的图床服务
+- ✅ **智能通知集成** - 任务、礼物、留言操作自动触发通知
+- ✅ **用户级别配置** - 支持用户级别的图床和通知配置管理
+- ✅ **关联者配置一致性** - 配置自动与关联者保持一致
+- ✅ **自动同步机制** - 配置修改时自动同步到关联者账号
+- ✅ **关联者信息显示** - 用户页面显示关联者的详细信息
+- ✅ **环境变量简化** - 去除图床和通知环境变量，只需配置数据库和JWT密钥
+- ✅ **Web界面配置** - 所有图床和通知配置通过Web界面管理
+- ✅ **配置系统完善** - 图床和通知配置完全通过数据库和Web界面管理，无需环境变量
+- ✅ **文档优化** - 更新了所有相关说明，强调Web界面配置的重要性
+- ✅ **用户体验优化** - 简化了配置流程，用户只需配置数据库和JWT密钥即可
+- ✅ **部署简化** - Docker和Vercel部署时只需配置数据库和JWT密钥环境变量
+- ✅ **README更新完成** - 已从文档中完全移除图床和通知相关的环境变量配置说明
+
+### 🚧 持续改进中
+- 🔄 接口参数校验完善
+- 🔄 二次确认逻辑优化
+- 🔄 错误处理机制增强
+- 🔄 性能优化和缓存策略
+
+## 🚀 部署指南
+
+### 🐳 Docker 部署（推荐）
+
+#### 1. 构建或拉取镜像
+```bash
+# 构建本地镜像（需要先进入项目目录）
+docker build -t romance-hub .
+
+# 或拉取远程镜像
+docker pull queensu/romance-hub
 ```
-2. 编译
-```shell
-yarn build
+
+#### 2. 运行容器
+
+##### PostgreSQL 模式（推荐）
+```bash
+docker run -d -p 9999:9999 --name romance-hub \
+  -e DATABASE_URL=postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require \
+  -e JWT_SECRET_KEY=your_jwt_secret_key \
+  romance-hub
 ```
-3. 启动项目
-```shell
-yarn start
+
+> 💡 **注意**: Docker部署后，可通过Web界面配置图床和通知设置，无需在环境变量中配置。只需要设置数据库连接和JWT密钥即可。
+
+### ☁️ Vercel 部署
+
+#### 1. 准备部署
+1. Fork 本项目到你的GitHub账户
+2. 注册 [Vercel](https://vercel.com) 账户
+3. 在Vercel中导入你的GitHub仓库
+
+#### 2. 环境变量配置
+在Vercel项目设置中添加以下环境变量：
+```bash
+DATABASE_PROVIDER=postgresql
+DATABASE_URL=your_postgresql_connection_string
+JWT_SECRET_KEY=your_jwt_secret_key
 ```
-4. 访问项目地址
-```text
-http://你的ip地址:9999/
+
+#### 3. 数据库设置
+- 推荐使用 [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
+- 或使用 [Neon](https://neon.tech)、[Supabase](https://supabase.com) 等PostgreSQL服务
+
+#### 4. 部署完成
+- 部署完成后，访问你的Vercel域名
+- 进入 `/trick/config` 配置图床和通知设置
+- 只需要设置数据库连接和JWT密钥环境变量，其他配置可通过Web界面管理
+
+### 🐙 GitHub Pages 部署
+
+由于项目使用Next.js API Routes，GitHub Pages不支持服务端功能。建议使用Vercel或其他支持Node.js的平台部署。
+
+## 🚀 开发启动流程
+
+### 1. 克隆项目
+```bash
+git clone https://github.com/your-username/romance-hub.git
+cd romance-hub
 ```
+
+### 2. 安装依赖
+```bash
+# 使用npm
+npm install
+
+# 或使用yarn
+yarn install
+```
+
+### 3. 环境配置
+```bash
+# 复制并编辑环境变量文件
+cp .env.example .env.local
+
+# 编辑配置文件（只需要配置数据库连接和JWT密钥）
+vim .env.local  # 或使用其他编辑器
+```
+
+### 4. 数据库初始化
+```bash
+# 生成Prisma客户端
+npm run db:generate
+
+# 推送数据库schema（开发环境）
+npm run db:push
+
+# 或运行数据库迁移（生产环境）
+npm run db:migrate
+```
+
+### 5. 启动开发服务器
+```bash
+# 启动开发服务器
+npm run dev
+# 或
+yarn dev
+```
+
+### 6. 访问应用
+打开浏览器访问：http://localhost:9999
+
+## 📦 生产环境部署
+
+### 1. 安装依赖
+```bash
+npm install --production
+```
+
+### 2. 数据库迁移
+```bash
+# 生产环境数据库迁移
+npm run db:migrate
+
+# 生成Prisma客户端
+npm run db:generate
+```
+
+### 3. 构建项目
+```bash
+npm run build
+```
+
+### 4. 启动生产服务器
+```bash
+npm start
+```
+
+### 5. 访问应用
+浏览器访问：http://你的服务器IP:9999
+
+## 🛠️ 数据库管理命令
+
+```bash
+# 生成Prisma客户端
+npm run db:generate
+
+# 推送schema到数据库（开发）
+npm run db:push
+
+# 拉取数据库schema
+npm run db:pull
+
+# 创建数据库迁移
+npm run db:migrate
+
+# 重置数据库
+npm run db:reset
+
+# 打开数据库管理界面
+npm run db:studio
+
+# 快速切换数据库
+```
+
+## 🔄 本地开发数据库结构更新流程
+
+### 📝 修改数据库结构后的标准操作流程
+
+当您在本地开发中修改了 `prisma/schema.prisma` 文件后，需要按以下步骤更新数据库：
+
+#### 1. 开发环境（推荐使用 `db:push`）
+
+```bash
+# 1. 重新生成Prisma客户端（更新TypeScript类型）
+npm run db:generate
+
+# 2. 推送schema变更到数据库
+npm run db:push
+
+# 3. 验证数据库结构
+npm run db:studio
+```
+
+#### 2. 生产环境（推荐使用 `db:migrate`）
+
+```bash
+# 1. 创建数据库迁移文件
+npm run db:migrate
+
+# 2. 重新生成Prisma客户端
+npm run db:generate
+
+# 3. 应用迁移到数据库
+npm run db:migrate:deploy
+```
+
+### 🎯 不同场景的操作指南
+
+#### 🔧 场景一：新增表或字段
+```bash
+# 1. 修改 prisma/schema.prisma 文件
+# 2. 生成客户端和推送变更
+npm run db:generate && npm run db:push
+# 3. 重启开发服务器
+npm run dev
+```
+
+#### 🔧 场景二：修改字段类型或约束
+```bash
+# 1. 修改 prisma/schema.prisma 文件
+# 2. 推送变更（可能需要接受数据丢失）
+npm run db:push --accept-data-loss
+# 3. 重新生成客户端
+npm run db:generate
+```
+
+#### 🔧 场景三：删除表或字段
+```bash
+# 1. 修改 prisma/schema.prisma 文件
+# 2. 推送变更（会丢失相关数据）
+npm run db:push --accept-data-loss
+# 3. 重新生成客户端
+npm run db:generate
+```
+
+#### 🔧 场景四：同步多个数据库schema文件
+```bash
+# 1. 修改主schema文件 prisma/schema.prisma
+# 2. 同步到其他数据库schema文件
+node scripts/sync-schemas.js
+# 3. 重新生成客户端
+npm run db:generate
+```
+
+### ⚠️ 重要注意事项
+
+#### 数据安全
+- **开发环境**: 使用 `npm run db:push` 快速更新，但可能丢失数据
+- **生产环境**: 使用 `npm run db:migrate` 创建迁移文件，保留数据变更历史
+- **重要数据**: 更新前请备份数据库
+
+#### 常见问题解决
+
+**问题1**: 推送schema时提示数据丢失
+```bash
+# 解决方案：明确接受数据丢失
+npm run db:push --accept-data-loss
+```
+
+**问题2**: 类型错误或客户端过期
+```bash
+# 解决方案：重新生成客户端
+npm run db:generate
+```
+
+**问题3**: 数据库连接失败
+```bash
+# 解决方案：检查环境变量和数据库状态
+npm run db:studio
+```
+
+### 🚀 快速开发工作流
+
+#### 日常开发流程
+```bash
+# 1. 修改schema文件
+vim prisma/schema.prisma
+
+# 2. 快速更新数据库（开发环境）
+npm run db:generate && npm run db:push
+
+# 3. 重启开发服务器
+npm run dev
+```
+
+#### 完整开发流程
+```bash
+# 1. 修改schema文件
+# 2. 同步所有数据库schema
+node scripts/sync-schemas.js
+
+# 3. 更新数据库结构
+npm run db:generate && npm run db:push
+
+# 4. 验证数据库结构
+npm run db:studio
+
+# 5. 重启开发服务器
+npm run dev
+```
+
+### 📊 数据库状态检查
+
+```bash
+# 检查数据库连接
+npm run db:studio
+
+# 查看数据库表结构
+npm run db:pull
+
+# 验证Prisma客户端
+npm run db:generate
+```
+
+### 🎯 数据库结构变更最佳实践
+
+#### 📋 变更前准备
+1. **备份数据**: 重要数据变更前请备份数据库
+2. **测试环境**: 先在测试环境验证变更
+3. **记录变更**: 记录所有schema变更内容
+
+#### 🔄 变更流程
+1. **修改schema**: 编辑 `prisma/schema.prisma` 文件
+2. **推送schema**: 运行 `npm run db:push` 推送schema到数据库
+3. **更新数据库**: 运行 `npm run db:generate && npm run db:push`
+4. **验证变更**: 使用 `npm run db:studio` 检查数据库结构
+5. **测试功能**: 重启开发服务器并测试相关功能
+
+#### ⚡ 快速命令组合
+```bash
+# 一键更新数据库结构（开发环境）
+npm run db:generate && npm run db:push && npm run dev
+
+# 一键同步所有schema并更新
+node scripts/sync-schemas.js && npm run db:generate && npm run db:push
+
+# 一键重置数据库（谨慎使用）
+npm run db:reset && npm run db:generate && npm run db:push
+```
+
+#### 🚨 常见错误及解决方案
+
+**错误1**: `P1012: Error validating datasource db`
+```bash
+# 原因：环境变量未设置或数据库连接失败
+# 解决：检查 DATABASE_URL 环境变量
+echo $env:DATABASE_URL
+```
+
+**错误2**: `P3007: The requested preview features are not yet allowed`
+```bash
+# 原因：Prisma版本不兼容
+# 解决：更新Prisma版本或调整schema语法
+npm update prisma
+```
+
+**错误3**: `P2002: Unique constraint failed`
+```bash
+# 原因：唯一约束冲突
+# 解决：检查数据或调整约束条件
+npm run db:studio  # 查看数据
+```
+
+## 🚨 常见问题与解决方案
+
+### 🔍 快速故障排除表
+
+| 问题症状 | 可能原因 | 快速解决 |
+|---------|---------|---------|
+| 🚫 Prisma Studio 报错 | 客户端损坏 | `taskkill /f /im node.exe` → 重新生成客户端 |
+| 🚫 数据库连接失败 | 环境变量未设置 | 检查 `.env.local` 中的 `DATABASE_URL` |
+| 🚫 端口 9999 被占用 | 进程未正常结束 | `netstat -ano \| findstr :9999` → 杀死进程 |
+| 🚫 npm install 失败 | 依赖冲突 | 删除 `node_modules` → 重新安装 |
+| 🚫 图片上传失败 | 图床配置错误 | 检查Web界面中的图床配置 |
+| 🚫 微信通知不工作 | Webhook URL 错误 | 检查Web界面中的通知配置 |
+| 🚫 TypeScript 错误 | 类型定义过期 | `npm run db:generate` 更新类型 |
+| 🚫 页面白屏 | 数据库未初始化 | `npm run db:push` 创建表结构 |
+| 🚫 数据库结构错误 | Schema变更未同步 | `npm run db:generate && npm run db:push` |
+
+### ❌ Prisma Studio 运行错误
+
+**问题描述**: 运行 `npm run db:studio` 时出现以下错误：
+```
+Invalid `STUDIO_EMBED_BUILD<"u"&&STUDIO_EMBED_BUILD?lMe():require(...)` invocation
+Cannot fetch data from service: fetch failed
+```
+
+**解决方案**:
+```bash
+# 1. 停止所有 Node 进程
+taskkill /f /im node.exe
+
+# 2. 删除损坏的 Prisma 客户端
+Remove-Item -Recurse -Force .\generated\prisma -ErrorAction SilentlyContinue
+
+# 3. 重新生成 Prisma 客户端
+$env:DATABASE_URL="file:./dev.db"; npm run db:generate
+
+# 4. 推送数据库 schema
+$env:DATABASE_URL="file:./dev.db"; npm run db:push
+
+# 5. 重新启动 Prisma Studio
+npm run db:studio
+```
+
+### ❌ 环境变量配置问题
+
+**问题描述**: 无法创建 `.env.local` 文件或环境变量未生效
+
+**解决方案**:
+```bash
+# 方法1: 使用开发脚本设置环境变量
+.\setup-sqlite-dev.ps1
+
+# 方法2: 手动在 PowerShell 中设置
+$env:DATABASE_URL="postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require"
+
+# 方法3: 创建 .env 文件（如果 .env.local 被忽略）
+echo 'DATABASE_URL="postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require"' > .env
+```
+
+### ❌ PostgreSQL 数据库连接失败
+
+**问题描述**: 提示无法连接到 PostgreSQL 数据库
+
+**解决方案**:
+```bash
+# 1. 检查环境变量是否正确设置
+echo $env:DATABASE_URL
+
+# 2. 验证数据库连接字符串格式
+# 确保格式为: postgresql://username:password@host:port/database?sslmode=require
+
+# 3. 测试数据库连接
+npm run db:push
+
+# 4. 使用 Prisma Studio 验证连接
+npm run db:studio
+```
+
+### ❌ 依赖安装问题
+
+**问题描述**: `npm install` 过程中出现依赖冲突或安装失败
+
+**解决方案**:
+```bash
+# 1. 清理缓存
+npm cache clean --force
+
+# 2. 删除 node_modules 和 package-lock.json
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+Remove-Item package-lock.json -ErrorAction SilentlyContinue
+
+# 3. 重新安装
+npm install
+
+# 4. 如果仍有问题，使用 yarn
+yarn install
+```
+
+### ❌ 端口占用问题
+
+**问题描述**: 启动项目时提示端口 9999 已被占用
+
+**解决方案**:
+```bash
+# 1. 查找占用端口的进程
+netstat -ano | findstr :9999
+
+# 2. 杀死占用进程（替换 PID）
+taskkill /f /pid <PID>
+
+# 3. 或使用不同端口启动
+next dev -p 3000
+```
+
+### ❌ TypeScript 类型错误
+
+**问题描述**: 编译时出现 TypeScript 类型错误
+
+**解决方案**:
+```bash
+# 1. 重新生成 Prisma 客户端（更新类型定义）
+npm run db:generate
+
+# 2. 类型检查
+npm run type-check
+
+# 3. 如果是开发环境，可以暂时跳过类型检查
+npm run dev -- --no-type-check
+```
+
+### ❌ 图片上传失败
+
+**问题描述**: 图片上传到图床失败
+
+**解决方案**:
+1. **检查图床配置**:
+   - 访问 `/trick/config` 检查图床配置是否正确
+   - 确认API密钥是否有效
+   - 检查图片大小是否超过限制（5MB）
+   - 确认图片格式是否支持
+
+### ❌ 微信机器人通知失败
+
+**问题描述**: 企业微信机器人无法发送通知
+
+**解决方案**:
+1. **检查通知配置**:
+   - 访问 `/trick/config` 检查通知配置是否正确
+   - 确认Webhook URL格式是否正确
+
+2. **常见问题**:
+   - Webhook URL 格式错误
+   - 机器人被管理员禁用
+   - 发送频率过高被限制
+
+### ❌ 数据库结构变更失败
+
+**问题描述**: 修改schema后无法更新数据库结构
+
+**解决方案**:
+1. **检查schema语法**:
+   ```bash
+   # 验证schema文件语法
+   npx prisma validate
+   ```
+
+2. **强制推送变更**:
+   ```bash
+   # 接受数据丢失并推送变更
+   npm run db:push --accept-data-loss
+   ```
+
+3. **重置数据库**:
+   ```bash
+   # 完全重置数据库（谨慎使用）
+   npm run db:reset
+   npm run db:generate
+   npm run db:push
+   ```
+
+4. **常见问题**:
+   - Schema语法错误
+   - 数据库连接失败
+   - 约束冲突
+   - 数据类型不兼容
+
+### 🔧 快速诊断脚本
+
+我们为您提供了快速诊断脚本：
+
+### 🚀 开发环境设置
+
+```powershell
+# 1. 创建 .env.local 文件
+echo 'DATABASE_URL="postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require"' > .env.local
+echo 'JWT_SECRET_KEY="your_super_secret_jwt_key_here"' >> .env.local
+
+# 2. 安装依赖
+yarn install
+
+# 3. 推送数据库 schema
+yarn db:push
+
+# 4. 启动开发服务器
+yarn dev
+```
+
+### ⚡ 极速启动（零配置）
+
+如果您只想快速体验项目：
+
+```bash
+# 1. 克隆并进入项目
+git clone https://github.com/lengsukq/romance-hub.git && cd romance-hub
+
+# 2. 安装依赖
+npm install
+
+# 3. 配置环境变量（创建 .env.local）
+# 4. 启动项目
+yarn dev
+```
+
+**就这么简单！** 项目会自动：
+- 🗄️ 连接到 PostgreSQL 数据库（Neon）
+- 🔧 自动生成 Prisma 客户端
+- 📦 自动创建数据库表结构
+- 🌐 在 http://localhost:9999 启动服务
+- ⚙️ 图床和通知配置可通过Web界面管理
+
+### 📞 获取帮助
+
+如果以上解决方案都无法解决您的问题：
+
+1. 🐛 [提交 Issue](https://github.com/lengsukq/romance-hub/issues) - 详细描述问题和错误信息
+2. 📖 [查看完整文档](https://blog.lengsu.top/article/romance-hub)
+3. 💬 加入讨论群获取实时帮助
+
+## 📂 项目结构
+
+```
+romance-hub/
+├── app/                    # Next.js 13+ App Router
+│   ├── api/               # API路由
+│   │   └── v1/           # API版本
+│   │       ├── config/   # 配置管理API（图床、通知等）
+│   │       ├── user/     # 用户管理API
+│   │       ├── task/     # 任务管理API
+│   │       ├── gift/     # 礼物管理API
+│   │       ├── whisper/  # 留言管理API
+│   │       └── favourite/ # 收藏管理API
+│   ├── components/        # React组件
+│   ├── hooks/            # 自定义Hooks
+│   ├── store/            # Redux状态管理
+│   ├── trick/            # 应用页面
+│   │   ├── config/       # 配置管理页面（Web界面配置）
+│   │   ├── myInfo/       # 个人信息页面
+│   │   ├── gift/         # 礼物管理页面
+│   │   ├── postTask/     # 发布任务页面
+│   │   └── whisper/      # 留言管理页面
+│   ├── types/            # TypeScript类型定义
+│   └── utils/            # 工具函数
+│       ├── configService.ts # 配置管理服务
+│       ├── imageTools.ts    # 图片上传工具
+│       └── third-party-tools.ts # 第三方服务工具
+├── prisma/               # Prisma数据库配置
+│   └── schema.prisma    # PostgreSQL schema文件（包含配置管理表）
+├── scripts/              # 构建脚本
+├── public/               # 静态资源
+└── generated/            # Prisma生成的客户端
+```
+
+## 🆕 最新功能
+
+### 🎛️ 配置管理系统
+- **数据库配置存储**: 图床、通知等配置存储在数据库中，支持动态管理
+- **Web界面管理**: 访问 `/trick/config` 进行可视化配置管理
+- **多图床支持**: 支持多种图床服务（SM图床、IMGBB图床等），可动态添加新图床
+- **通知配置**: 支持企业微信机器人等多种通知方式
+- **环境变量简化**: 只需要配置数据库连接和JWT密钥，其他配置通过Web界面管理
+- **无需环境变量**: 图床和通知配置不再需要环境变量，完全通过Web界面管理
+- **配置系统完善**: 图床和通知配置完全通过数据库和Web界面管理，无需环境变量
+- **用户体验优化**: 简化了配置流程，用户只需配置数据库和JWT密钥即可
+- **部署简化**: Docker和Vercel部署时只需配置数据库和JWT密钥环境变量
+
+### 👥 双账号注册
+- **一次性注册**: 支持同时注册两个关联账号
+- **共享密码**: 两个账号使用相同密码，便于情侣使用
+- **互相关联**: 自动建立账号间的关联关系
+- **完整信息**: 每个账号都有独立的头像、昵称、邮箱和个人描述
+
+### 🎨 用户体验优化
+- **表单验证改进**: 注册页面不再初次加载时显示红色错误
+- **交互反馈**: 只有用户交互后才显示验证错误
+- **加载状态**: 完善的加载动画和状态提示
+
+## 🤝 贡献指南
+
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+## 📄 许可证
+
+本项目基于 MIT 许可证开源。详情请参阅 [LICENSE](LICENSE) 文件。
+
+## 🙏 致谢
+
+- [Next.js](https://nextjs.org/) - React全栈框架
+- [Prisma](https://www.prisma.io/) - 现代化数据库工具
+- [Tailwind CSS](https://tailwindcss.com/) - 原子化CSS框架
+- [React](https://reactjs.org/) - 用户界面库
+
+## 📞 支持与反馈
+
+- 🐛 [报告Bug](https://github.com/lengsukq/romance-hub/issues)
+- 💡 [功能建议](https://github.com/lengsukq/romance-hub/issues)
+- 📖 [查看文档](https://blog.lengsu.top/article/romance-hub)
+- 🌐 [在线体验](https://romance-hub.lengsu.top/)
+
+## 👨‍💻 关于作者
+
+**lengsukq** - 全干工程师 🚀
+
+- 🌍 **个人博客**: [https://blog.lengsu.top/](https://blog.lengsu.top/)
+- 🐙 **GitHub**: [https://github.com/lengsukq](https://github.com/lengsukq)
+- 💼 **技术栈**: Vue3/React/Next.js/Node.js/Python/Docker
+
+### 🎯 更多精彩项目
+
+- 💬 [AI集合站-NextChat](https://chat.lengsu.top/) - Web端一站式大模型整合
+- 🛠️ [工具箱](https://tools.lengsu.top/) - 各种实用工具集合
+- 🎵 [Bilibili音乐解析](https://bilibili-music.lengsu.top/) - 支持解析单个/收藏夹
+- 🖼️ [Pic-Su](https://pic-su.top/) - 图片管理系统
+- ✍️ [AI降重](https://parap.lengsu.top/) - 解析查重报告并自定义大模型降重
+
+---
+
+<div align="center">
+
+**如果这个项目对你有帮助，请给它一个 ⭐️**
+
+Made with ❤️ by [lengsukq](https://github.com/lengsukq)
+
+</div>

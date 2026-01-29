@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserInfo {
+  userId            Int             @id @default(autoincrement())
+  userEmail         String          @unique
+  username          String
+  password          String
+  avatar            String?
+  describeBySelf    String?
+  registrationTime  DateTime        @default(now())
+  lover             String
+  score             Int             @default(0)
+  favourites        FavouriteList[]
+  publishedGifts    GiftList[]      @relation("PublisherGifts")
+  publishedTasks    TaskList[]      @relation("PublisherTasks")
+  receivedTasks     TaskList[]      @relation("ReceiverTasks")
+  publishedWhispers WhisperList[]   @relation("PublisherWhispers")
+  receivedWhispers  WhisperList[]   @relation("ReceiverWhispers")
+
+  @@map("userinfo")
+}
+
+model TaskList {
+  taskId         Int       @id @default(autoincrement())
+  publisherEmail String
+  receiverEmail  String?
+  taskName       String
+  taskDesc       String?
+  taskImage      String?
+  taskScore      Int       @default(0)
+  taskStatus     String    @default("未开始")
+  creationTime   DateTime  @default(now())
+  completionTime DateTime?
+  isApprove      Boolean   @default(false)
+  publisher      UserInfo  @relation("PublisherTasks", fields: [publisherEmail], references: [userEmail])
+  receiver       UserInfo? @relation("ReceiverTasks", fields: [receiverEmail], references: [userEmail])
+
+  @@map("tasklist")
+}
+
+model GiftList {
+  giftId         Int      @id @default(autoincrement())
+  publisherEmail String
+  giftImg        String?
+  giftName       String
+  giftDetail     String?
+  needScore      Int      @default(0)
+  remained       Int      @default(0)
+  isShow         Boolean  @default(true)
+  creationTime   DateTime @default(now())
+  publisher      UserInfo @relation("PublisherGifts", fields: [publisherEmail], references: [userEmail])
+
+  @@map("gift_list")
+}
+
+model WhisperList {
+  whisperId      Int       @id @default(autoincrement())
+  publisherEmail String
+  toUserEmail    String?
+  title          String?
+  content        String
+  creationTime   DateTime  @default(now())
+  isRead         Boolean   @default(false)
+  publisher      UserInfo  @relation("PublisherWhispers", fields: [publisherEmail], references: [userEmail])
+  receiver       UserInfo? @relation("ReceiverWhispers", fields: [toUserEmail], references: [userEmail])
+
+  @@map("whisper_list")
+}
+
+model FavouriteList {
+  favId          Int      @id @default(autoincrement())
+  userEmail      String
+  collectionId   String
+  collectionType String
+  creationTime   DateTime @default(now())
+  user           UserInfo @relation(fields: [userEmail], references: [userEmail])
+
+  @@unique([userEmail, collectionId, collectionType])
+  @@map("favourite_list")
+}
+
+// 配置管理表
+model SystemConfig {
+  id          Int      @id @default(autoincrement())
+  configKey   String   // 配置键名
+  configValue String   // 配置值
+  configType  String   // 配置类型: image_bed, notification, other
+  description String?  // 配置描述
+  isActive    Boolean  @default(true) // 是否启用
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userEmail   String   // 关联用户邮箱
+
+  @@unique([configKey, userEmail])
+  @@map("system_configs")
+}
+
+// 图床配置表
+model ImageBedConfig {
+  id          Int      @id @default(autoincrement())
+  bedName     String   // 图床名称: SM, IMGBB, etc.
+  bedType     String   // 图床类型
+  apiUrl      String   // API地址
+  apiKey      String?  // API密钥
+  authHeader  String?  // 认证头名称
+  isActive    Boolean  @default(true) // 是否启用
+  isDefault   Boolean  @default(false) // 是否为默认图床
+  priority    Int      @default(0) // 优先级
+  description String?  // 描述
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userEmail   String   // 关联用户邮箱
+
+  @@unique([bedName, userEmail])
+  @@map("image_bed_configs")
+}
+
+// 通知配置表
+model NotificationConfig {
+  id          Int      @id @default(autoincrement())
+  notifyType  String   // 通知类型: wx_robot, email, etc.
+  notifyName  String   // 通知名称
+  webhookUrl  String?  // Webhook地址
+  apiKey      String?  // API密钥
+  isActive    Boolean  @default(true) // 是否启用
+  description String?  // 描述
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userEmail   String   // 关联用户邮箱
+
+  @@unique([notifyType, userEmail])
+  @@map("notification_configs")
+}
