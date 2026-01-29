@@ -94,4 +94,26 @@ class WhisperService {
       );
     }
   }
+
+  /// 删除留言（仅自己的留言）
+  Future<ApiResponse<void>> deleteWhisper(int whisperId) async {
+    try {
+      final response = await _apiService.post(
+        '/api/v1/whisper',
+        data: {
+          'action': 'delete',
+          'data': {'whisperId': whisperId},
+        },
+      );
+
+      final responseData = response.data as Map<String, dynamic>;
+      return ApiResponse<void>.fromJson(responseData, null);
+    } catch (e) {
+      AppLogger.e('删除留言失败', e);
+      return ApiResponse(
+        code: 500,
+        msg: '删除留言失败: ${e.toString()}',
+      );
+    }
+  }
 }

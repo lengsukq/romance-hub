@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/whisper_model.dart';
 import 'package:romance_hub_flutter/core/services/whisper_service.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
@@ -7,6 +8,7 @@ import 'package:romance_hub_flutter/core/models/favourite_model.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
 
 /// 留言列表页面
 class WhisperListPage extends StatefulWidget {
@@ -71,6 +73,40 @@ class _WhisperListPageState extends State<WhisperListPage> {
     }
   }
 
+  Future<void> _deleteWhisper(WhisperModel whisper) async {
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: '确认删除',
+      message: '确定要删除这条留言吗？',
+      confirmText: '删除',
+      cancelText: '取消',
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      final response = await _whisperService.deleteWhisper(whisper.whisperId);
+      if (response.isSuccess && mounted) {
+        setState(() {
+          _whisperList.removeWhere((w) => w.whisperId == whisper.whisperId);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('已删除')),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.msg)),
+        );
+      }
+    } catch (e) {
+      AppLogger.e('删除留言失败', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('删除失败')),
+        );
+      }
+    }
+  }
+
   Future<void> _toggleFavourite(int whisperId) async {
     try {
       if (_favouriteWhisperIds.contains(whisperId)) {
@@ -123,7 +159,7 @@ class _WhisperListPageState extends State<WhisperListPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.go('/post-whisper'),
+            onPressed: () => context.go(AppRoutes.postWhisper),
           ),
         ],
       ),
@@ -161,12 +197,22 @@ class _WhisperListPageState extends State<WhisperListPage> {
                               ),
                             ],
                           ),
-                          trailing: IconButton(
-                            icon: Icon(
-                              isFavourite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavourite ? Colors.red : null,
-                            ),
-                            onPressed: () => _toggleFavourite(whisper.whisperId),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isFavourite ? Icons.favorite : Icons.favorite_border,
+                                  color: isFavourite ? Colors.red : null,
+                                ),
+                                onPressed: () => _toggleFavourite(whisper.whisperId),
+                              ),
+                              if (widget.type == 'my')
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () => _deleteWhisper(whisper),
+                                ),
+                            ],
                           ),
                         ),
                       );

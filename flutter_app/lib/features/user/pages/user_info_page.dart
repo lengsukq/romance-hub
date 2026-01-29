@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:romance_hub_flutter/core/utils/date_utils.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
+import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/services/user_service.dart';
+import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/features/auth/services/auth_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
+import 'package:romance_hub_flutter/shared/widgets/config_dialog.dart';
 
 /// 用户信息页面
 class UserInfoPage extends StatefulWidget {
@@ -22,11 +25,38 @@ class _UserInfoPageState extends State<UserInfoPage> {
   UserModel? _userInfo;
   UserModel? _loverInfo;
   bool _isLoading = true;
+  String _baseUrl = '';
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadBaseUrl();
+  }
+
+  Future<void> _loadBaseUrl() async {
+    final url = await AppConfig.getBaseUrl();
+    if (mounted) setState(() => _baseUrl = url);
+  }
+
+  void _showConfigDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => ConfigDialog(
+        initialUrl: _baseUrl,
+        onSave: (url) async {
+          await AppConfig.setBaseUrl(url);
+          await ApiService().updateBaseUrl(url);
+          if (mounted) {
+            setState(() => _baseUrl = url);
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('后端地址已更新')),
+            );
+          }
+        },
+      ),
+    );
   }
 
   Future<void> _loadUserInfo() async {
@@ -69,7 +99,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     if (confirm == true) {
       await _authService.logout();
       if (mounted) {
-        context.go('/login');
+        context.go(AppRoutes.login);
       }
     }
   }
@@ -88,7 +118,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => context.go('/config'),
+            onPressed: () => context.go(AppRoutes.config),
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -99,11 +129,61 @@ class _UserInfoPageState extends State<UserInfoPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _buildSectionTitle('后端服务器'),
+          Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.link, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        '当前地址',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: _showConfigDialog,
+                        icon: const Icon(Icons.edit, size: 18),
+                        label: const Text('配置'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _baseUrl.isEmpty ? '未配置' : _baseUrl,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           if (_userInfo != null) ...[
             _buildSectionTitle('我的信息'),
+            if (_userInfo!.avatar != null && _userInfo!.avatar!.isNotEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: CircleAvatar(
+                    radius: 48,
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage: NetworkImage(_userInfo!.avatar!),
+                  ),
+                ),
+              ),
             _buildInfoCard(
               title: '用户名',
-              value: _userInfo!.username ?? '未设置',
+              value: _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username,
             ),
             _buildInfoCard(
               title: '邮箱',
@@ -124,7 +204,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             _buildSectionTitle('关联者信息'),
             _buildInfoCard(
               title: '用户名',
-              value: _loverInfo!.username ?? '未设置',
+              value: _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username,
             ),
             _buildInfoCard(
               title: '邮箱',

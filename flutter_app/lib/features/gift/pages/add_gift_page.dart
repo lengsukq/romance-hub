@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/gift_service.dart';
 import 'package:romance_hub_flutter/core/services/upload_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
@@ -90,7 +91,7 @@ class _AddGiftPageState extends State<AddGiftPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('添加成功')),
           );
-          context.go('/gifts');
+          context.go(AppRoutes.gifts);
         }
       } else {
         if (mounted) {

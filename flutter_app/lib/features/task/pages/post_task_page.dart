@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
 import 'package:romance_hub_flutter/core/services/upload_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
@@ -92,7 +93,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('发布成功')),
           );
-          context.go('/tasks');
+          context.go(AppRoutes.tasks);
         }
       } else {
         if (mounted) {

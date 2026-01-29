@@ -1,0 +1,293 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
+import 'package:romance_hub_flutter/core/models/gift_model.dart';
+import 'package:romance_hub_flutter/core/services/gift_service.dart';
+import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
+
+/// 我的礼物类型（与 Web 后端一致）
+const List<String> _myGiftTypes = ['已上架', '已下架', '待使用', '已用完'];
+
+/// 我的礼物页面（货架）
+/// 支持按类型筛选：已上架、已下架、待使用、已用完；使用礼物、上架/下架
+class MyGiftListPage extends StatefulWidget {
+  const MyGiftListPage({super.key});
+
+  @override
+  State<MyGiftListPage> createState() => _MyGiftListPageState();
+}
+
+class _MyGiftListPageState extends State<MyGiftListPage> {
+  final GiftService _giftService = GiftService();
+  List<GiftModel> _giftList = [];
+  bool _isLoading = false;
+  String _currentType = '已上架';
+  int _actionLoadingGiftId = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGifts();
+  }
+
+  Future<void> _loadGifts() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _giftService.getMyGiftList(
+        type: _currentType,
+        searchWords: null,
+      );
+      if (response.isSuccess && response.data != null) {
+        setState(() {
+          _giftList = response.data!;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response.msg)),
+          );
+        }
+      }
+    } catch (e) {
+      AppLogger.e('加载我的礼物失败', e);
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _useGift(GiftModel gift) async {
+    setState(() {
+      _actionLoadingGiftId = gift.giftId;
+    });
+    try {
+      final response = await _giftService.useGift(gift.giftId);
+      if (response.isSuccess && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('使用成功')),
+        );
+        _loadGifts();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.msg)),
+        );
+      }
+    } catch (e) {
+      AppLogger.e('使用礼物失败', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('使用失败')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _actionLoadingGiftId = -1;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleShow(GiftModel gift, bool isShow) async {
+    setState(() {
+      _actionLoadingGiftId = gift.giftId;
+    });
+    try {
+      final response = await _giftService.toggleGiftShow(
+        giftId: gift.giftId,
+        isShow: isShow,
+      );
+      if (response.isSuccess && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isShow ? '已上架' : '已下架')),
+        );
+        _loadGifts();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.msg)),
+        );
+      }
+    } catch (e) {
+      AppLogger.e('上架/下架失败', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('操作失败')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _actionLoadingGiftId = -1;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('我的礼物'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => context.go(AppRoutes.addGift),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              children: _myGiftTypes
+                  .map((type) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text(type),
+                          selected: _currentType == type,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() {
+                                _currentType = type;
+                              });
+                              _loadGifts();
+                            }
+                          },
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const LoadingWidget()
+                : _giftList.isEmpty
+                    ? const EmptyWidget(message: '暂无礼物')
+                    : RefreshIndicator(
+                        onRefresh: _loadGifts,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(8),
+                          itemCount: _giftList.length,
+                          itemBuilder: (context, index) {
+                            final gift = _giftList[index];
+                            final isActionLoading =
+                                _actionLoadingGiftId == gift.giftId;
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              child: ListTile(
+                                leading: gift.giftImage != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          gift.giftImage!,
+                                          width: 56,
+                                          height: 56,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              width: 56,
+                                              height: 56,
+                                              color: Colors.grey[300],
+                                              child: const Icon(
+                                                  Icons.image_not_supported),
+                                            );
+                                          },
+                                        ),
+                                      )
+                                    : Container(
+                                        width: 56,
+                                        height: 56,
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                            Icons.image_not_supported),
+                                      ),
+                                title: Text(
+                                  gift.giftName,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.star,
+                                            size: 14, color: Colors.amber),
+                                        const SizedBox(width: 4),
+                                        Text('${gift.score} 积分',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[600])),
+                                        if (gift.remained != null) ...[
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            '剩余 ${gift.remained}',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[600]),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                trailing: _buildActionButton(
+                                    gift, isActionLoading),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(GiftModel gift, bool isActionLoading) {
+    if (isActionLoading) {
+      return const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+    if (_currentType == '待使用') {
+      return ElevatedButton(
+        onPressed: (gift.remained ?? 0) > 0
+            ? () => _useGift(gift)
+            : null,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        child: const Text('使用'),
+      );
+    }
+    if (_currentType == '已上架') {
+      return TextButton(
+        onPressed: () => _toggleShow(gift, false),
+        child: const Text('下架'),
+      );
+    }
+    if (_currentType == '已下架') {
+      return TextButton(
+        onPressed: () => _toggleShow(gift, true),
+        child: const Text('上架'),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 管理后端服务器地址等配置信息
 class AppConfig {
   static const String _keyBaseUrl = 'base_url';
-  static const String _defaultBaseUrl = 'http://localhost:9999';
+  static const String _defaultBaseUrl = 'https://r-d.lengsu.top/';
 
   /// 获取后端服务器地址
   static Future<String> getBaseUrl() async {

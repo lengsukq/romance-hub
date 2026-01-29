@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:provider/provider.dart';
 import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
@@ -126,7 +127,7 @@ class _TaskListPageState extends State<TaskListPage> {
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.go('/post-task'),
+            onPressed: () => context.go(AppRoutes.postTask),
           ),
         ],
         bottom: PreferredSize(
@@ -161,7 +162,7 @@ class _TaskListPageState extends State<TaskListPage> {
                   }
                   return TaskCard(
                     task: _taskList[index],
-                    onTap: () => context.go('/task/${_taskList[index].taskId}'),
+                    onTap: () => context.go(AppRoutes.taskDetail(_taskList[index].taskId)),
                   );
                 },
               ),

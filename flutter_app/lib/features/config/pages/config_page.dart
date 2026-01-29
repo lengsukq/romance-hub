@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/services/user_service.dart';
+import 'package:romance_hub_flutter/core/services/upload_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 
 /// 配置页面
@@ -13,13 +16,17 @@ class ConfigPage extends StatefulWidget {
 
 class _ConfigPageState extends State<ConfigPage> {
   final UserService _userService = UserService();
+  final UploadService _uploadService = UploadService();
+  final ImagePicker _imagePicker = ImagePicker();
   UserModel? _userInfo;
   bool _isLoading = false;
   bool _isEditing = false;
+  bool _isUploadingAvatar = false;
 
   final _usernameController = TextEditingController();
   final _describeController = TextEditingController();
   final _avatarController = TextEditingController();
+  File? _pickedAvatarFile;
 
   @override
   void initState() {
@@ -45,9 +52,10 @@ class _ConfigPageState extends State<ConfigPage> {
       if (response.isSuccess && response.data != null) {
         setState(() {
           _userInfo = response.data;
-          _usernameController.text = response.data!.username ?? '';
+          _usernameController.text = response.data!.username;
           _describeController.text = response.data!.describeBySelf ?? '';
           _avatarController.text = response.data!.avatar ?? '';
+          _pickedAvatarFile = null;
           _isLoading = false;
         });
       } else {
@@ -68,6 +76,48 @@ class _ConfigPageState extends State<ConfigPage> {
     }
   }
 
+  Future<void> _pickAndUploadAvatar() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      if (image == null || !mounted) return;
+
+      setState(() {
+        _pickedAvatarFile = File(image.path);
+        _isUploadingAvatar = true;
+      });
+
+      final uploadRes = await _uploadService.uploadImage(File(image.path));
+      if (uploadRes.isSuccess && uploadRes.data != null && mounted) {
+        setState(() {
+          _avatarController.text = uploadRes.data!;
+          _isUploadingAvatar = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('头像上传成功，请点击保存')),
+        );
+      } else {
+        if (mounted) {
+          setState(() {
+            _isUploadingAvatar = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(uploadRes.msg)),
+          );
+        }
+      }
+    } catch (e) {
+      AppLogger.e('选择或上传头像失败', e);
+      if (mounted) {
+        setState(() {
+          _isUploadingAvatar = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('选择或上传头像失败')),
+        );
+      }
+    }
+  }
+
   Future<void> _saveUserInfo() async {
     setState(() {
       _isLoading = true;
@@ -84,6 +134,7 @@ class _ConfigPageState extends State<ConfigPage> {
         setState(() {
           _isEditing = false;
           _isLoading = false;
+          _pickedAvatarFile = null;
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -148,6 +199,35 @@ class _ConfigPageState extends State<ConfigPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (_isEditing) ...[
+                    Center(
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+                            child: CircleAvatar(
+                              radius: 48,
+                              backgroundColor: Colors.grey.shade200,
+                              backgroundImage: _avatarImageProvider,
+                              child: _pickedAvatarFile == null &&
+                                      _avatarController.text.isEmpty
+                                  ? (_isUploadingAvatar
+                                      ? const Padding(
+                                          padding: EdgeInsets.all(24),
+                                          child: CircularProgressIndicator(),
+                                        )
+                                      : const Icon(Icons.add_a_photo, size: 40))
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _isUploadingAvatar ? '上传中…' : '点击头像从相册选择',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
                     TextField(
                       controller: _usernameController,
                       decoration: const InputDecoration(
@@ -168,9 +248,9 @@ class _ConfigPageState extends State<ConfigPage> {
                     TextField(
                       controller: _avatarController,
                       decoration: const InputDecoration(
-                        labelText: '头像URL',
+                        labelText: '头像URL（可选，或从相册上传）',
                         border: OutlineInputBorder(),
-                        hintText: '输入头像图片URL',
+                        hintText: '上传后自动填充，也可手动输入',
                       ),
                     ),
                   ] else ...[
@@ -211,6 +291,14 @@ class _ConfigPageState extends State<ConfigPage> {
         ],
       ),
     );
+  }
+
+  ImageProvider? get _avatarImageProvider {
+    if (_pickedAvatarFile != null) return FileImage(_pickedAvatarFile!);
+    if (_avatarController.text.isNotEmpty) {
+      return NetworkImage(_avatarController.text);
+    }
+    return null;
   }
 
   Widget _buildSectionTitle(String title) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 
 /// 主页
 class HomePage extends StatelessWidget {
@@ -36,28 +37,35 @@ class HomePage extends StatelessWidget {
                     '任务',
                     Icons.task,
                     Colors.blue,
-                    () => context.go('/tasks'),
+                    () => context.go(AppRoutes.tasks),
                   ),
                   _buildFeatureCard(
                     context,
                     '礼物',
                     Icons.card_giftcard,
                     Colors.pink,
-                    () => context.go('/gifts'),
+                    () => context.go(AppRoutes.gifts),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    '我的礼物',
+                    Icons.inventory_2,
+                    Colors.deepOrange,
+                    () => context.go(AppRoutes.myGifts),
                   ),
                   _buildFeatureCard(
                     context,
                     '留言',
                     Icons.chat,
                     Colors.green,
-                    () => context.go('/whispers?type=my'),
+                    () => context.go(AppRoutes.whisperList(type: 'my')),
                   ),
                   _buildFeatureCard(
                     context,
                     '收藏',
                     Icons.favorite,
                     Colors.red,
-                    () => context.go('/favourites?type=task'),
+                    () => context.go(AppRoutes.favouriteList(type: 'task')),
                   ),
                 ],
               ),

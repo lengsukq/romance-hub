@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:romance_hub_flutter/core/utils/validation_utils.dart';
 import 'package:romance_hub_flutter/features/auth/services/auth_service.dart';
@@ -130,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(response.msg)),
           );
-          context.go('/login');
+          context.go(AppRoutes.login);
         } else {
           setState(() {
             _errorMessage = response.msg;
@@ -160,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
         title: const Text('双账号注册'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/login'),
+          onPressed: () => context.go(AppRoutes.login),
         ),
       ),
       body: SafeArea(
@@ -403,7 +404,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
                 TextButton(
-                  onPressed: () => context.go('/login'),
+                  onPressed: () => context.go(AppRoutes.login),
                   child: const Text('已有账号？去登录'),
                 ),
               ],

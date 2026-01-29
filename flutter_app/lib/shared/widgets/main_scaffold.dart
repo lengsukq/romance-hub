@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 
 /// 主框架 Scaffold
 /// 包含底部导航栏和通用布局
@@ -33,19 +34,19 @@ class _MainScaffoldState extends State<MainScaffold> {
 
     switch (index) {
       case 0:
-        context.go('/');
+        context.go(AppRoutes.home);
         break;
       case 1:
-        context.go('/tasks');
+        context.go(AppRoutes.tasks);
         break;
       case 2:
-        context.go('/gifts');
+        context.go(AppRoutes.gifts);
         break;
       case 3:
-        context.go('/whispers?type=my');
+        context.go(AppRoutes.whisperList(type: 'my'));
         break;
       case 4:
-        context.go('/user-info');
+        context.go(AppRoutes.userInfo);
         break;
     }
   }

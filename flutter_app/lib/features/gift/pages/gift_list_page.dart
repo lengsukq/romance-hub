@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/gift_model.dart';
 import 'package:romance_hub_flutter/core/services/gift_service.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
@@ -131,9 +132,14 @@ class _GiftListPageState extends State<GiftListPage> {
       appBar: AppBar(
         title: const Text('礼物列表'),
         actions: [
+          TextButton.icon(
+            onPressed: () => context.go(AppRoutes.myGifts),
+            icon: const Icon(Icons.inventory_2, size: 20),
+            label: const Text('我的礼物'),
+          ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.go('/add-gift'),
+            onPressed: () => context.go(AppRoutes.addGift),
           ),
         ],
       ),

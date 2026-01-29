@@ -1,4 +1,5 @@
 /// 礼物模型
+/// 兼容后端字段：giftDetail/giftDesc, giftImg/giftImage, needScore/score, publisherEmail/publisherId
 class GiftModel {
   final int giftId;
   final String giftName;
@@ -12,6 +13,8 @@ class GiftModel {
   final String? exchangeStatus;
   final String? exchangeTime;
   final String? recipientId;
+  /// 剩余数量（我的礼物列表用）
+  final int? remained;
 
   GiftModel({
     required this.giftId,
@@ -26,22 +29,32 @@ class GiftModel {
     this.exchangeStatus,
     this.exchangeTime,
     this.recipientId,
+    this.remained,
   });
 
   factory GiftModel.fromJson(Map<String, dynamic> json) {
+    final creationTime = json['creationTime'];
+    final creationTimeStr = creationTime == null
+        ? ''
+        : (creationTime is String ? creationTime : creationTime.toString());
+    final publisher = json['publisher'];
+    final publisherName = publisher is Map<String, dynamic>
+        ? (publisher['username'] as String? ?? '')
+        : (json['publisherName'] as String? ?? '');
     return GiftModel(
       giftId: json['giftId'] as int,
       giftName: json['giftName'] as String,
-      giftDesc: json['giftDesc'] as String?,
-      giftImage: json['giftImage'] as String?,
-      score: json['score'] as int,
-      publisherId: json['publisherId'] as String,
-      publisherName: json['publisherName'] as String,
+      giftDesc: json['giftDesc'] as String? ?? json['giftDetail'] as String?,
+      giftImage: json['giftImage'] as String? ?? json['giftImg'] as String?,
+      score: (json['score'] ?? json['needScore']) as int,
+      publisherId: (json['publisherId'] ?? json['publisherEmail']) as String,
+      publisherName: publisherName,
       isShow: json['isShow'] as bool? ?? true,
-      creationTime: json['creationTime'] as String,
+      creationTime: creationTimeStr,
       exchangeStatus: json['exchangeStatus'] as String?,
       exchangeTime: json['exchangeTime'] as String?,
       recipientId: json['recipientId'] as String?,
+      remained: json['remained'] as int?,
     );
   }
 
@@ -59,6 +72,7 @@ class GiftModel {
       'exchangeStatus': exchangeStatus,
       'exchangeTime': exchangeTime,
       'recipientId': recipientId,
+      'remained': remained,
     };
   }
 }

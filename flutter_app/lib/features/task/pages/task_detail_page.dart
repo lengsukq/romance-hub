@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
@@ -132,7 +133,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('删除成功')),
             );
-            context.go('/tasks');
+            context.go(AppRoutes.tasks);
           }
         } else {
           if (mounted) {

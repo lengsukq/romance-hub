@@ -75,7 +75,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
               controller: _urlController,
               decoration: InputDecoration(
                 labelText: '服务器地址',
-                hintText: 'http://localhost:9999',
+                hintText: 'https://r-d.lengsu.top/',
                 prefixIcon: const Icon(Icons.link),
                 border: const OutlineInputBorder(),
                 errorText: _isValid ? null : '请输入有效的 URL 地址',

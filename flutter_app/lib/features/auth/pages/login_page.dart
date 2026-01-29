@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/features/auth/services/auth_service.dart';
@@ -106,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         if (response.isSuccess && response.data != null) {
           // 登录成功，跳转到主页
-          context.go('/');
+          context.go(AppRoutes.home);
         } else {
           setState(() {
             _errorMessage = response.msg;
@@ -216,7 +217,7 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _baseUrlController,
                             decoration: const InputDecoration(
                               labelText: '后端地址',
-                              hintText: 'http://localhost:9999',
+                              hintText: 'https://r-d.lengsu.top/',
                               prefixIcon: Icon(Icons.link),
                               border: OutlineInputBorder(),
                               isDense: true,
@@ -333,7 +334,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   // 注册提示
                   TextButton(
-                    onPressed: () => context.go('/register'),
+                    onPressed: () => context.go(AppRoutes.register),
                     child: const Text('还没有账号？点击注册'),
                   ),
                 ],
