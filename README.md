@@ -22,7 +22,8 @@ cd romance-hub
 # 2. 安装依赖
 npm install
 
-# 3. 启动项目（使用SQLite零配置）
+# 3. 配置环境变量（创建 .env.local 文件）
+# 4. 启动项目
 npm run dev
 ```
 
@@ -109,10 +110,10 @@ npm run dev
 - **中间件验证** - 路由安全保护
 
 ### 数据库支持
-🗄️ **多数据库兼容** - 通过Prisma ORM支持：
-- **SQLite** (开发环境推荐) - 零配置，开箱即用
-- **MySQL** (生产环境推荐) - 高性能关系型数据库  
-- **PostgreSQL** (企业级推荐) - 功能丰富的开源数据库
+🗄️ **PostgreSQL** - 使用 Prisma ORM 连接 PostgreSQL 数据库
+- **Neon** - 使用 Neon 云数据库服务（推荐）
+- **高性能** - 支持连接池和优化查询
+- **类型安全** - 通过 Prisma 提供完整的类型安全
 
 ### 外部集成
 - **图床服务** - 支持多种图床服务（SM图床、IMGBB图床等，支持高清图片上传）
@@ -161,14 +162,9 @@ npm run dev
 # 🗄️ 数据库配置 (Database Configuration)
 # ===========================================
 
-# 数据库提供商选择: sqlite, mysql, postgresql
-DATABASE_PROVIDER=sqlite
-
-# 数据库连接URL (根据DATABASE_PROVIDER选择对应格式)
-# SQLite: file:./dev.db
-# MySQL: mysql://username:password@host:port/database  
-# PostgreSQL: postgresql://username:password@host:port/database
-DATABASE_URL=file:./dev.db
+# PostgreSQL 数据库连接URL (Neon)
+# 格式: postgresql://username:password@host:port/database?sslmode=require
+DATABASE_URL=postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require
 
 # ===========================================
 # 🔐 安全配置 (Security Configuration)
@@ -187,9 +183,12 @@ JWT_SECRET_KEY=your_super_secret_jwt_key_here
 ### 📝 配置说明
 
 #### 数据库配置
-- **开发环境推荐**: 使用SQLite (`DATABASE_PROVIDER=sqlite`)，零配置开箱即用
-- **生产环境推荐**: 使用MySQL或PostgreSQL，性能更优
-- 使用Prisma ORM，支持数据库迁移和类型安全
+- **PostgreSQL**: 项目已全面迁移到 PostgreSQL
+- **Neon 数据库**: 使用 Neon 云数据库服务，支持连接池和自动扩展
+- **Prisma ORM**: 使用 Prisma 进行数据库操作，支持迁移和类型安全
+- **连接字符串格式**: `postgresql://username:password@host:port/database?sslmode=require`
+  - 请从 Neon 控制台获取您的实际连接字符串
+  - 确保使用连接池 URL（通常包含 `-pooler` 后缀）
 
 #### 图床配置
 - 支持多种图床服务配置，包括**SM图床**和**IMGBB图床**
@@ -205,17 +204,17 @@ JWT_SECRET_KEY=your_super_secret_jwt_key_here
 - **礼物通知**：礼物兑换和使用状态同步通知
 - **留言通知**：新留言到达时及时提醒
 
-#### 数据库快速切换
-项目支持通过npm脚本快速切换数据库：
+#### 数据库迁移
+项目使用 Prisma 进行数据库迁移：
 ```bash
-# 切换到SQLite
-npm run db:sqlite
+# 创建数据库迁移
+npm run db:migrate
 
-# 切换到MySQL  
-npm run db:mysql
+# 推送schema到数据库（开发环境）
+npm run db:push
 
-# 切换到PostgreSQL
-npm run db:postgresql
+# 重置数据库（谨慎使用）
+npm run db:reset
 ```
 
 #### 配置管理说明
@@ -294,7 +293,7 @@ npm run db:postgresql
 
 ### ✅ 已完成优化
 - ✅ **数据库架构升级** - 从原生SQL迁移到Prisma ORM
-- ✅ **多数据库支持** - 支持SQLite/MySQL/PostgreSQL
+- ✅ **PostgreSQL 数据库** - 全面迁移到 PostgreSQL，使用 Neon 云数据库
 - ✅ **Next.js 16升级** - 升级到最新版本，性能更优，默认使用 Turbopack
 - ✅ **React 19升级** - 最新React特性支持
 - ✅ **Cookie安全优化** - 服务器端二次校验
@@ -339,30 +338,10 @@ docker pull queensu/romance-hub
 
 #### 2. 运行容器
 
-##### SQLite模式（推荐新手）
+##### PostgreSQL 模式（推荐）
 ```bash
 docker run -d -p 9999:9999 --name romance-hub \
-  -e DATABASE_PROVIDER=sqlite \
-  -e DATABASE_URL=file:./dev.db \
-  -e JWT_SECRET_KEY=your_jwt_secret_key \
-  -v $(pwd)/data:/app/data \
-  romance-hub
-```
-
-##### MySQL模式（生产环境推荐）
-```bash
-docker run -d -p 9999:9999 --name romance-hub \
-  -e DATABASE_PROVIDER=mysql \
-  -e DATABASE_URL=mysql://username:password@host:port/database \
-  -e JWT_SECRET_KEY=your_jwt_secret_key \
-  romance-hub
-```
-
-##### PostgreSQL模式
-```bash
-docker run -d -p 9999:9999 --name romance-hub \
-  -e DATABASE_PROVIDER=postgresql \
-  -e DATABASE_URL=postgresql://username:password@host:port/database \
+  -e DATABASE_URL=postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require \
   -e JWT_SECRET_KEY=your_jwt_secret_key \
   romance-hub
 ```
@@ -497,9 +476,6 @@ npm run db:reset
 npm run db:studio
 
 # 快速切换数据库
-npm run db:sqlite    # 切换到SQLite
-npm run db:mysql     # 切换到MySQL  
-npm run db:postgresql # 切换到PostgreSQL
 ```
 
 ## 🔄 本地开发数据库结构更新流程
@@ -651,7 +627,7 @@ npm run db:generate
 
 #### 🔄 变更流程
 1. **修改schema**: 编辑 `prisma/schema.prisma` 文件
-2. **同步schema**: 运行 `node scripts/sync-schemas.js` 同步多数据库schema
+2. **推送schema**: 运行 `npm run db:push` 推送schema到数据库
 3. **更新数据库**: 运行 `npm run db:generate && npm run db:push`
 4. **验证变更**: 使用 `npm run db:studio` 检查数据库结构
 5. **测试功能**: 重启开发服务器并测试相关功能
@@ -698,7 +674,7 @@ npm run db:studio  # 查看数据
 | 问题症状 | 可能原因 | 快速解决 |
 |---------|---------|---------|
 | 🚫 Prisma Studio 报错 | 客户端损坏 | `taskkill /f /im node.exe` → 重新生成客户端 |
-| 🚫 数据库连接失败 | 环境变量未设置 | 运行 `.\setup-sqlite-dev.ps1` |
+| 🚫 数据库连接失败 | 环境变量未设置 | 检查 `.env.local` 中的 `DATABASE_URL` |
 | 🚫 端口 9999 被占用 | 进程未正常结束 | `netstat -ano \| findstr :9999` → 杀死进程 |
 | 🚫 npm install 失败 | 依赖冲突 | 删除 `node_modules` → 重新安装 |
 | 🚫 图片上传失败 | 图床配置错误 | 检查Web界面中的图床配置 |
@@ -706,7 +682,6 @@ npm run db:studio  # 查看数据
 | 🚫 TypeScript 错误 | 类型定义过期 | `npm run db:generate` 更新类型 |
 | 🚫 页面白屏 | 数据库未初始化 | `npm run db:push` 创建表结构 |
 | 🚫 数据库结构错误 | Schema变更未同步 | `npm run db:generate && npm run db:push` |
-| 🚫 多数据库不一致 | Schema文件不同步 | `node scripts/sync-schemas.js` |
 
 ### ❌ Prisma Studio 运行错误
 
@@ -744,44 +719,29 @@ npm run db:studio
 .\setup-sqlite-dev.ps1
 
 # 方法2: 手动在 PowerShell 中设置
-$env:DATABASE_URL="file:./dev.db"
-$env:DATABASE_PROVIDER="sqlite"
+$env:DATABASE_URL="postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require"
 
 # 方法3: 创建 .env 文件（如果 .env.local 被忽略）
-echo 'DATABASE_URL="file:./dev.db"' > .env
-echo 'DATABASE_PROVIDER="sqlite"' >> .env
+echo 'DATABASE_URL="postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require"' > .env
 ```
 
-### ❌ SQLite 数据库文件找不到
+### ❌ PostgreSQL 数据库连接失败
 
-**问题描述**: 提示数据库文件不存在或无法连接
+**问题描述**: 提示无法连接到 PostgreSQL 数据库
 
 **解决方案**:
 ```bash
-# 1. 检查数据库文件是否存在
-Test-Path ./prisma/dev.db
+# 1. 检查环境变量是否正确设置
+echo $env:DATABASE_URL
 
-# 2. 如果文件不存在，推送 schema 创建数据库
+# 2. 验证数据库连接字符串格式
+# 确保格式为: postgresql://username:password@host:port/database?sslmode=require
+
+# 3. 测试数据库连接
 npm run db:push
 
-# 3. 验证数据库连接
-node -e "const { PrismaClient } = require('./generated/prisma'); const prisma = new PrismaClient(); prisma.userInfo.count().then(count => console.log('连接成功，用户数:', count)).catch(console.error).finally(() => prisma.$disconnect());"
-```
-
-### ❌ 数据库切换失败
-
-**问题描述**: 运行 `npm run db:mysql` 或其他数据库切换命令失败
-
-**解决方案**:
-```bash
-# 1. 手动切换数据库
-node scripts/switch-database.js sqlite
-
-# 2. 重新生成客户端
-npm run db:generate
-
-# 3. 推送 schema
-npm run db:push
+# 4. 使用 Prisma Studio 验证连接
+npm run db:studio
 ```
 
 ### ❌ 依赖安装问题
@@ -896,34 +856,22 @@ npm run dev -- --no-type-check
 
 我们为您提供了快速诊断脚本：
 
-```powershell
-# 运行诊断脚本
-.\setup-sqlite-dev.ps1
-```
-
-该脚本会自动：
-- ✅ 检查数据库环境变量设置
-- ✅ 验证数据库文件存在
-- ✅ 显示可用命令
-- ✅ 提供数据库状态信息
-
-### 🚀 开发环境一键设置
-
-对于 Windows 用户，我们提供了一键设置脚本：
+### 🚀 开发环境设置
 
 ```powershell
-# 下载项目后，直接运行：
-.\setup-sqlite-dev.ps1
+# 1. 创建 .env.local 文件
+echo 'DATABASE_URL="postgresql://username:password@your-neon-host.neon.tech/database?sslmode=require"' > .env.local
+echo 'JWT_SECRET_KEY="your_super_secret_jwt_key_here"' >> .env.local
 
-# 然后启动开发服务器：
-npm run dev
+# 2. 安装依赖
+yarn install
+
+# 3. 推送数据库 schema
+yarn db:push
+
+# 4. 启动开发服务器
+yarn dev
 ```
-
-这个脚本会自动：
-- ✅ 设置 SQLite 数据库环境变量
-- ✅ 检查数据库文件状态  
-- ✅ 显示所有可用命令
-- ✅ 提供完整的开发环境信息
 
 ### ⚡ 极速启动（零配置）
 
@@ -936,12 +884,13 @@ git clone https://github.com/lengsukq/romance-hub.git && cd romance-hub
 # 2. 安装依赖
 npm install
 
-# 3. 一键启动（自动使用 SQLite）
-npm run dev
+# 3. 配置环境变量（创建 .env.local）
+# 4. 启动项目
+yarn dev
 ```
 
 **就这么简单！** 项目会自动：
-- 🗄️ 使用 SQLite 数据库（无需配置）
+- 🗄️ 连接到 PostgreSQL 数据库（Neon）
 - 🔧 自动生成 Prisma 客户端
 - 📦 自动创建数据库表结构
 - 🌐 在 http://localhost:9999 启动服务
@@ -983,10 +932,7 @@ romance-hub/
 │       ├── imageTools.ts    # 图片上传工具
 │       └── third-party-tools.ts # 第三方服务工具
 ├── prisma/               # Prisma数据库配置
-│   ├── schema.prisma    # 主schema文件（包含配置管理表）
-│   ├── schema.mysql.prisma     # MySQL schema
-│   ├── schema.postgresql.prisma # PostgreSQL schema
-│   └── schema.sqlite.prisma    # SQLite schema
+│   └── schema.prisma    # PostgreSQL schema文件（包含配置管理表）
 ├── scripts/              # 构建脚本
 ├── public/               # 静态资源
 └── generated/            # Prisma生成的客户端
