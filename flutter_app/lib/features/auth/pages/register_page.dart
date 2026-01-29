@@ -95,22 +95,14 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
+      // 头像可选：后端上传需登录，注册时未登录则传 null，后端使用默认头像
       String? avatarUrl;
       if (_avatarFile != null) {
         final uploadRes = await _uploadService.uploadImage(_avatarFile!);
         if (uploadRes.isSuccess && uploadRes.data != null) {
           avatarUrl = uploadRes.data;
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(uploadRes.msg)),
-            );
-          }
-          setState(() {
-            _isLoading = false;
-          });
-          return;
         }
+        // 上传失败（如未登录）时继续注册，后端会使用随机默认头像
       }
 
       String? loverAvatarUrl;
@@ -118,16 +110,6 @@ class _RegisterPageState extends State<RegisterPage> {
         final uploadRes = await _uploadService.uploadImage(_loverAvatarFile!);
         if (uploadRes.isSuccess && uploadRes.data != null) {
           loverAvatarUrl = uploadRes.data;
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(uploadRes.msg)),
-            );
-          }
-          setState(() {
-            _isLoading = false;
-          });
-          return;
         }
       }
 
@@ -202,6 +184,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   file: _avatarFile,
                   onTap: () => _pickAvatar(false),
                 ),
+                const SizedBox(height: 4),
+                const Text(
+                  '选填，不选则使用默认头像',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _usernameController,
@@ -254,6 +242,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 _avatarPicker(
                   file: _loverAvatarFile,
                   onTap: () => _pickAvatar(true),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '选填，不选则使用默认头像',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(

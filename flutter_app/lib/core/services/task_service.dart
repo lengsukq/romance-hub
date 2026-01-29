@@ -31,7 +31,12 @@ class TaskService {
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<TaskListResponse>.fromJson(
         responseData,
-        (data) => TaskListResponse.fromJson(data as Map<String, dynamic>),
+        (data) {
+          if (data is! Map<String, dynamic>) {
+            return TaskListResponse(record: [], totalPages: 0);
+          }
+          return TaskListResponse.fromJson(data);
+        },
       );
     } catch (e) {
       AppLogger.e('获取任务列表失败', e);

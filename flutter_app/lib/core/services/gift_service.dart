@@ -21,9 +21,12 @@ class GiftService {
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<List<GiftModel>>.fromJson(
         responseData,
-        (data) => (data as List)
-            .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
-            .toList(),
+        (data) {
+          if (data is! List) return <GiftModel>[];
+          return data
+              .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
+              .toList();
+        },
       );
     } catch (e) {
       AppLogger.e('获取礼物列表失败', e);
@@ -54,9 +57,12 @@ class GiftService {
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<List<GiftModel>>.fromJson(
         responseData,
-        (data) => (data as List)
-            .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
-            .toList(),
+        (data) {
+          if (data is! List) return <GiftModel>[];
+          return data
+              .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
+              .toList();
+        },
       );
     } catch (e) {
       AppLogger.e('获取我的礼物列表失败', e);

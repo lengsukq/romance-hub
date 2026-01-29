@@ -21,9 +21,12 @@ class WhisperService {
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<List<WhisperModel>>.fromJson(
         responseData,
-        (data) => (data as List)
-            .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
-            .toList(),
+        (data) {
+          if (data is! List) return <WhisperModel>[];
+          return data
+              .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
+              .toList();
+        },
       );
     } catch (e) {
       AppLogger.e('获取我的留言列表失败', e);
@@ -48,9 +51,12 @@ class WhisperService {
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<List<WhisperModel>>.fromJson(
         responseData,
-        (data) => (data as List)
-            .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
-            .toList(),
+        (data) {
+          if (data is! List) return <WhisperModel>[];
+          return data
+              .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
+              .toList();
+        },
       );
     } catch (e) {
       AppLogger.e('获取TA的留言列表失败', e);

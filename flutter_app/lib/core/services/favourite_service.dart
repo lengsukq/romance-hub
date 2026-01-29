@@ -77,9 +77,12 @@ class FavouriteService {
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<List<FavouriteModel>>.fromJson(
         responseData,
-        (data) => (data as List)
-            .map((item) => FavouriteModel.fromJson(item as Map<String, dynamic>))
-            .toList(),
+        (data) {
+          if (data is! List) return <FavouriteModel>[];
+          return data
+              .map((item) => FavouriteModel.fromJson(item as Map<String, dynamic>))
+              .toList();
+        },
       );
     } catch (e) {
       AppLogger.e('获取收藏列表失败', e);

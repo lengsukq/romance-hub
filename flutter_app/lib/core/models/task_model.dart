@@ -72,10 +72,14 @@ class TaskListResponse {
   });
 
   factory TaskListResponse.fromJson(Map<String, dynamic> json) {
+    final recordRaw = json['record'];
+    final record = recordRaw is List
+        ? (recordRaw)
+            .map((item) => TaskModel.fromJson(item as Map<String, dynamic>))
+            .toList()
+        : <TaskModel>[];
     return TaskListResponse(
-      record: (json['record'] as List)
-          .map((item) => TaskModel.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      record: record,
       totalPages: json['totalPages'] as int? ?? 0,
     );
   }
