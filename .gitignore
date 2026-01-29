@@ -52,3 +52,27 @@ dev.db
 
 # development scripts (optional)
 setup-sqlite-dev.ps1
+
+# Flutter
+flutter_app/.dart_tool/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/.pub-cache/
+flutter_app/.pub/
+flutter_app/build/
+flutter_app/**/ios/Flutter/.last_build_id
+flutter_app/**/ios/Flutter/App.framework
+flutter_app/**/ios/Flutter/Flutter.framework
+flutter_app/**/ios/Flutter/Flutter.podspec
+flutter_app/**/ios/Flutter/Generated.xcconfig
+flutter_app/**/ios/Flutter/ephemeral
+flutter_app/**/ios/ServiceDefinitions.json
+flutter_app/**/ios/Runner/GeneratedPluginRegistrant.*
+flutter_app/**/android/.gradle/
+flutter_app/**/android/app/debug/
+flutter_app/**/android/app/profile/
+flutter_app/**/android/app/release/
+flutter_app/**/windows/flutter/generated_plugin_registrant.*
+flutter_app/**/macos/Flutter/GeneratedPluginRegistrant.*
+flutter_app/**/linux/flutter/generated_plugin_registrant.*
