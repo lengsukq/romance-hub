@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -21,11 +22,25 @@ class AuthService {
         },
       );
 
-      final responseData = response.data as Map<String, dynamic>;
-      final apiResponse = ApiResponse<UserModel>.fromJson(
-        responseData,
-        (data) => UserModel.fromJson(data as Map<String, dynamic>),
-      );
+      final raw = response.data;
+      if (raw == null || raw is! Map<String, dynamic>) {
+        AppLogger.e('登录失败', '响应格式异常: ${raw.runtimeType}');
+        return ApiResponse(code: 500, msg: '云阁响应格式异常，请检查地址是否正确');
+      }
+
+      final code = (raw['code'] is int) ? raw['code'] as int : 500;
+      final msg = (raw['msg'] is String) ? raw['msg'] as String : '未知错误';
+      UserModel? userData;
+      if (code == 200 && raw['data'] != null && raw['data'] is Map<String, dynamic>) {
+        try {
+          userData = UserModel.fromJson(raw['data'] as Map<String, dynamic>);
+        } catch (e) {
+          AppLogger.e('解析用户信息失败', e);
+          return ApiResponse(code: 500, msg: '云阁返回数据格式异常');
+        }
+      }
+
+      final apiResponse = ApiResponse<UserModel>(code: code, msg: msg, data: userData);
 
       if (apiResponse.isSuccess && apiResponse.data != null) {
         // 保存 cookie（从响应头获取）
@@ -36,12 +51,37 @@ class AuthService {
       }
 
       return apiResponse;
-    } catch (e) {
+    } on DioException catch (e) {
+      final msg = _loginDioErrorMessage(e);
       AppLogger.e('登录失败', e);
+      return ApiResponse(code: 500, msg: msg);
+    } catch (e, stack) {
+      AppLogger.e('登录失败', e);
+      AppLogger.d('堆栈: $stack');
       return ApiResponse(
         code: 500,
         msg: '登录失败: ${e.toString()}',
       );
+    }
+  }
+
+  String _loginDioErrorMessage(DioException e) {
+    switch (e.type) {
+      case DioExceptionType.connectionError:
+      case DioExceptionType.connectionTimeout:
+        return '无法连接云阁，请检查网络与云阁地址';
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.sendTimeout:
+        return '连接超时，请稍后重试';
+      case DioExceptionType.badResponse:
+        final code = e.response?.statusCode;
+        if (code == 401) return '用户名或密码错误';
+        if (code != null && code >= 500) return '云阁繁忙，请稍后重试';
+        return e.response?.data is Map ? (e.response!.data['msg'] as String? ?? '请求失败') : '请求失败';
+      case DioExceptionType.cancel:
+        return '请求已取消';
+      default:
+        return '网络异常: ${e.message ?? e.type.name}';
     }
   }
 
