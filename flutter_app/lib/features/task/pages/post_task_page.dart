@@ -122,7 +122,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('发布任务'),
+        title: const Text('立一诺'),
       ),
       body: Form(
         key: _formKey,
@@ -146,13 +146,13 @@ class _PostTaskPageState extends State<PostTaskPage> {
             TextFormField(
               controller: _taskDescController,
               decoration: const InputDecoration(
-                labelText: '任务描述',
+                labelText: '诺言',
                 border: OutlineInputBorder(),
               ),
               maxLines: 5,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '请输入任务描述';
+                  return '请写下诺言';
                 }
                 return null;
               },

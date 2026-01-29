@@ -57,7 +57,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
         children: [
           Icon(Icons.settings, size: 24),
           SizedBox(width: 8),
-          Text('配置后端服务器'),
+          Text('配置云阁'),
         ],
       ),
       content: Form(
@@ -67,14 +67,14 @@ class _ConfigDialogState extends State<ConfigDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '请输入后端服务器地址',
+              '请输入云阁地址',
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _urlController,
               decoration: InputDecoration(
-                labelText: '服务器地址',
+                labelText: '云阁地址',
                 hintText: 'https://r-d.lengsu.top/',
                 prefixIcon: const Icon(Icons.link),
                 border: const OutlineInputBorder(),
@@ -83,13 +83,22 @@ class _ConfigDialogState extends State<ConfigDialog> {
               keyboardType: TextInputType.url,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '请输入服务器地址';
+                  return '请输入云阁地址';
                 }
                 if (!AppConfig.isValidUrl(value.trim())) {
                   return '请输入有效的 URL（http:// 或 https://）';
                 }
                 return null;
               },
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                _urlController.text = AppConfig.defaultBaseUrl;
+                _validateUrl();
+              },
+              icon: const Icon(Icons.restore, size: 18),
+              label: const Text('复为默认云阁'),
             ),
             const SizedBox(height: 16),
             Container(
@@ -117,7 +126,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '• 确保后端服务器正在运行\n• 地址格式: http://ip:port 或 https://domain.com\n• 示例: http://192.168.1.100:9999',
+                    '• 确保云阁（后端）正在运行\n• 地址格式: http://ip:port 或 https://domain.com\n• 示例: https://r-d.lengsu.top/',
                     style: TextStyle(fontSize: 12, color: Colors.blue),
                   ),
                 ],

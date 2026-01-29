@@ -140,13 +140,13 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
   String _getTitle() {
     switch (widget.type) {
       case 'task':
-        return '任务收藏';
+        return '心诺藏心';
       case 'gift':
-        return '礼物收藏';
+        return '赠礼藏心';
       case 'whisper':
-        return '留言收藏';
+        return '私语藏心';
       default:
-        return '收藏列表';
+        return '藏心一览';
     }
   }
 

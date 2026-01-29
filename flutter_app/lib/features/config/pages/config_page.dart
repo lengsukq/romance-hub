@@ -191,7 +191,7 @@ class _ConfigPageState extends State<ConfigPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSectionTitle('用户信息'),
+          _buildSectionTitle('吾之信息'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -258,7 +258,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     _buildInfoRow('邮箱', _userInfo?.userEmail ?? ''),
                     _buildInfoRow('积分', '${_userInfo?.score ?? 0}'),
                     if (_userInfo?.describeBySelf != null && _userInfo!.describeBySelf!.isNotEmpty)
-                      _buildInfoRow('个人描述', _userInfo!.describeBySelf!),
+                      _buildInfoRow('一言', _userInfo!.describeBySelf!),
                   ],
                 ],
               ),
@@ -270,13 +270,13 @@ class _ConfigPageState extends State<ConfigPage> {
             child: ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('关于'),
-              subtitle: const Text('RomanceHub Flutter 客户端'),
+              subtitle: const Text('锦书'),
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('关于'),
-                    content: const Text('RomanceHub Flutter 客户端\n版本: 1.0.0'),
+                    content: const Text('锦书\n版本: 1.0.0'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),

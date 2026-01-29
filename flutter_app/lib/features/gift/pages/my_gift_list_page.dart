@@ -136,7 +136,7 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('我的礼物'),
+        title: const Text('我的赠礼'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

@@ -6,6 +6,9 @@ class AppConfig {
   static const String _keyBaseUrl = 'base_url';
   static const String _defaultBaseUrl = 'https://r-d.lengsu.top/';
 
+  /// 默认后端服务器地址（供配置弹框「使用默认服务器」使用）
+  static String get defaultBaseUrl => _defaultBaseUrl;
+
   /// 获取后端服务器地址
   static Future<String> getBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();

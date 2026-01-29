@@ -10,7 +10,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('RomanceHub'),
+        title: const Text('锦书'),
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '欢迎回来',
+              '君归矣',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -34,35 +34,35 @@ class HomePage extends StatelessWidget {
                 children: [
                   _buildFeatureCard(
                     context,
-                    '任务',
+                    '心诺',
                     Icons.task,
                     Colors.blue,
                     () => context.go(AppRoutes.tasks),
                   ),
                   _buildFeatureCard(
                     context,
-                    '礼物',
+                    '赠礼',
                     Icons.card_giftcard,
                     Colors.pink,
                     () => context.go(AppRoutes.gifts),
                   ),
                   _buildFeatureCard(
                     context,
-                    '我的礼物',
+                    '我的赠礼',
                     Icons.inventory_2,
                     Colors.deepOrange,
                     () => context.go(AppRoutes.myGifts),
                   ),
                   _buildFeatureCard(
                     context,
-                    '留言',
+                    '私语',
                     Icons.chat,
                     Colors.green,
                     () => context.go(AppRoutes.whisperList(type: 'my')),
                   ),
                   _buildFeatureCard(
                     context,
-                    '收藏',
+                    '藏心',
                     Icons.favorite,
                     Colors.red,
                     () => context.go(AppRoutes.favouriteList(type: 'task')),

@@ -164,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'RomanceHub',
+                    '锦书',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 32,
@@ -174,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '情侣任务管理系统',
+                    '两心相知，一事一诺',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
@@ -195,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
                               const Icon(Icons.settings, size: 20),
                               const SizedBox(width: 8),
                               const Text(
-                                '后端服务器配置',
+                                '云阁配置',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -227,7 +227,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '当前: ${_baseUrlController.text.isEmpty ? "未配置" : _baseUrlController.text}',
+                            '当前: ${_baseUrlController.text.isEmpty ? "未配置云阁" : _baseUrlController.text}',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.grey,

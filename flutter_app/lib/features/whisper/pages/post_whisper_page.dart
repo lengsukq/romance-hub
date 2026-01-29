@@ -70,7 +70,7 @@ class _PostWhisperPageState extends State<PostWhisperPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('发布留言'),
+        title: const Text('写私语'),
       ),
       body: Form(
         key: _formKey,

@@ -119,7 +119,7 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('任务列表'),
+        title: const Text('心诺一览'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -191,7 +191,7 @@ class _TaskListPageState extends State<TaskListPage> {
       builder: (context) {
         final controller = TextEditingController(text: _searchWords);
         return AlertDialog(
-          title: const Text('搜索任务'),
+          title: const Text('寻诺'),
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(

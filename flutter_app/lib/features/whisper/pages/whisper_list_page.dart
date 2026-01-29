@@ -77,7 +77,7 @@ class _WhisperListPageState extends State<WhisperListPage> {
     final confirmed = await ConfirmDialog.show(
       context,
       title: '确认删除',
-      message: '确定要删除这条留言吗？',
+      message: '确定要删除此私语吗？',
       confirmText: '删除',
       cancelText: '取消',
     );
@@ -155,7 +155,7 @@ class _WhisperListPageState extends State<WhisperListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.type == 'my' ? '我的留言' : 'TA的留言'),
+        title: Text(widget.type == 'my' ? '我的私语' : 'TA的私语'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

@@ -119,7 +119,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     final confirm = await ConfirmDialog.show(
       context,
       title: '确认删除',
-      message: '确定要删除这个任务吗？',
+      message: '确定要删除此心诺吗？',
       confirmText: '确定',
       cancelText: '取消',
       confirmColor: Colors.red,
@@ -158,14 +158,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
     if (_task == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('任务详情')),
+        appBar: AppBar(title: const Text('心诺详情')),
         body: const Center(child: Text('任务不存在')),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('任务详情'),
+        title: const Text('心诺详情'),
         actions: [
           IconButton(
             icon: Icon(_isFavourite ? Icons.favorite : Icons.favorite_border),

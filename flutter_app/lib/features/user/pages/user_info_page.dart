@@ -114,7 +114,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('我的'),
+        title: const Text('吾心'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -129,7 +129,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSectionTitle('后端服务器'),
+          _buildSectionTitle('云阁'),
           Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: Padding(
@@ -158,7 +158,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _baseUrl.isEmpty ? '未配置' : _baseUrl,
+                    _baseUrl.isEmpty ? '未配置云阁' : _baseUrl,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[700],
@@ -169,7 +169,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ),
           ),
           if (_userInfo != null) ...[
-            _buildSectionTitle('我的信息'),
+            _buildSectionTitle('吾之信息'),
             if (_userInfo!.avatar != null && _userInfo!.avatar!.isNotEmpty)
               Center(
                 child: Padding(
@@ -195,13 +195,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ),
             if (_userInfo!.describeBySelf != null)
               _buildInfoCard(
-                title: '个人描述',
+                title: '一言',
                 value: _userInfo!.describeBySelf!,
               ),
             const SizedBox(height: 16),
           ],
           if (_loverInfo != null) ...[
-            _buildSectionTitle('关联者信息'),
+            _buildSectionTitle('良人信息'),
             _buildInfoCard(
               title: '用户名',
               value: _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username,
@@ -212,7 +212,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ),
             if (_loverInfo!.describeBySelf != null)
               _buildInfoCard(
-                title: '个人描述',
+                title: '一言',
                 value: _loverInfo!.describeBySelf!,
               ),
           ],

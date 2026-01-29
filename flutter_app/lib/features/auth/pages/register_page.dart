@@ -158,7 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('双账号注册'),
+        title: const Text('二人同契'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.login),
@@ -173,7 +173,7 @@ class _RegisterPageState extends State<RegisterPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  '将同时为您和关联者创建账号，两个账号使用相同密码，便于情侣间互动使用',
+                  '为君与良人同立契，共守一钥，便于两心相记',
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 const SizedBox(height: 24),
@@ -238,7 +238,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 24),
 
                 // 关联者账号信息
-                _sectionTitle('关联者账号信息', Colors.deepPurple),
+                _sectionTitle('良人契', Colors.deepPurple),
                 const SizedBox(height: 12),
                 _avatarPicker(
                   file: _loverAvatarFile,
@@ -297,7 +297,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 24),
 
                 // 共享密码
-                _sectionTitle('共享密码', Colors.orange),
+                _sectionTitle('共守之钥', Colors.orange),
                 const SizedBox(height: 8),
                 const Text(
                   '两个账号将使用相同的登录密码',

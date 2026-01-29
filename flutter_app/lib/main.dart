@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         Provider<UserService>(create: (_) => UserService()),
       ],
       child: MaterialApp.router(
-        title: 'RomanceHub',
+        title: '锦书',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(

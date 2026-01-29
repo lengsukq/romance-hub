@@ -144,7 +144,7 @@ class _AddGiftPageState extends State<AddGiftPage> {
             TextFormField(
               controller: _giftDescController,
               decoration: const InputDecoration(
-                labelText: '礼物描述（可选）',
+                labelText: '心意说明（可选）',
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,

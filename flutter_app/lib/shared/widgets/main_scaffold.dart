@@ -68,19 +68,19 @@ class _MainScaffoldState extends State<MainScaffold> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.task),
-            label: '任务',
+            label: '心诺',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.card_giftcard),
-            label: '礼物',
+            label: '赠礼',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
-            label: '留言',
+            label: '私语',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: '我的',
+            label: '吾心',
           ),
         ],
       ),
