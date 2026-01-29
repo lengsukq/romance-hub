@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     serverExternalPackages: ['@prisma/client', 'prisma'],
+    // Next.js 16 默认使用 Turbopack，但如果有自定义 webpack 配置，会自动回退到 webpack
     webpack: (config) => {
         // 处理 Prisma 客户端
         config.externals.push({

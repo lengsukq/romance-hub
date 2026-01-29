@@ -3,7 +3,7 @@
 > 💝 给女朋友写的专属情侣任务和商城系统 | 纯H5页面 | 完全免费部署 | 无需服务器  
 > 🚀 React-Next.js全栈项目，让爱情更有趣！
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black?logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.1-blue?logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6.2-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.15.0-green?logo=prisma)](https://www.prisma.io/)
@@ -94,7 +94,7 @@ npm run dev
 ## 🏗️ 技术架构
 
 ### 前端技术栈
-- **Next.js 15.5.2** - React全栈框架，支持SSR/SSG
+- **Next.js 16.1.6** - React全栈框架，支持SSR/SSG
 - **React 19.1.1** - 用户界面库
 - **TypeScript 5.6.2** - 类型安全的JavaScript
 - **Tailwind CSS** - 原子化CSS框架
@@ -295,7 +295,7 @@ npm run db:postgresql
 ### ✅ 已完成优化
 - ✅ **数据库架构升级** - 从原生SQL迁移到Prisma ORM
 - ✅ **多数据库支持** - 支持SQLite/MySQL/PostgreSQL
-- ✅ **Next.js 15升级** - 升级到最新版本，性能更优
+- ✅ **Next.js 16升级** - 升级到最新版本，性能更优，默认使用 Turbopack
 - ✅ **React 19升级** - 最新React特性支持
 - ✅ **Cookie安全优化** - 服务器端二次校验
 - ✅ **类型安全** - 全面TypeScript化
