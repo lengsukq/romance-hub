@@ -25,11 +25,15 @@ GoRouter createAppRouter(AuthNotifier authNotifier) {
     initialLocation: AppRoutes.login,
     refreshListenable: authNotifier,
     redirect: (context, state) async {
-      final hasCookie = await ApiService().hasCookie();
+      // 仅首次或未解析时读存储，避免每次 tab 切换都 async 读导致误判
+      if (!authNotifier.isLoggedInKnown) {
+        final hasCookie = await ApiService().hasCookie();
+        authNotifier.setLoggedIn(hasCookie);
+      }
       final isAuthRoute = state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.register;
-      if (hasCookie && isAuthRoute) return AppRoutes.home;
-      if (!hasCookie && !isAuthRoute) return AppRoutes.login;
+      if (authNotifier.isLoggedIn && isAuthRoute) return AppRoutes.home;
+      if (!authNotifier.isLoggedIn && !isAuthRoute) return AppRoutes.login;
       return null;
     },
     routes: [

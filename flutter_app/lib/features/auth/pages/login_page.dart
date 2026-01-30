@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:romance_hub_flutter/core/auth/auth_notifier.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -106,7 +108,8 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         if (response.isSuccess && response.data != null) {
-          // 登录成功，跳转到主页
+          // 登录成功，更新登录态缓存并跳转到主页
+          context.read<AuthNotifier>().setLoggedIn(true);
           context.go(AppRoutes.home);
         } else {
           setState(() {
