@@ -1,0 +1,204 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
+import 'package:romance_hub_flutter/core/services/gift_service.dart';
+import 'package:romance_hub_flutter/core/services/upload_service.dart';
+import 'package:romance_hub_flutter/core/utils/logger.dart';
+
+/// 添心意页面
+class AddGiftPage extends StatefulWidget {
+  const AddGiftPage({super.key});
+
+  @override
+  State<AddGiftPage> createState() => _AddGiftPageState();
+}
+
+class _AddGiftPageState extends State<AddGiftPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _giftNameController = TextEditingController();
+  final _giftDescController = TextEditingController();
+  final _scoreController = TextEditingController();
+  final GiftService _giftService = GiftService();
+  final UploadService _uploadService = UploadService();
+  final ImagePicker _imagePicker = ImagePicker();
+  
+  File? _selectedImage;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _giftNameController.dispose();
+    _giftDescController.dispose();
+    _scoreController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      AppLogger.e('选择图片失败', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('选择图片失败')),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitGift() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      String? imageUrl;
+      if (_selectedImage != null) {
+        final uploadResponse = await _uploadService.uploadImage(_selectedImage!);
+        if (uploadResponse.isSuccess && uploadResponse.data != null) {
+          imageUrl = uploadResponse.data;
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(uploadResponse.msg)),
+            );
+          }
+          setState(() {
+            _isSubmitting = false;
+          });
+          return;
+        }
+      }
+
+      final response = await _giftService.createGift(
+        giftName: _giftNameController.text,
+        giftDesc: _giftDescController.text.isEmpty ? null : _giftDescController.text,
+        giftImage: imageUrl,
+        score: int.parse(_scoreController.text),
+      );
+
+      if (response.isSuccess) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('添加成功')),
+          );
+          context.go(AppRoutes.gifts);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response.msg)),
+          );
+        }
+      }
+    } catch (e) {
+      AppLogger.e('添加礼物失败', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('添加失败，请重试')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        title: const Text('添心意'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          children: [
+            TextFormField(
+              controller: _giftNameController,
+              decoration: const InputDecoration(labelText: '赠礼名称'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '请输入赠礼名称';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _giftDescController,
+              decoration: const InputDecoration(
+                labelText: '心意说明（可选）',
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _scoreController,
+              decoration: const InputDecoration(labelText: '所需积分'),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '请输入所需积分';
+                }
+                if (int.tryParse(value) == null) {
+                  return '请输入有效的数字';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _pickImage,
+              icon: const Icon(Icons.image_rounded),
+              label: const Text('选择图片'),
+            ),
+            if (_selectedImage != null) ...[
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(
+                  _selectedImage!,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ],
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isSubmitting ? null : _submitGift,
+              child: _isSubmitting
+                  ? SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                      ),
+                    )
+                  : const Text('添加'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

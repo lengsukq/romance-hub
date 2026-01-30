@@ -1,11 +1,10 @@
 'use client'
 import React, {useState, ChangeEvent} from "react";
-import {useRouter} from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {Input, Button, Avatar} from "@heroui/react";
 import {loginApi} from "@/utils/client/apihttp";
 import {Notify} from "@/utils/client/notificationUtils";
 import Register from "@/components/register";
-
 interface LoginResponse {
   code: number;
   msg: string;

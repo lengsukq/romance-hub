@@ -1,0 +1,5 @@
+{
+  "terminal.integrated.env.windows": {
+    "Path": "${env:Path};C:\\flutter\\bin"
+  }
+}
