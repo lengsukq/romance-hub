@@ -4,6 +4,7 @@ import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/models/gift_model.dart';
 import 'package:romance_hub_flutter/core/models/whisper_model.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
+import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
@@ -117,7 +118,7 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
       body: _isLoading
           ? const LoadingWidget()
           : _favouriteList.isEmpty
-              ? const EmptyWidget(message: '暂无藏心')
+              ? const EmptyWidget(message: '暂无藏心', verse: ClassicVerses.xiSang)
               : RefreshIndicator(
                   onRefresh: _loadFavourites,
                   child: ListView.builder(

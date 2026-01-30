@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
+import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/task_card.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
@@ -152,7 +153,7 @@ class _TaskListPageState extends State<TaskListPage> {
         ),
       ),
       body: _taskList.isEmpty && !_isLoading
-          ? const EmptyWidget(message: '暂无心诺')
+          ? const EmptyWidget(message: '暂无心诺', verse: ClassicVerses.caiGe)
           : RefreshIndicator(
               onRefresh: () => _loadTasks(refresh: true),
               child: ListView.builder(

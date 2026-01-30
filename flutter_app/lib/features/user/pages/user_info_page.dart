@@ -8,11 +8,17 @@ import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/core/services/user_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/core/utils/snackbar_utils.dart';
+import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
+import 'package:romance_hub_flutter/features/user/widgets/cloud_section_card.dart';
+import 'package:romance_hub_flutter/features/user/widgets/info_row_card.dart';
+import 'package:romance_hub_flutter/features/user/widgets/section_title.dart';
+import 'package:romance_hub_flutter/features/user/widgets/user_avatar.dart';
 import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
 import 'package:romance_hub_flutter/shared/widgets/config_dialog.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 
-/// 用户信息页面
+/// 用户信息页面（吾心）：符合锦书 UI 准则，组件原子化
 class UserInfoPage extends StatefulWidget {
   const UserInfoPage({super.key});
 
@@ -50,9 +56,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
           if (mounted) {
             setState(() => _baseUrl = url);
             Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('云阁已更新')),
-            );
+            SnackBarUtils.showSuccess(context, '已更新云阁');
           }
         },
       ),
@@ -60,30 +64,22 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   Future<void> _loadUserInfo() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final userResponse = await _userService.getUserInfo();
       if (userResponse.isSuccess && userResponse.data != null) {
-        setState(() {
-          _userInfo = userResponse.data;
-        });
+        setState(() => _userInfo = userResponse.data);
       }
 
       final loverResponse = await _userService.getLoverInfo();
       if (loverResponse.isSuccess && loverResponse.data != null) {
-        setState(() {
-          _loverInfo = loverResponse.data;
-        });
+        setState(() => _loverInfo = loverResponse.data);
       }
     } catch (e) {
       AppLogger.e('加载用户信息失败', e);
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -104,13 +100,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: LoadingWidget(),
-      );
+      return const Scaffold(body: LoadingWidget());
     }
 
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -130,129 +123,35 @@ class _UserInfoPageState extends State<UserInfoPage> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         children: [
-          _buildSectionTitle(context, '云阁'),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.cloud_rounded, size: 20, color: colorScheme.primary),
-                      const SizedBox(width: 10),
-                      Text(
-                        '云阁地址',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: _showConfigDialog,
-                        icon: Icon(Icons.edit_rounded, size: 18, color: colorScheme.primary),
-                        label: const Text('配置'),
-                        style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _baseUrl.isEmpty ? '未配置云阁' : _baseUrl,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
+          SectionTitle(title: '云阁', verse: ClassicVerses.jianJia),
+          CloudSectionCard(baseUrl: _baseUrl, onConfig: _showConfigDialog),
+          const SizedBox(height: 24),
           if (_userInfo != null) ...[
-            _buildSectionTitle(context, '吾之信息'),
-            if (_userInfo!.avatar != null && _userInfo!.avatar!.isNotEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: CircleAvatar(
-                    radius: 48,
-                    backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    backgroundImage: NetworkImage(_userInfo!.avatar!),
-                  ),
-                ),
-              ),
-            _buildInfoCard(context, '用户名', _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username),
-            _buildInfoCard(context, '邮箱', _userInfo!.userEmail),
-            _buildInfoCard(context, '积分', '${_userInfo!.score}'),
+            SectionTitle(title: '吾之信息', verse: ClassicVerses.ziJin),
+            UserAvatar(avatarUrl: _userInfo!.avatar),
+            InfoRowCard(
+              label: '用户名',
+              value: _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username,
+            ),
+            InfoRowCard(label: '邮箱', value: _userInfo!.userEmail),
+            InfoRowCard(label: '积分', value: '${_userInfo!.score}'),
             if (_userInfo!.describeBySelf != null)
-              _buildInfoCard(context, '一言', _userInfo!.describeBySelf!),
-            const SizedBox(height: 20),
+              InfoRowCard(label: '一言', value: _userInfo!.describeBySelf!),
+            const SizedBox(height: 24),
           ],
           if (_loverInfo != null) ...[
-            _buildSectionTitle(context, '良人信息'),
-            _buildInfoCard(context, '用户名', _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username),
-            _buildInfoCard(context, '邮箱', _loverInfo!.userEmail),
+            SectionTitle(title: '良人信息', verse: ClassicVerses.chouMou),
+            InfoRowCard(
+              label: '用户名',
+              value: _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username,
+            ),
+            InfoRowCard(label: '邮箱', value: _loverInfo!.userEmail),
             if (_loverInfo!.describeBySelf != null)
-              _buildInfoCard(context, '一言', _loverInfo!.describeBySelf!),
+              InfoRowCard(label: '一言', value: _loverInfo!.describeBySelf!),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoCard(BuildContext context, String title, String value) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    const radius = 24.0;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(radius),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  value,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

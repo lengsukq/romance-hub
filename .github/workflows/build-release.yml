@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       platform:
-        description: '构建平台'
+        description: '构建平台 (android=仅 APK, windows=仅 Windows, both=双平台)'
         required: true
         default: 'both'
         type: choice
