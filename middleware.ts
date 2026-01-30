@@ -3,40 +3,61 @@ import {NextResponse, NextRequest} from 'next/server'
 import {cookies} from 'next/headers'
 import dayjs from "dayjs";
 import BizResult from "@/utils/BizResult";
+import { decryptData } from "@/utils/cookieTools";
 
 interface ClientCookie {
     name: string;
     value: string;
-    expires: string;
+    expires?: string;
 }
 
 export async function middleware(request: NextRequest) {
     try {
-        // 获取 cookie
         const reqCookie = request.cookies.get('cookie');
-        if (!reqCookie) {
+        if (!reqCookie?.value) {
             console.log('中间件: 未找到 cookie');
             return Response.json(BizResult.fail('', '请登录后使用'));
         }
-        
-        // 解析 cookie
+
         let clientCookie: ClientCookie;
         try {
-            clientCookie = JSON.parse(reqCookie.value);
+            let raw = reqCookie.value;
+            try {
+                clientCookie = JSON.parse(raw);
+            } catch {
+                raw = decodeURIComponent(raw);
+                clientCookie = JSON.parse(raw);
+            }
         } catch (parseError) {
             console.log('中间件: cookie 解析失败', parseError);
             return Response.json(BizResult.fail('', '请重新登录'));
         }
 
-        // 检查服务端 cookie
-        const serverCookie = (await cookies()).get(clientCookie.name);
-        if (!serverCookie) {
-            console.log('中间件: 服务端未找到对应 cookie');
+        if (!clientCookie.value) {
+            console.log('中间件: cookie 缺少 value');
             return Response.json(BizResult.fail('', '请重新登录'));
         }
 
-        // 验证 cookie 值
-        if (clientCookie.value !== serverCookie.value) {
+        const payload = decryptData(clientCookie.value);
+        if (!payload?.userEmail) {
+            console.log('中间件: JWT 无效或已过期');
+            return Response.json(BizResult.fail('', '请重新登录'));
+        }
+
+        if (clientCookie.expires) {
+            const cookieDate = dayjs(clientCookie.expires);
+            if (cookieDate.isBefore(dayjs())) {
+                console.log('中间件: cookie 已过期');
+                const pastDate = new Date(Date.now() - 86400000).toUTCString();
+                return Response.json(BizResult.fail('', '登录过期'), {
+                    status: 200,
+                    headers: {'Set-Cookie': `cookie=;Expires=${pastDate};`},
+                });
+            }
+        }
+
+        const serverCookie = (await cookies()).get(clientCookie.name);
+        if (serverCookie && clientCookie.value !== serverCookie.value) {
             console.log('中间件: cookie 值不匹配');
             const pastDate = new Date(Date.now() - 86400000).toUTCString();
             return Response.json(BizResult.fail('', '身份验证失败，请重新登录'), {
@@ -44,18 +65,7 @@ export async function middleware(request: NextRequest) {
                 headers: {'Set-Cookie': `cookie=;Expires=${pastDate};`},
             });
         }
-        
-        // 检查过期时间
-        const cookieDate = dayjs(clientCookie.expires);
-        if (cookieDate.isBefore(dayjs())) {
-            console.log('中间件: cookie 已过期');
-            const pastDate = new Date(Date.now() - 86400000).toUTCString();
-            return Response.json(BizResult.fail('', '登录过期'), {
-                status: 200,
-                headers: {'Set-Cookie': `cookie=;Expires=${pastDate};`},
-            });
-        }
-        
+
         console.log('中间件: 验证通过');
         return NextResponse.next();
     } catch (e) {
