@@ -9,10 +9,16 @@ class ApiService {
   late Dio _dio;
   static ApiService? _instance;
   final _storage = const FlutterSecureStorage();
+  static void Function()? _on401;
 
   ApiService._internal() {
     _dio = Dio();
     _initializeDio();
+  }
+
+  /// 收到 401 时先清除 cookie，再调用此回调（用于触发路由重定向登录）
+  static void setOn401(void Function() callback) {
+    _on401 = callback;
   }
 
   factory ApiService() {
@@ -50,7 +56,11 @@ class ApiService {
         AppLogger.d('响应: ${response.statusCode} ${response.requestOptions.path}');
         return handler.next(response);
       },
-      onError: (error, handler) {
+      onError: (error, handler) async {
+        if (error.response?.statusCode == 401) {
+          await ApiService().clearCookie();
+          _on401?.call();
+        }
         AppLogger.e('错误: ${error.message}');
         return handler.next(error);
       },
@@ -79,6 +89,12 @@ class ApiService {
   /// 清除 cookie
   Future<void> clearCookie() async {
     await _storage.delete(key: 'cookie');
+  }
+
+  /// 是否有已保存的 cookie（用于启动时判断是否已登录）
+  Future<bool> hasCookie() async {
+    final c = await _getCookie();
+    return c != null && c.isNotEmpty;
   }
 
   /// GET 请求

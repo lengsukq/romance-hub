@@ -6,7 +6,7 @@ class AppRoutes {
   // ---------- 路径常量 ----------
   static const String login = '/login';
   static const String register = '/register';
-  static const String home = '/';
+  static const String home = '/index';
 
   static const String tasks = '/tasks';
   static const String postTask = '/post-task';

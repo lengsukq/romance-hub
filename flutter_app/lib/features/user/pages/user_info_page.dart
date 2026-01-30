@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:romance_hub_flutter/core/routes/app_routes.dart';
+import 'package:provider/provider.dart';
+import 'package:romance_hub_flutter/core/auth/auth_notifier.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
-import 'package:romance_hub_flutter/core/services/user_service.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
-import 'package:romance_hub_flutter/features/auth/services/auth_service.dart';
+import 'package:romance_hub_flutter/core/services/user_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
-import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
 import 'package:romance_hub_flutter/shared/widgets/config_dialog.dart';
+import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 
 /// 用户信息页面
 class UserInfoPage extends StatefulWidget {
@@ -21,7 +22,6 @@ class UserInfoPage extends StatefulWidget {
 
 class _UserInfoPageState extends State<UserInfoPage> {
   final UserService _userService = UserService();
-  final AuthService _authService = AuthService();
   UserModel? _userInfo;
   UserModel? _loverInfo;
   bool _isLoading = true;
@@ -96,11 +96,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
       cancelText: '取消',
     );
 
-    if (confirm == true) {
-      await _authService.logout();
-      if (mounted) {
-        context.go(AppRoutes.login);
-      }
+    if (confirm == true && mounted) {
+      await context.read<AuthNotifier>().invalidate();
     }
   }
 

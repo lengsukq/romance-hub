@@ -1,85 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 
-/// 主框架 Scaffold
-/// 包含底部导航栏和通用布局
-class MainScaffold extends StatefulWidget {
-  final Widget child;
-  final int? initialIndex;
+/// 主框架 Shell：底部 Tab 固定，切换时无路由动画
+/// 与 [StatefulShellRoute] 配合使用，body 由 [navigationShell] 提供
+class MainShellScaffold extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
 
-  const MainScaffold({
+  const MainShellScaffold({
     super.key,
-    required this.child,
-    this.initialIndex,
+    required this.navigationShell,
   });
-
-  @override
-  State<MainScaffold> createState() => _MainScaffoldState();
-}
-
-class _MainScaffoldState extends State<MainScaffold> {
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.initialIndex ?? 0;
-  }
-
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-        context.go(AppRoutes.home);
-        break;
-      case 1:
-        context.go(AppRoutes.tasks);
-        break;
-      case 2:
-        context.go(AppRoutes.gifts);
-        break;
-      case 3:
-        context.go(AppRoutes.whisperList(type: 'my'));
-        break;
-      case 4:
-        context.go(AppRoutes.userInfo);
-        break;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.child,
+      body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
+        currentIndex: navigationShell.currentIndex,
+        onTap: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: true,
+        ),
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Theme.of(context).primaryColor,
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
             label: '首页',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.task),
+            icon: Icon(Icons.task_alt_outlined),
+            activeIcon: Icon(Icons.task_alt),
             label: '心诺',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.card_giftcard),
+            icon: Icon(Icons.card_giftcard_outlined),
+            activeIcon: Icon(Icons.card_giftcard),
             label: '赠礼',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
+            icon: Icon(Icons.chat_bubble_outline),
+            activeIcon: Icon(Icons.chat_bubble),
             label: '私语',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: '吾心',
           ),
         ],
