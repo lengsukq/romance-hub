@@ -41,30 +41,6 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  /// 保存后端地址配置
-  Future<void> _saveBaseUrl() async {
-    final url = _baseUrlController.text.trim();
-    if (url.isEmpty) {
-      _showError('请输入后端服务器地址');
-      return;
-    }
-
-    if (!AppConfig.isValidUrl(url)) {
-      _showError('请输入有效的 URL 地址（http:// 或 https://）');
-      return;
-    }
-
-    final normalizedUrl = AppConfig.normalizeUrl(url);
-    await AppConfig.setBaseUrl(normalizedUrl);
-    await ApiService().updateBaseUrl(normalizedUrl);
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('后端地址已保存')),
-      );
-    }
-  }
-
   /// 显示配置对话框
   void _showConfigDialog() {
     showDialog(
@@ -80,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
           if (mounted) {
             Navigator.of(context).pop();
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('后端地址已更新')),
+              const SnackBar(content: Text('云阁已更新')),
             );
           }
         },
@@ -132,12 +108,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _showError(String message) {
-    setState(() {
-      _errorMessage = message;
-    });
-  }
-
   @override
   void dispose() {
     _usernameController.dispose();
@@ -148,81 +118,89 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo 或标题
-                  const Icon(
-                    Icons.favorite,
-                    size: 80,
-                    color: Colors.pink,
+                  // 品牌区：图标 + 标题 + 副标题（8pt 网格，留白充足）
+                  Icon(
+                    Icons.favorite_rounded,
+                    size: 72,
+                    color: colorScheme.primary,
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
+                  const SizedBox(height: 20),
+                  Text(
                     '锦书',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
+                    style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.pink,
+                      color: colorScheme.primary,
+                      letterSpacing: 1.2,
+                    ) ?? TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                      letterSpacing: 1.2,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     '两心相知，一事一诺',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ) ?? TextStyle(fontSize: 15, color: colorScheme.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 40),
 
-                  // 后端地址配置
+                  // 云阁配置卡片（大圆角、内容区 20dp）
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.settings, size: 20),
-                              const SizedBox(width: 8),
-                              const Text(
+                              Icon(Icons.cloud_rounded, size: 22, color: colorScheme.primary),
+                              const SizedBox(width: 12),
+                              Text(
                                 '云阁配置',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
+                                style: textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                               const Spacer(),
                               TextButton.icon(
                                 onPressed: _showConfigDialog,
-                                icon: const Icon(Icons.edit, size: 16),
+                                icon: Icon(Icons.edit_rounded, size: 18, color: colorScheme.primary),
                                 label: const Text('配置'),
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  foregroundColor: colorScheme.primary,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           TextFormField(
                             controller: _baseUrlController,
-                            decoration: const InputDecoration(
-                              labelText: '后端地址',
+                            decoration: InputDecoration(
+                              labelText: '云阁地址',
                               hintText: 'https://r-d.lengsu.top/',
-                              prefixIcon: Icon(Icons.link),
-                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.link_rounded, color: colorScheme.onSurfaceVariant),
                               isDense: true,
                             ),
                             keyboardType: TextInputType.url,
@@ -230,11 +208,12 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '当前: ${_baseUrlController.text.isEmpty ? "未配置云阁" : _baseUrlController.text}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
+                            _baseUrlController.text.isEmpty ? '未配置云阁' : '当前：${_baseUrlController.text}',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -242,103 +221,117 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // 登录表单
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(
-                      labelText: '用户名',
-                      hintText: '请输入用户名',
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return '请输入用户名';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: '密码',
-                      hintText: '请输入密码',
-                      prefixIcon: const Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      border: const OutlineInputBorder(),
-                    ),
-                    obscureText: _obscurePassword,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '请输入密码';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 错误信息
-                  if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.shade200),
-                      ),
-                      child: Row(
+                  // 登入表单卡片（层级清晰、大圆角）
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(color: Colors.red.shade700),
+                          Text(
+                            '登入',
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
                             ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _usernameController,
+                            decoration: InputDecoration(
+                              labelText: '用户名',
+                              hintText: '请输入用户名',
+                              prefixIcon: Icon(Icons.person_rounded, color: colorScheme.onSurfaceVariant),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return '请输入用户名';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              labelText: '密码',
+                              hintText: '请输入密码',
+                              prefixIcon: Icon(Icons.lock_rounded, color: colorScheme.onSurfaceVariant),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                            ),
+                            obscureText: _obscurePassword,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return '请输入密码';
+                              }
+                              return null;
+                            },
+                          ),
+                          if (_errorMessage != null) ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: colorScheme.errorContainer.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: colorScheme.error.withValues(alpha: 0.5)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 20),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage!,
+                                      style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _handleLogin,
+                            child: _isLoading
+                                ? SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                                    ),
+                                  )
+                                : const Text('登入'),
                           ),
                         ],
                       ),
                     ),
-                  if (_errorMessage != null) const SizedBox(height: 16),
-
-                  // 登录按钮
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.pink,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text(
-                            '登录',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // 注册提示
-                  TextButton(
-                    onPressed: () => context.go(AppRoutes.register),
-                    child: const Text('还没有账号？点击注册'),
+                  // 注册入口（简洁古风文案）
+                  Center(
+                    child: TextButton(
+                      onPressed: () => context.go(AppRoutes.register),
+                      child: Text(
+                        '未有账号？去注册',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

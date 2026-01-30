@@ -52,14 +52,15 @@ class ConfirmDialog extends StatelessWidget {
         TextButton(
           onPressed: () {
             onCancel?.call();
-            Navigator.of(context).pop(false);
+            if (onCancel == null) Navigator.of(context).pop(false);
           },
           child: Text(cancelText),
         ),
         TextButton(
           onPressed: () {
             onConfirm?.call();
-            Navigator.of(context).pop(true);
+            // 仅当未提供 onConfirm 时由按钮关闭对话框，避免与 show() 传入的 onConfirm 重复 pop 导致栈空
+            if (onConfirm == null) Navigator.of(context).pop(true);
           },
           style: TextButton.styleFrom(
             foregroundColor: confirmColor ?? Colors.red,
