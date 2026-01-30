@@ -1,10 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
+import 'package:romance_hub_flutter/core/services/sweet_talk_service.dart';
 
-/// 首页：入口导航，无切换动画（由 StatefulShellRoute 保证）
-class HomePage extends StatelessWidget {
+/// 首页：入口导航 + 情话展示，无切换动画（由 StatefulShellRoute 保证）
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String? _sweetTalk;
+  bool _sweetTalkLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSweetTalk();
+  }
+
+  Future<void> _loadSweetTalk() async {
+    final text = await SweetTalkService.instance.fetchOne();
+    if (mounted) {
+      setState(() {
+        _sweetTalk = text;
+        _sweetTalkLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +66,13 @@ class HomePage extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          // 情话展示区（每次进入首页拉取一句）
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: _buildSweetTalkCard(context),
             ),
           ),
           SliverPadding(
@@ -88,6 +120,80 @@ class HomePage extends StatelessWidget {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSweetTalkCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const radius = 24.0;
+
+    if (_sweetTalkLoading) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        decoration: BoxDecoration(
+          color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(
+            color: colorScheme.outline.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '一言一语…',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_sweetTalk == null || _sweetTalk!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: colorScheme.outline.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.format_quote_rounded,
+            color: colorScheme.primary,
+            size: 28,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _sweetTalk!,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
+                height: 1.5,
+              ),
+            ),
+          ),
         ],
       ),
     );

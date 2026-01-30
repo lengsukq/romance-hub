@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Form(
               key: _formKey,
               child: Column(
@@ -139,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                     size: 72,
                     color: colorScheme.primary,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Text(
                     '锦书',
                     textAlign: TextAlign.center,
@@ -162,12 +162,12 @@ class _LoginPageState extends State<LoginPage> {
                       color: colorScheme.onSurfaceVariant,
                     ) ?? TextStyle(fontSize: 15, color: colorScheme.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
 
-                  // 云阁配置卡片（大圆角、内容区 20dp）
+                  // 云阁配置卡片
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -194,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
                           TextFormField(
                             controller: _baseUrlController,
                             decoration: InputDecoration(
@@ -219,12 +219,12 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-                  // 登入表单卡片（层级清晰、大圆角）
+                  // 登入表单卡片
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -235,7 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
                           TextFormField(
                             controller: _usernameController,
                             decoration: InputDecoration(
@@ -300,7 +300,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                           ],
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: _isLoading ? null : _handleLogin,
                             child: _isLoading
@@ -318,9 +318,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // 注册入口（简洁古风文案）
+                  // 注册入口
                   Center(
                     child: TextButton(
                       onPressed: () => context.go(AppRoutes.register),

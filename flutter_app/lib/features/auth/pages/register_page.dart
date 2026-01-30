@@ -86,7 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final lover = _loverEmailController.text.trim();
     if (userEmail == lover) {
       setState(() {
-        _errorMessage = '用户邮箱与关联者邮箱不可相同';
+        _errorMessage = '君与良人邮箱不可相同';
       });
       return;
     }
@@ -156,256 +156,278 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('二人同契'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go(AppRoutes.login),
         ),
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
+                Text(
                   '为君与良人同立契，共守一钥，便于两心相记',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-                const SizedBox(height: 24),
-
-                // 主账号信息
-                _sectionTitle('主账号信息', Colors.pink),
-                const SizedBox(height: 12),
-                _avatarPicker(
-                  file: _avatarFile,
-                  onTap: () => _pickAvatar(false),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '选填，不选则使用默认头像',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: '昵称',
-                    hintText: '请输入昵称',
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return '请输入昵称';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _userEmailController,
-                  decoration: const InputDecoration(
-                    labelText: '邮箱',
-                    hintText: '请输入邮箱',
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return '请输入邮箱';
-                    if (!ValidationUtils.isValidEmail(v.trim())) return '请输入正确的邮箱';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _describeBySelfController,
-                  decoration: const InputDecoration(
-                    labelText: '一言',
-                    hintText: '请输入一言',
-                    prefixIcon: Icon(Icons.chat_bubble_outline),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return '请输入一言';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // 关联者账号信息
-                _sectionTitle('良人契', Colors.deepPurple),
-                const SizedBox(height: 12),
-                _avatarPicker(
-                  file: _loverAvatarFile,
-                  onTap: () => _pickAvatar(true),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '选填，不选则使用默认头像',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _loverEmailController,
-                  decoration: const InputDecoration(
-                    labelText: '关联者邮箱',
-                    hintText: '请输入关联者邮箱',
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return '请输入关联者邮箱';
-                    if (!ValidationUtils.isValidEmail(v.trim())) return '请输入正确的邮箱';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _loverUsernameController,
-                  decoration: const InputDecoration(
-                    labelText: '关联者昵称',
-                    hintText: '请输入关联者昵称',
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return '请输入关联者昵称';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _loverDescribeBySelfController,
-                  decoration: const InputDecoration(
-                    labelText: '关联者一言',
-                    hintText: '请输入关联者一言',
-                    prefixIcon: Icon(Icons.chat_bubble_outline),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return '请输入关联者一言';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // 共享密码
-                _sectionTitle('共守之钥', Colors.orange),
-                const SizedBox(height: 8),
-                const Text(
-                  '两个账号将使用相同的登录密码',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: '密码',
-                    hintText: '请输入密码',
-                    prefixIcon: const Icon(Icons.lock),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                // 主账号信息卡片
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _sectionTitle(context, '君之契', colorScheme.primary),
+                        const SizedBox(height: 12),
+                        _avatarPicker(context, file: _avatarFile, onTap: () => _pickAvatar(false)),
+                        const SizedBox(height: 6),
+                        Text(
+                          '选填，不选则用默认头像',
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _usernameController,
+                          decoration: InputDecoration(
+                            labelText: '昵称',
+                            hintText: '请输入昵称',
+                            prefixIcon: Icon(Icons.person_rounded, color: colorScheme.onSurfaceVariant),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return '请输入昵称';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _userEmailController,
+                          decoration: InputDecoration(
+                            labelText: '邮箱',
+                            hintText: '请输入邮箱',
+                            prefixIcon: Icon(Icons.email_rounded, color: colorScheme.onSurfaceVariant),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return '请输入邮箱';
+                            if (!ValidationUtils.isValidEmail(v.trim())) return '请输入正确的邮箱';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _describeBySelfController,
+                          decoration: InputDecoration(
+                            labelText: '一言',
+                            hintText: '请输入一言',
+                            prefixIcon: Icon(Icons.chat_bubble_outline_rounded, color: colorScheme.onSurfaceVariant),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return '请输入一言';
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  obscureText: _obscurePassword,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return '请输入密码';
-                    if (!ValidationUtils.isValidPassword(v)) return '密码至少 6 位';
-                    return null;
-                  },
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _password2Controller,
-                  decoration: InputDecoration(
-                    labelText: '确认密码',
-                    hintText: '请再次输入一致的密码',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword2 ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword2 = !_obscurePassword2;
-                        });
-                      },
+                const SizedBox(height: 20),
+
+                // 良人契卡片
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _sectionTitle(context, '良人契', colorScheme.primary),
+                        const SizedBox(height: 12),
+                        _avatarPicker(context, file: _loverAvatarFile, onTap: () => _pickAvatar(true)),
+                        const SizedBox(height: 6),
+                        Text(
+                          '选填，不选则用默认头像',
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _loverEmailController,
+                          decoration: InputDecoration(
+                            labelText: '良人邮箱',
+                            hintText: '请输入良人邮箱',
+                            prefixIcon: Icon(Icons.email_rounded, color: colorScheme.onSurfaceVariant),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return '请输入良人邮箱';
+                            if (!ValidationUtils.isValidEmail(v.trim())) return '请输入正确的邮箱';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _loverUsernameController,
+                          decoration: InputDecoration(
+                            labelText: '良人昵称',
+                            hintText: '请输入良人昵称',
+                            prefixIcon: Icon(Icons.person_rounded, color: colorScheme.onSurfaceVariant),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return '请输入良人昵称';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _loverDescribeBySelfController,
+                          decoration: InputDecoration(
+                            labelText: '良人一言',
+                            hintText: '请输入良人一言',
+                            prefixIcon: Icon(Icons.chat_bubble_outline_rounded, color: colorScheme.onSurfaceVariant),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return '请输入良人一言';
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  obscureText: _obscurePassword2,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return '请再次输入密码';
-                    if (v != _passwordController.text) return '两次密码不一致';
-                    return null;
-                  },
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+
+                // 共守之钥卡片
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _sectionTitle(context, '共守之钥', colorScheme.primary),
+                        const SizedBox(height: 6),
+                        Text(
+                          '两账号共用同一登入密码',
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _passwordController,
+                          decoration: InputDecoration(
+                            labelText: '密码',
+                            hintText: '请输入密码',
+                            prefixIcon: Icon(Icons.lock_rounded, color: colorScheme.onSurfaceVariant),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
+                          obscureText: _obscurePassword,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return '请输入密码';
+                            if (!ValidationUtils.isValidPassword(v)) return '密码至少 6 位';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _password2Controller,
+                          decoration: InputDecoration(
+                            labelText: '确认密码',
+                            hintText: '请再次输入一致密码',
+                            prefixIcon: Icon(Icons.lock_outline_rounded, color: colorScheme.onSurfaceVariant),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword2 ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              onPressed: () => setState(() => _obscurePassword2 = !_obscurePassword2),
+                            ),
+                          ),
+                          obscureText: _obscurePassword2,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return '请再次输入密码';
+                            if (v != _passwordController.text) return '两次密码不一致';
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
 
                 if (_errorMessage != null) ...[
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.shade200),
+                      color: colorScheme.errorContainer.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colorScheme.error.withValues(alpha: 0.5)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-                        const SizedBox(width: 8),
+                        Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 20),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             _errorMessage!,
-                            style: TextStyle(color: Colors.red.shade700),
+                            style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                 ],
 
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleRegister,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.pink,
-                    foregroundColor: Colors.white,
-                  ),
                   child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
+                      ? SizedBox(
+                          height: 22,
+                          width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
                           ),
                         )
-                      : const Text(
-                          '注册双账号',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                      : const Text('同立契'),
                 ),
                 const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => context.go(AppRoutes.login),
-                  child: const Text('已有账号？去登录'),
+
+                Center(
+                  child: TextButton(
+                    onPressed: () => context.go(AppRoutes.login),
+                    child: Text(
+                      '已有账号？去登入',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -415,27 +437,27 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _sectionTitle(String title, Color color) {
+  Widget _sectionTitle(BuildContext context, String title, Color color) {
     return Text(
       title,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.w600,
         color: color,
       ),
     );
   }
 
-  Widget _avatarPicker({required File? file, required VoidCallback onTap}) {
+  Widget _avatarPicker(BuildContext context, {required File? file, required VoidCallback onTap}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Center(
         child: CircleAvatar(
           radius: 40,
-          backgroundColor: Colors.grey.shade200,
+          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           backgroundImage: file != null ? FileImage(file) : null,
           child: file == null
-              ? const Icon(Icons.add_a_photo, size: 36, color: Colors.grey)
+              ? Icon(Icons.add_a_photo_rounded, size: 36, color: colorScheme.onSurfaceVariant)
               : null,
         ),
       ),
