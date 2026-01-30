@@ -1,24 +1,26 @@
-# 手动构建并发布 Windows / Android Release 到 GitHub
+# 手动构建并发布全平台 Release 到 GitHub
 # 版本号格式: 1.YYYYMMDDHHmm（如 1.202601011200）
 # 在 Actions 页选择此 workflow，点击 Run workflow，选择平台后运行
 
-name: Build Release (Windows / Android)
+name: Build Release (全平台)
 
 on:
   workflow_dispatch:
     inputs:
       platform:
-        description: '构建平台 (android=仅 APK, windows=仅 Windows, both=双平台)'
+        description: '构建平台 (android/windows/macos/linux 单选，all=全平台)'
         required: true
-        default: 'both'
+        default: 'all'
         type: choice
         options:
           - android
           - windows
-          - both
+          - macos
+          - linux
+          - all
 
 env:
-  FLUTTER_VERSION: '3.24.0'
+  FLUTTER_VERSION: '3.27.0'
   PROJECT_DIR: flutter_app
 
 jobs:
@@ -39,7 +41,7 @@ jobs:
     name: 构建 Android Release
     runs-on: ubuntu-latest
     needs: prepare
-    if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
+    if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,7 +76,7 @@ jobs:
     name: 构建 Windows Release
     runs-on: windows-latest
     needs: prepare
-    if: ${{ github.event.inputs.platform == 'windows' || github.event.inputs.platform == 'both' }}
+    if: ${{ github.event.inputs.platform == 'windows' || github.event.inputs.platform == 'all' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -104,15 +106,90 @@ jobs:
           name: windows-release
           path: windows-release.zip
 
+  build-macos:
+    name: 构建 macOS Release
+    runs-on: macos-latest
+    needs: prepare
+    if: ${{ github.event.inputs.platform == 'macos' || github.event.inputs.platform == 'all' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 安装 Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: 获取依赖
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: flutter pub get
+
+      - name: 构建 macOS (Release)
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: flutter build macos --release
+
+      - name: 打包 macOS 应用
+        run: |
+          cd ${{ env.PROJECT_DIR }}/build/macos/Build/Products/Release
+          zip -r ../../../../../../macos-release.zip . -x "*.dSYM/*"
+
+      - name: 上传 macOS 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: ${{ env.PROJECT_DIR }}/macos-release.zip
+
+  build-linux:
+    name: 构建 Linux Release
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: ${{ github.event.inputs.platform == 'linux' || github.event.inputs.platform == 'all' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 安装 Linux 桌面依赖
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev
+
+      - name: 安装 Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: 获取依赖
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: flutter pub get
+
+      - name: 构建 Linux (Release)
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: flutter build linux --release
+
+      - name: 打包 Linux 发布目录
+        run: |
+          cd ${{ env.PROJECT_DIR }}/build/linux/x64/release/bundle
+          zip -r ../../../../../../linux-release.zip .
+
+      - name: 上传 Linux 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: ${{ env.PROJECT_DIR }}/linux-release.zip
+
   release:
     name: 创建 GitHub Release
     runs-on: ubuntu-latest
-    needs: [prepare, build-android, build-windows]
+    needs: [prepare, build-android, build-windows, build-macos, build-linux]
     if: |
       always() &&
       (needs.build-android.result == 'success' || needs.build-android.result == 'skipped') &&
       (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped') &&
-      (needs.build-android.result == 'success' || needs.build-windows.result == 'success')
+      (needs.build-macos.result == 'success' || needs.build-macos.result == 'skipped') &&
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
+      (needs.build-android.result == 'success' || needs.build-windows.result == 'success' || needs.build-macos.result == 'success' || needs.build-linux.result == 'success')
     permissions:
       contents: write
     steps:
@@ -128,11 +205,25 @@ jobs:
         with:
           name: windows-release
 
+      - name: 下载 macOS 产物
+        if: needs.build-macos.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-release
+
+      - name: 下载 Linux 产物
+        if: needs.build-linux.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+
       - name: 准备发布文件
         run: |
           mkdir -p release_assets
           [ -f app-release.apk ] && cp app-release.apk release_assets/
           [ -f windows-release.zip ] && cp windows-release.zip release_assets/
+          [ -f macos-release.zip ] && cp macos-release.zip release_assets/
+          [ -f linux-release.zip ] && cp linux-release.zip release_assets/
           ls -la release_assets/
 
       - name: 创建 Release 并上传产物
