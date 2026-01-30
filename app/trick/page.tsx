@@ -54,12 +54,12 @@ export default function App() {
         }).then(res => {
             dispatch(closeSearch());
             const data = res.data as TaskListResponse;
-            setTotalPages(data.totalPages || 0);
-            // 判断是否是第一次请求，如果是，则直接设置列表数据，否则添加到现有列表
+            const records = data?.record ?? [];
+            setTotalPages(data?.totalPages ?? 0);
             if (current === 1) {
-                setTaskList(data.record);
+                setTaskList(records);
             } else {
-                setTaskList(prevList => [...prevList, ...data.record]);
+                setTaskList(prevList => [...(prevList ?? []), ...records]);
             }
         })
     }
@@ -82,9 +82,9 @@ export default function App() {
                          searchWords={searchWords}
                          setSearchWords={setSearchWords}
                          onKeyDown={onKeyDown}/>
-            {taskList.length > 0 ?
+            {(taskList?.length ?? 0) > 0 ?
                 <div className="gap-2 grid grid-cols-2 sm:grid-cols-4 p-5">
-                    <TaskCard taskList={taskList} checkDetails={checkDetails}/>
+                    <TaskCard taskList={taskList ?? []} checkDetails={checkDetails}/>
                 </div> : <NoDataCom/>}
         </>
     )

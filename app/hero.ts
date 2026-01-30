@@ -1,3 +1,3 @@
-import { heroui } from "@heroui/react";
+import { heroui } from "@heroui/theme/plugin";
 
 export default heroui();
