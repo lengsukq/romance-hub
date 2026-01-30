@@ -120,24 +120,26 @@ class _PostTaskPageState extends State<PostTaskPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('立一诺'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           children: [
             TextFormField(
               controller: _taskNameController,
-              decoration: const InputDecoration(
-                labelText: '任务名称',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '心诺名称'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '请输入任务名称';
+                  return '请输入心诺名称';
                 }
                 return null;
               },
@@ -145,10 +147,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _taskDescController,
-              decoration: const InputDecoration(
-                labelText: '诺言',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '诺言'),
               maxLines: 5,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -160,10 +159,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _taskScoreController,
-              decoration: const InputDecoration(
-                labelText: '积分',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '积分'),
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -178,7 +174,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _pickImages,
-              icon: const Icon(Icons.image),
+              icon: const Icon(Icons.image_rounded),
               label: const Text('选择图片'),
             ),
             if (_selectedImages.isNotEmpty) ...[
@@ -190,11 +186,11 @@ class _PostTaskPageState extends State<PostTaskPage> {
                   itemCount: _selectedImages.length,
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.only(right: 12),
                       child: Stack(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(16),
                             child: Image.file(
                               _selectedImages[index],
                               width: 100,
@@ -206,8 +202,11 @@ class _PostTaskPageState extends State<PostTaskPage> {
                             top: 4,
                             right: 4,
                             child: IconButton(
-                              icon: const Icon(Icons.close, size: 20),
-                              color: Colors.white,
+                              icon: const Icon(Icons.close_rounded, size: 20),
+                              style: IconButton.styleFrom(
+                                backgroundColor: colorScheme.onSurface.withValues(alpha: 0.6),
+                                foregroundColor: colorScheme.surface,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   _selectedImages.removeAt(index);
@@ -225,12 +224,16 @@ class _PostTaskPageState extends State<PostTaskPage> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitTask,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
               child: _isSubmitting
-                  ? const CircularProgressIndicator()
-                  : const Text('发布任务'),
+                  ? SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                      ),
+                    )
+                  : const Text('发布'),
             ),
           ],
         ),

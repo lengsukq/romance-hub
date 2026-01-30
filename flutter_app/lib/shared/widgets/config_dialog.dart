@@ -52,12 +52,14 @@ class _ConfigDialogState extends State<ConfigDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return AlertDialog(
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.settings, size: 24),
-          SizedBox(width: 8),
-          Text('配置云阁'),
+          Icon(Icons.cloud_rounded, size: 24, color: colorScheme.primary),
+          const SizedBox(width: 10),
+          const Text('配置云阁'),
         ],
       ),
       content: Form(
@@ -66,9 +68,11 @@ class _ConfigDialogState extends State<ConfigDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               '请输入云阁地址',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -76,8 +80,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
               decoration: InputDecoration(
                 labelText: '云阁地址',
                 hintText: 'https://r-d.lengsu.top/',
-                prefixIcon: const Icon(Icons.link),
-                border: const OutlineInputBorder(),
+                prefixIcon: Icon(Icons.link_rounded, color: colorScheme.onSurfaceVariant),
                 errorText: _isValid ? null : '请输入有效的 URL 地址',
               ),
               keyboardType: TextInputType.url,
@@ -97,37 +100,44 @@ class _ConfigDialogState extends State<ConfigDialog> {
                 _urlController.text = AppConfig.defaultBaseUrl;
                 _validateUrl();
               },
-              icon: const Icon(Icons.restore, size: 18),
+              icon: Icon(Icons.restore_rounded, size: 18, color: colorScheme.primary),
               label: const Text('复为默认云阁'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
+                color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.4),
+                ),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.blue),
-                      SizedBox(width: 8),
+                      Icon(Icons.info_outline_rounded, size: 18, color: colorScheme.primary),
+                      const SizedBox(width: 8),
                       Text(
                         '提示',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.primary,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    '• 确保云阁（后端）正在运行\n• 地址格式: http://ip:port 或 https://domain.com\n• 示例: https://r-d.lengsu.top/',
-                    style: TextStyle(fontSize: 12, color: Colors.blue),
+                    '• 确保云阁正在运行\n• 地址格式：http://ip:port 或 https://domain.com\n• 示例：https://r-d.lengsu.top/',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -142,10 +152,6 @@ class _ConfigDialogState extends State<ConfigDialog> {
         ),
         ElevatedButton(
           onPressed: _handleSave,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink,
-            foregroundColor: Colors.white,
-          ),
           child: const Text('保存'),
         ),
       ],

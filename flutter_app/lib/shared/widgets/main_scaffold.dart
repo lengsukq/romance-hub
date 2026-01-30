@@ -22,7 +22,7 @@ class MainShellScaffold extends StatelessWidget {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: colorScheme.shadow.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -30,7 +30,7 @@ class MainShellScaffold extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: BottomNavigationBar(
               currentIndex: navigationShell.currentIndex,
               onTap: (index) => navigationShell.goBranch(
@@ -42,33 +42,33 @@ class MainShellScaffold extends StatelessWidget {
               elevation: 0,
               selectedItemColor: colorScheme.primary,
               unselectedItemColor: colorScheme.onSurfaceVariant,
-              items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: '首页',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.task_alt_outlined),
-            activeIcon: Icon(Icons.task_alt),
-            label: '心诺',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.card_giftcard_outlined),
-            activeIcon: Icon(Icons.card_giftcard),
-            label: '赠礼',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: '私语',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: '吾心',
-          ),
-        ],
+              items: [
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  activeIcon: Icon(Icons.home_rounded),
+                  label: '首页',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.task_alt_outlined),
+                  activeIcon: Icon(Icons.task_alt_rounded),
+                  label: '心诺',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.card_giftcard_outlined),
+                  activeIcon: Icon(Icons.card_giftcard_rounded),
+                  label: '赠礼',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_bubble_outline),
+                  activeIcon: Icon(Icons.chat_bubble_rounded),
+                  label: '私语',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person_rounded),
+                  label: '吾心',
+                ),
+              ],
             ),
           ),
         ),

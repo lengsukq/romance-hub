@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
-import 'package:provider/provider.dart';
 import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
@@ -117,46 +116,55 @@ class _TaskListPageState extends State<TaskListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('心诺一览'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search_rounded),
             onPressed: () => _showSearchDialog(),
           ),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.postTask),
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatusChip('全部', null),
-              _buildStatusChip('待接受', 'pending'),
-              _buildStatusChip('进行中', 'accepted'),
-              _buildStatusChip('已完成', 'completed'),
-            ],
+          preferredSize: const Size.fromHeight(52),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatusChip(context, '全部', null),
+                _buildStatusChip(context, '待接受', 'pending'),
+                _buildStatusChip(context, '进行中', 'accepted'),
+                _buildStatusChip(context, '已完成', 'completed'),
+              ],
+            ),
           ),
         ),
       ),
       body: _taskList.isEmpty && !_isLoading
-          ? const EmptyWidget(message: '暂无任务')
+          ? const EmptyWidget(message: '暂无心诺')
           : RefreshIndicator(
               onRefresh: () => _loadTasks(refresh: true),
               child: ListView.builder(
                 controller: _scrollController,
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 itemCount: _taskList.length + (_hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == _taskList.length) {
-                    return const Center(
+                    return Center(
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(),
+                        padding: const EdgeInsets.all(16),
+                        child: CircularProgressIndicator(color: colorScheme.primary),
                       ),
                     );
                   }
@@ -170,7 +178,9 @@ class _TaskListPageState extends State<TaskListPage> {
     );
   }
 
-  Widget _buildStatusChip(String label, String? status) {
+  Widget _buildStatusChip(BuildContext context, String label, String? status) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isSelected = _taskStatus == status;
     return FilterChip(
       label: Text(label),
@@ -182,6 +192,8 @@ class _TaskListPageState extends State<TaskListPage> {
           _onTaskStatusChanged(null);
         }
       },
+      selectedColor: colorScheme.primaryContainer,
+      checkmarkColor: colorScheme.primary,
     );
   }
 
@@ -196,7 +208,6 @@ class _TaskListPageState extends State<TaskListPage> {
             controller: controller,
             decoration: const InputDecoration(
               hintText: '输入关键词',
-              border: OutlineInputBorder(),
             ),
           ),
           actions: [

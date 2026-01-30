@@ -51,7 +51,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             setState(() => _baseUrl = url);
             Navigator.of(context).pop();
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('后端地址已更新')),
+              const SnackBar(content: Text('云阁已更新')),
             );
           }
         },
@@ -109,26 +109,31 @@ class _UserInfoPageState extends State<UserInfoPage> {
       );
     }
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('吾心'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: () => context.go(AppRoutes.config),
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded),
             onPressed: _logout,
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          _buildSectionTitle('云阁'),
+          _buildSectionTitle(context, '云阁'),
           Card(
-            margin: const EdgeInsets.only(bottom: 16),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -136,107 +141,118 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.link, size: 20),
-                      const SizedBox(width: 8),
-                      const Text(
-                        '当前地址',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                      Icon(Icons.cloud_rounded, size: 20, color: colorScheme.primary),
+                      const SizedBox(width: 10),
+                      Text(
+                        '云阁地址',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const Spacer(),
                       TextButton.icon(
                         onPressed: _showConfigDialog,
-                        icon: const Icon(Icons.edit, size: 18),
+                        icon: Icon(Icons.edit_rounded, size: 18, color: colorScheme.primary),
                         label: const Text('配置'),
+                        style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _baseUrl.isEmpty ? '未配置云阁' : _baseUrl,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
           ),
+          const SizedBox(height: 20),
           if (_userInfo != null) ...[
-            _buildSectionTitle('吾之信息'),
+            _buildSectionTitle(context, '吾之信息'),
             if (_userInfo!.avatar != null && _userInfo!.avatar!.isNotEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: CircleAvatar(
                     radius: 48,
-                    backgroundColor: Colors.grey.shade200,
+                    backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                     backgroundImage: NetworkImage(_userInfo!.avatar!),
                   ),
                 ),
               ),
-            _buildInfoCard(
-              title: '用户名',
-              value: _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username,
-            ),
-            _buildInfoCard(
-              title: '邮箱',
-              value: _userInfo!.userEmail,
-            ),
-            _buildInfoCard(
-              title: '积分',
-              value: '${_userInfo!.score}',
-            ),
+            _buildInfoCard(context, '用户名', _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username),
+            _buildInfoCard(context, '邮箱', _userInfo!.userEmail),
+            _buildInfoCard(context, '积分', '${_userInfo!.score}'),
             if (_userInfo!.describeBySelf != null)
-              _buildInfoCard(
-                title: '一言',
-                value: _userInfo!.describeBySelf!,
-              ),
-            const SizedBox(height: 16),
+              _buildInfoCard(context, '一言', _userInfo!.describeBySelf!),
+            const SizedBox(height: 20),
           ],
           if (_loverInfo != null) ...[
-            _buildSectionTitle('良人信息'),
-            _buildInfoCard(
-              title: '用户名',
-              value: _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username,
-            ),
-            _buildInfoCard(
-              title: '邮箱',
-              value: _loverInfo!.userEmail,
-            ),
+            _buildSectionTitle(context, '良人信息'),
+            _buildInfoCard(context, '用户名', _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username),
+            _buildInfoCard(context, '邮箱', _loverInfo!.userEmail),
             if (_loverInfo!.describeBySelf != null)
-              _buildInfoCard(
-                title: '一言',
-                value: _loverInfo!.describeBySelf!,
-              ),
+              _buildInfoCard(context, '一言', _loverInfo!.describeBySelf!),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSurface,
         ),
       ),
     );
   }
 
-  Widget _buildInfoCard({required String title, required String value}) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(value),
+  Widget _buildInfoCard(BuildContext context, String title, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const radius = 24.0;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(radius),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  value,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

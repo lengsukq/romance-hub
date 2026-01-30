@@ -1,3 +1,4 @@
+import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -14,7 +15,7 @@ class FavouriteService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/favourite',
+        ApiEndpoints.favourite,
         data: {
           'action': 'add',
           'data': {
@@ -42,7 +43,7 @@ class FavouriteService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/favourite',
+        ApiEndpoints.favourite,
         data: {
           'action': 'remove',
           'data': {
@@ -67,7 +68,7 @@ class FavouriteService {
   Future<ApiResponse<List<FavouriteModel>>> getFavouriteList(FavouriteType type) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/favourite',
+        ApiEndpoints.favourite,
         data: {
           'action': 'list',
           'data': {'type': type.name},

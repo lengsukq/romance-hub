@@ -132,10 +132,12 @@
 
 ## 九、实施检查清单
 
-- [ ] 全局主题：Primary、Surface、大圆角（16/20/24）在 `ThemeData` 统一。
-- [ ] 所有卡片、按钮、输入框、弹窗使用大圆角，无 4–8 dp 小圆角。
-- [ ] 界面文案使用古风用词（心诺、赠礼、吾心、云阁等），提示简洁含蓄。
-- [ ] 无多余装饰、无高饱和色；对比度达标（WCAG AA）。
+- [x] 全局主题：Primary、Surface、大圆角（16/20/24）在 `ThemeData` 统一。
+- [x] 所有卡片、按钮、输入框、弹窗使用大圆角，无 4–8 dp 小圆角。
+- [x] 界面文案使用古风用词（心诺、赠礼、吾心、云阁等），提示简洁含蓄。
+- [x] 无多余装饰、无高饱和色；对比度达标（WCAG AA）。
+
+**实施说明**：登录/注册/首页/吾心/心诺/赠礼/私语/藏心/设置及共享组件（LoadingWidget、EmptyWidget、TaskCard、ConfigDialog、ConfirmDialog、RetryWidget、ErrorWidget、RefreshWrapper、SnackBarUtils）、主框架底部导航已按本规则统一主题色、圆角与文案。
 
 ---
 

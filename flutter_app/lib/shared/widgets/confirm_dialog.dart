@@ -63,7 +63,7 @@ class ConfirmDialog extends StatelessWidget {
             if (onConfirm == null) Navigator.of(context).pop(true);
           },
           style: TextButton.styleFrom(
-            foregroundColor: confirmColor ?? Colors.red,
+            foregroundColor: confirmColor ?? Theme.of(context).colorScheme.error,
           ),
           child: Text(confirmText),
         ),

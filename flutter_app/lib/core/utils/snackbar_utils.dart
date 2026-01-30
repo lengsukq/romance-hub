@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 
-/// SnackBar 工具类
+/// SnackBar 工具类（使用主题色，符合 UI 设计规则）
 class SnackBarUtils {
   /// 显示成功消息
   static void showSuccess(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle, color: Colors.white),
+            Icon(Icons.check_circle_rounded, color: colorScheme.onPrimary),
             const SizedBox(width: 8),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimary),
+              ),
+            ),
           ],
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: colorScheme.primary,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -21,16 +28,23 @@ class SnackBarUtils {
 
   /// 显示错误消息
   static void showError(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error, color: Colors.white),
+            Icon(Icons.error_rounded, color: colorScheme.onError),
             const SizedBox(width: 8),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onError),
+              ),
+            ),
           ],
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: colorScheme.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -38,16 +52,23 @@ class SnackBarUtils {
 
   /// 显示警告消息
   static void showWarning(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.warning, color: Colors.white),
+            Icon(Icons.warning_rounded, color: colorScheme.onSurface),
             const SizedBox(width: 8),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+              ),
+            ),
           ],
         ),
-        backgroundColor: Colors.orange,
+        backgroundColor: colorScheme.primaryContainer,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -55,16 +76,23 @@ class SnackBarUtils {
 
   /// 显示信息消息
   static void showInfo(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.info, color: Colors.white),
+            Icon(Icons.info_outline_rounded, color: colorScheme.onPrimary),
             const SizedBox(width: 8),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimary),
+              ),
+            ),
           ],
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: colorScheme.primary,
         behavior: SnackBarBehavior.floating,
       ),
     );

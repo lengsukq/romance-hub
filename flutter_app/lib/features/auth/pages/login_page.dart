@@ -84,9 +84,10 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         if (response.isSuccess && response.data != null) {
-          // 登录成功，更新登录态缓存并跳转到主页
+          // 登录成功，更新登录态；确认 cookie 可读后再跳转，避免首次进私语等请求未带上 cookie
           context.read<AuthNotifier>().setLoggedIn(true);
-          context.go(AppRoutes.home);
+          await ApiService().hasCookie();
+          if (mounted) context.go(AppRoutes.home);
         } else {
           setState(() {
             _errorMessage = response.msg;

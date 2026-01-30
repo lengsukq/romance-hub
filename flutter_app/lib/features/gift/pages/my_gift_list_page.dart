@@ -134,12 +134,16 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('我的赠礼'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.addGift),
           ),
         ],
@@ -148,7 +152,7 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
         children: [
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(
               children: _myGiftTypes
                   .map((type) => Padding(
@@ -173,22 +177,25 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
             child: _isLoading
                 ? const LoadingWidget()
                 : _giftList.isEmpty
-                    ? const EmptyWidget(message: '暂无礼物')
+                    ? const EmptyWidget(message: '暂无赠礼')
                     : RefreshIndicator(
                         onRefresh: _loadGifts,
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           itemCount: _giftList.length,
                           itemBuilder: (context, index) {
                             final gift = _giftList[index];
                             final isActionLoading =
                                 _actionLoadingGiftId == gift.giftId;
+                            final theme = Theme.of(context);
+                            final colorScheme = theme.colorScheme;
                             return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
+                              margin: const EdgeInsets.only(bottom: 10),
                               child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                 leading: gift.giftImage != null
                                     ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(16),
                                         child: Image.network(
                                           gift.giftImage!,
                                           width: 56,
@@ -199,9 +206,8 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
                                             return Container(
                                               width: 56,
                                               height: 56,
-                                              color: Colors.grey[300],
-                                              child: const Icon(
-                                                  Icons.image_not_supported),
+                                              color: colorScheme.surfaceContainerHighest,
+                                              child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
                                             );
                                           },
                                         ),
@@ -209,35 +215,33 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
                                     : Container(
                                         width: 56,
                                         height: 56,
-                                        color: Colors.grey[300],
-                                        child: const Icon(
-                                            Icons.image_not_supported),
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.surfaceContainerHighest,
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
                                       ),
                                 title: Text(
                                   gift.giftName,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 6),
                                     Row(
                                       children: [
-                                        const Icon(Icons.star,
-                                            size: 14, color: Colors.amber),
+                                        Icon(Icons.star_rounded, size: 14, color: colorScheme.primary),
                                         const SizedBox(width: 4),
                                         Text('${gift.score} 积分',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600])),
+                                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                                         if (gift.remained != null) ...[
                                           const SizedBox(width: 12),
                                           Text(
                                             '剩余 ${gift.remained}',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600]),
+                                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                                           ),
                                         ],
                                       ],
@@ -258,11 +262,12 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
   }
 
   Widget _buildActionButton(GiftModel gift, bool isActionLoading) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (isActionLoading) {
-      return const SizedBox(
+      return SizedBox(
         width: 24,
         height: 24,
-        child: CircularProgressIndicator(strokeWidth: 2),
+        child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
       );
     }
     if (_currentType == '待使用') {

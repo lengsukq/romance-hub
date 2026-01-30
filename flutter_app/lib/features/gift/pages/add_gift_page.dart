@@ -7,7 +7,7 @@ import 'package:romance_hub_flutter/core/services/gift_service.dart';
 import 'package:romance_hub_flutter/core/services/upload_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 
-/// 添加礼物页面
+/// 添心意页面
 class AddGiftPage extends StatefulWidget {
   const AddGiftPage({super.key});
 
@@ -118,24 +118,26 @@ class _AddGiftPageState extends State<AddGiftPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('添加礼物'),
+        title: const Text('添心意'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           children: [
             TextFormField(
               controller: _giftNameController,
-              decoration: const InputDecoration(
-                labelText: '礼物名称',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '赠礼名称'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '请输入礼物名称';
+                  return '请输入赠礼名称';
                 }
                 return null;
               },
@@ -145,17 +147,13 @@ class _AddGiftPageState extends State<AddGiftPage> {
               controller: _giftDescController,
               decoration: const InputDecoration(
                 labelText: '心意说明（可选）',
-                border: OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _scoreController,
-              decoration: const InputDecoration(
-                labelText: '所需积分',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '所需积分'),
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -170,13 +168,13 @@ class _AddGiftPageState extends State<AddGiftPage> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _pickImage,
-              icon: const Icon(Icons.image),
+              icon: const Icon(Icons.image_rounded),
               label: const Text('选择图片'),
             ),
             if (_selectedImage != null) ...[
               const SizedBox(height: 16),
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
                 child: Image.file(
                   _selectedImage!,
                   height: 200,
@@ -187,12 +185,16 @@ class _AddGiftPageState extends State<AddGiftPage> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitGift,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
               child: _isSubmitting
-                  ? const CircularProgressIndicator()
-                  : const Text('添加礼物'),
+                  ? SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                      ),
+                    )
+                  : const Text('添加'),
             ),
           ],
         ),

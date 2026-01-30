@@ -1,3 +1,4 @@
+import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -11,7 +12,7 @@ class UserService {
   Future<ApiResponse<UserModel>> getUserInfo() async {
     try {
       final response = await _apiService.post(
-        '/api/v1/user',
+        ApiEndpoints.user,
         data: {'action': 'info'},
       );
 
@@ -33,7 +34,7 @@ class UserService {
   Future<ApiResponse<UserModel>> getLoverInfo() async {
     try {
       final response = await _apiService.post(
-        '/api/v1/user',
+        ApiEndpoints.user,
         data: {'action': 'lover'},
       );
 
@@ -59,7 +60,7 @@ class UserService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/user',
+        ApiEndpoints.user,
         data: {
           'action': 'update',
           'data': {
@@ -85,7 +86,7 @@ class UserService {
   Future<ApiResponse<int>> getScore() async {
     try {
       final response = await _apiService.post(
-        '/api/v1/user',
+        ApiEndpoints.user,
         data: {'action': 'score'},
       );
 
@@ -107,7 +108,7 @@ class UserService {
   Future<ApiResponse<void>> logout() async {
     try {
       final response = await _apiService.post(
-        '/api/v1/user',
+        ApiEndpoints.user,
         data: {'action': 'logout'},
       );
 

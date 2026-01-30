@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
@@ -16,7 +17,7 @@ class UploadService {
       });
 
       final response = await _apiService.dio.post(
-        '/api/v1/common',
+        ApiEndpoints.common,
         data: formData,
         options: Options(
           headers: {
@@ -55,7 +56,7 @@ class UploadService {
       }
 
       final response = await _apiService.dio.post(
-        '/api/v1/common',
+        ApiEndpoints.common,
         data: formData,
         options: Options(
           headers: {

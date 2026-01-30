@@ -10,7 +10,7 @@ import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
 
-/// 留言列表页面
+/// 私语列表页面
 class WhisperListPage extends StatefulWidget {
   final String type; // 'my' or 'ta'
 
@@ -153,12 +153,17 @@ class _WhisperListPageState extends State<WhisperListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(widget.type == 'my' ? '我的私语' : 'TA的私语'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.postWhisper),
           ),
         ],
@@ -166,34 +171,36 @@ class _WhisperListPageState extends State<WhisperListPage> {
       body: _isLoading
           ? const LoadingWidget()
           : _whisperList.isEmpty
-              ? const EmptyWidget(message: '暂无留言')
+              ? const EmptyWidget(message: '暂无私语')
               : RefreshIndicator(
                   onRefresh: _loadWhispers,
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     itemCount: _whisperList.length,
                     itemBuilder: (context, index) {
                       final whisper = _whisperList[index];
                       final isFavourite = _favouriteWhisperIds.contains(whisper.whisperId);
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           title: Text(
                             whisper.content,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Text(
-                                '来自: ${whisper.fromUserName}',
-                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                '来自：${whisper.fromUserName}',
+                                style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                               ),
                               Text(
                                 whisper.creationTime,
-                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                               ),
                             ],
                           ),
@@ -202,14 +209,14 @@ class _WhisperListPageState extends State<WhisperListPage> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  isFavourite ? Icons.favorite : Icons.favorite_border,
-                                  color: isFavourite ? Colors.red : null,
+                                  isFavourite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                  color: isFavourite ? colorScheme.primary : colorScheme.onSurfaceVariant,
                                 ),
                                 onPressed: () => _toggleFavourite(whisper.whisperId),
                               ),
                               if (widget.type == 'my')
                                 IconButton(
-                                  icon: const Icon(Icons.delete_outline),
+                                  icon: Icon(Icons.delete_outline_rounded, color: colorScheme.onSurfaceVariant),
                                   onPressed: () => _deleteWhisper(whisper),
                                 ),
                             ],

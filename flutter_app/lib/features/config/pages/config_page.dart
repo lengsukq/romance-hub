@@ -162,15 +162,20 @@ class _ConfigPageState extends State<ConfigPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     if (_isLoading && _userInfo == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
       );
     }
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('设置'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           if (_isEditing)
             TextButton(
@@ -189,9 +194,9 @@ class _ConfigPageState extends State<ConfigPage> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          _buildSectionTitle('吾之信息'),
+          _buildSectionTitle(context, '吾之信息'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -206,23 +211,23 @@ class _ConfigPageState extends State<ConfigPage> {
                             onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
                             child: CircleAvatar(
                               radius: 48,
-                              backgroundColor: Colors.grey.shade200,
+                              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               backgroundImage: _avatarImageProvider,
                               child: _pickedAvatarFile == null &&
                                       _avatarController.text.isEmpty
                                   ? (_isUploadingAvatar
-                                      ? const Padding(
-                                          padding: EdgeInsets.all(24),
-                                          child: CircularProgressIndicator(),
+                                      ? Padding(
+                                          padding: const EdgeInsets.all(24),
+                                          child: CircularProgressIndicator(color: colorScheme.primary),
                                         )
-                                      : const Icon(Icons.add_a_photo, size: 40))
+                                      : Icon(Icons.add_a_photo_rounded, size: 40, color: colorScheme.onSurfaceVariant))
                                   : null,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             _isUploadingAvatar ? '上传中…' : '点击头像从相册选择',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -230,18 +235,12 @@ class _ConfigPageState extends State<ConfigPage> {
                     ),
                     TextField(
                       controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: '用户名',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: '用户名'),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _describeController,
-                      decoration: const InputDecoration(
-                        labelText: '个人描述',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: '一言'),
                       maxLines: 3,
                     ),
                     const SizedBox(height: 16),
@@ -249,26 +248,25 @@ class _ConfigPageState extends State<ConfigPage> {
                       controller: _avatarController,
                       decoration: const InputDecoration(
                         labelText: '头像URL（可选，或从相册上传）',
-                        border: OutlineInputBorder(),
                         hintText: '上传后自动填充，也可手动输入',
                       ),
                     ),
                   ] else ...[
-                    _buildInfoRow('用户名', _userInfo?.username ?? '未设置'),
-                    _buildInfoRow('邮箱', _userInfo?.userEmail ?? ''),
-                    _buildInfoRow('积分', '${_userInfo?.score ?? 0}'),
+                    _buildInfoRow(context, '用户名', _userInfo?.username ?? '未设置'),
+                    _buildInfoRow(context, '邮箱', _userInfo?.userEmail ?? ''),
+                    _buildInfoRow(context, '积分', '${_userInfo?.score ?? 0}'),
                     if (_userInfo?.describeBySelf != null && _userInfo!.describeBySelf!.isNotEmpty)
-                      _buildInfoRow('一言', _userInfo!.describeBySelf!),
+                      _buildInfoRow(context, '一言', _userInfo!.describeBySelf!),
                   ],
                 ],
               ),
             ),
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('其他设置'),
+          _buildSectionTitle(context, '其他'),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.info_outline),
+              leading: Icon(Icons.info_outline_rounded, color: colorScheme.primary),
               title: const Text('关于'),
               subtitle: const Text('锦书'),
               onTap: () {
@@ -301,22 +299,26 @@ class _ConfigPageState extends State<ConfigPage> {
     return null;
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSurface,
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -324,16 +326,16 @@ class _ConfigPageState extends State<ConfigPage> {
             width: 80,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 14),
+              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
             ),
           ),
         ],

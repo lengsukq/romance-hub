@@ -15,13 +15,17 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const radius = 24.0;
+
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(radius),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -30,31 +34,30 @@ class TaskCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       task.taskName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  _buildStatusChip(task.taskStatus),
+                  _buildStatusChip(context, task.taskStatus),
                 ],
               ),
               if (task.taskDesc != null && task.taskDesc!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   task.taskDesc!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
               if (task.taskImage.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 SizedBox(
                   height: 100,
                   child: ListView.builder(
@@ -62,9 +65,9 @@ class TaskCard extends StatelessWidget {
                     itemCount: task.taskImage.length,
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
+                        padding: const EdgeInsets.only(right: 10),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(16),
                           child: GestureDetector(
                             onTap: () {
                               Navigator.of(context).push(
@@ -85,8 +88,8 @@ class TaskCard extends StatelessWidget {
                                 return Container(
                                   width: 100,
                                   height: 100,
-                                  color: Colors.grey[300],
-                                  child: const Icon(Icons.image_not_supported),
+                                  color: colorScheme.surfaceContainerHighest,
+                                  child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
                                 );
                               },
                             ),
@@ -97,26 +100,25 @@ class TaskCard extends StatelessWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '发布者: ${task.publisherName}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
+                    '发布者：${task.publisherName}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 16, color: Colors.amber),
+                      Icon(Icons.star_rounded, size: 18, color: colorScheme.primary),
                       const SizedBox(width: 4),
                       Text(
                         '${task.taskScore}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ],
@@ -130,37 +132,38 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(String status) {
+  Widget _buildStatusChip(BuildContext context, String status) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     Color color;
     String label;
     switch (status) {
       case 'pending':
-        color = Colors.orange;
+        color = colorScheme.primary;
         label = '待接受';
         break;
       case 'accepted':
-        color = Colors.blue;
+        color = colorScheme.primary;
         label = '进行中';
         break;
       case 'completed':
-        color = Colors.green;
+        color = colorScheme.onSurfaceVariant;
         label = '已完成';
         break;
       default:
-        color = Colors.grey;
+        color = colorScheme.onSurfaceVariant;
         label = status;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 12,
+        style: theme.textTheme.labelSmall?.copyWith(
           color: color,
           fontWeight: FontWeight.w500,
         ),

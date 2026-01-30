@@ -29,7 +29,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   TaskModel? _task;
   bool _isLoading = true;
   bool _isFavourite = false;
-  int? _favId;
 
   @override
   void initState() {
@@ -80,7 +79,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         if (response.isSuccess) {
           setState(() {
             _isFavourite = false;
-            _favId = null;
           });
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +120,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       message: '确定要删除此心诺吗？',
       confirmText: '确定',
       cancelText: '取消',
-      confirmColor: Colors.red,
     );
 
     if (confirm == true) {
@@ -150,51 +147,59 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     if (_isLoading) {
-      return const Scaffold(
-        body: LoadingWidget(),
-      );
+      return const Scaffold(body: LoadingWidget());
     }
 
     if (_task == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('心诺详情')),
-        body: const Center(child: Text('任务不存在')),
+        body: Center(
+          child: Text(
+            '心诺不存在',
+            style: theme.textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+        ),
       );
     }
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('心诺详情'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            icon: Icon(_isFavourite ? Icons.favorite : Icons.favorite_border),
-            color: _isFavourite ? Colors.red : null,
+            icon: Icon(_isFavourite ? Icons.favorite_rounded : Icons.favorite_border_rounded),
+            color: _isFavourite ? colorScheme.primary : colorScheme.onSurfaceVariant,
             onPressed: _toggleFavourite,
           ),
           IconButton(
-            icon: const Icon(Icons.delete),
+            icon: Icon(Icons.delete_outline_rounded, color: colorScheme.onSurfaceVariant),
             onPressed: _deleteTask,
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               _task!.taskName,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 16),
             if (_task!.taskDesc != null && _task!.taskDesc!.isNotEmpty) ...[
               Text(
                 _task!.taskDesc!,
-                style: const TextStyle(fontSize: 16),
+                style: theme.textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
               ),
               const SizedBox(height: 16),
             ],
@@ -206,7 +211,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                   itemCount: _task!.taskImage.length,
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.only(right: 12),
                       child: GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
@@ -219,7 +224,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                           );
                         },
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(16),
                           child: Image.network(
                             _task!.taskImage[index],
                             width: 200,
@@ -228,8 +233,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                               return Container(
                                 width: 200,
                                 height: 200,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.image_not_supported),
+                                color: colorScheme.surfaceContainerHighest,
+                                child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
                               );
                             },
                           ),
@@ -241,21 +246,23 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               ),
               const SizedBox(height: 16),
             ],
-            _buildInfoRow('发布者', _task!.publisherName),
-            _buildInfoRow('状态', _getStatusText(_task!.taskStatus)),
-            _buildInfoRow('积分', '${_task!.taskScore}'),
-            _buildInfoRow('创建时间', _task!.creationTime),
+            _buildInfoRow(context, '发布者', _task!.publisherName),
+            _buildInfoRow(context, '状态', _getStatusText(_task!.taskStatus)),
+            _buildInfoRow(context, '积分', '${_task!.taskScore}'),
+            _buildInfoRow(context, '创建时间', _task!.creationTime),
             if (_task!.completionTime != null)
-              _buildInfoRow('完成时间', _task!.completionTime!),
+              _buildInfoRow(context, '完成时间', _task!.completionTime!),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -263,16 +270,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             width: 80,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 14),
+              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
             ),
           ),
         ],

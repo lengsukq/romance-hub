@@ -1,3 +1,4 @@
+import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/gift_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -11,7 +12,7 @@ class GiftService {
   Future<ApiResponse<List<GiftModel>>> getGiftList({String? searchWords}) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/gift',
+        ApiEndpoints.gift,
         data: {
           'action': 'list',
           'data': {'searchWords': searchWords ?? ''},
@@ -44,7 +45,7 @@ class GiftService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/gift',
+        ApiEndpoints.gift,
         data: {
           'action': 'mylist',
           'data': {
@@ -82,7 +83,7 @@ class GiftService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/gift',
+        ApiEndpoints.gift,
         data: {
           'action': 'create',
           'data': {
@@ -109,7 +110,7 @@ class GiftService {
   Future<ApiResponse<void>> exchangeGift(int giftId) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/gift',
+        ApiEndpoints.gift,
         data: {
           'action': 'exchange',
           'data': {'giftId': giftId},
@@ -131,7 +132,7 @@ class GiftService {
   Future<ApiResponse<void>> useGift(int giftId) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/gift',
+        ApiEndpoints.gift,
         data: {
           'action': 'use',
           'data': {'giftId': giftId},
@@ -156,7 +157,7 @@ class GiftService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/gift',
+        ApiEndpoints.gift,
         data: {
           'action': 'show',
           'data': {

@@ -8,7 +8,7 @@ import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
 
-/// 收藏列表页面
+/// 藏心列表页面
 class FavouriteListPage extends StatefulWidget {
   final String type; // 'task', 'gift', 'whisper'
 
@@ -105,28 +105,40 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(_getTitle()),
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: _isLoading
           ? const LoadingWidget()
           : _favouriteList.isEmpty
-              ? const EmptyWidget(message: '暂无收藏')
+              ? const EmptyWidget(message: '暂无藏心')
               : RefreshIndicator(
                   onRefresh: _loadFavourites,
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     itemCount: _favouriteList.length,
                     itemBuilder: (context, index) {
                       final favourite = _favouriteList[index];
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
-                          title: Text(_getItemTitle(favourite)),
-                          subtitle: Text(_getItemSubtitle(favourite)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          title: Text(
+                            _getItemTitle(favourite),
+                            style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+                          ),
+                          subtitle: Text(
+                            _getItemSubtitle(favourite),
+                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
                           trailing: IconButton(
-                            icon: const Icon(Icons.favorite, color: Colors.red),
+                            icon: Icon(Icons.favorite_rounded, color: colorScheme.primary),
                             onPressed: () => _removeFavourite(favourite),
                           ),
                         ),
@@ -175,7 +187,7 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
         return '积分: ${gift.score}';
       case FavouriteType.whisper:
         final whisper = favourite.item as WhisperModel;
-        return '来自: ${whisper.fromUserName}';
+        return '来自：${whisper.fromUserName}';
     }
   }
 }

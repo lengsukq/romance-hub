@@ -128,17 +128,21 @@ class _GiftListPageState extends State<GiftListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('赠礼一览'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           TextButton.icon(
             onPressed: () => context.go(AppRoutes.myGifts),
-            icon: const Icon(Icons.inventory_2, size: 20),
-            label: const Text('我的礼物'),
+            icon: const Icon(Icons.inventory_2_rounded, size: 20),
+            label: const Text('我的赠礼'),
           ),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.addGift),
           ),
         ],
@@ -146,103 +150,98 @@ class _GiftListPageState extends State<GiftListPage> {
       body: _isLoading
           ? const LoadingWidget()
           : _giftList.isEmpty
-              ? const EmptyWidget(message: '暂无礼物')
+              ? const EmptyWidget(message: '暂无赠礼')
               : RefreshIndicator(
                   onRefresh: _loadGifts,
                   child: GridView.builder(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                       childAspectRatio: 0.75,
                     ),
                     itemCount: _giftList.length,
                     itemBuilder: (context, index) {
                       final gift = _giftList[index];
+                      final theme = Theme.of(context);
+                      final colorScheme = theme.colorScheme;
                       return Card(
+                        clipBehavior: Clip.antiAlias,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: gift.giftImage != null
-                                  ? ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(8),
-                                      ),
-                                      child: Image.network(
-                                        gift.giftImage!,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            color: Colors.grey[300],
-                                            child: const Icon(Icons.image_not_supported),
-                                          );
-                                        },
-                                      ),
+                                  ? Image.network(
+                                      gift.giftImage!,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: colorScheme.surfaceContainerHighest,
+                                          child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
+                                        );
+                                      },
                                     )
                                   : Container(
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.image_not_supported),
+                                      color: colorScheme.surfaceContainerHighest,
+                                      child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
                                     ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(12),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     gift.giftName,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: colorScheme.onSurface,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 4),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.star, size: 16, color: Colors.amber),
-                                            const SizedBox(width: 4),
-                                            Text('${gift.score}'),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(
-                                                _favouriteGiftIds.contains(gift.giftId)
-                                                    ? Icons.favorite
-                                                    : Icons.favorite_border,
-                                                size: 20,
-                                                color: _favouriteGiftIds.contains(gift.giftId)
-                                                    ? Colors.red
-                                                    : null,
-                                              ),
-                                              onPressed: () => _toggleFavourite(gift.giftId),
-                                              padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.star_rounded, size: 18, color: colorScheme.primary),
+                                          const SizedBox(width: 4),
+                                          Text('${gift.score}', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface)),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              _favouriteGiftIds.contains(gift.giftId)
+                                                  ? Icons.favorite_rounded
+                                                  : Icons.favorite_border_rounded,
+                                              size: 20,
+                                              color: _favouriteGiftIds.contains(gift.giftId)
+                                                  ? colorScheme.primary
+                                                  : colorScheme.onSurfaceVariant,
                                             ),
-                                            const SizedBox(width: 4),
-                                            ElevatedButton(
-                                              onPressed: () => _exchangeGift(gift.giftId),
-                                              style: ElevatedButton.styleFrom(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 4,
-                                                ),
-                                              ),
-                                              child: const Text('兑换'),
+                                            onPressed: () => _toggleFavourite(gift.giftId),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          ElevatedButton(
+                                            onPressed: () => _exchangeGift(gift.giftId),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                             ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                            child: const Text('兑换'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),

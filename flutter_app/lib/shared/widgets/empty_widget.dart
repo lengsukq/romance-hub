@@ -13,21 +13,22 @@ class EmptyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            icon ?? Icons.inbox_outlined,
+            icon ?? Icons.inbox_rounded,
             size: 64,
-            color: Colors.grey[400],
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             message ?? '暂无数据',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],

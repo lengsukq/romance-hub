@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -12,7 +13,7 @@ class AuthService {
   Future<ApiResponse<UserModel>> login(String username, String password) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/user',
+        ApiEndpoints.user,
         data: {
           'action': 'login',
           'data': {
@@ -43,10 +44,17 @@ class AuthService {
       final apiResponse = ApiResponse<UserModel>(code: code, msg: msg, data: userData);
 
       if (apiResponse.isSuccess && apiResponse.data != null) {
-        // 保存 cookie（从响应头获取）
-        final setCookieHeaders = response.headers['set-cookie'];
-        if (setCookieHeaders != null && setCookieHeaders.isNotEmpty) {
-          await _apiService.saveCookie(setCookieHeaders.first);
+        // 保存所有 cookie（服务端 middleware 需要 cookie=JSON 与 name=JWT 两个 cookie）
+        final raw = response.headers['set-cookie'] ?? response.headers['Set-Cookie'];
+        List<String> list = raw != null ? List<String>.from(raw as List) : <String>[];
+        if (list.length == 1 && list[0].contains(', ')) {
+          list = list[0].split(', ').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        }
+        final parts = list
+            .map((v) => v.contains(';') ? v.split(';').first.trim() : v.trim())
+            .where((s) => s.isNotEmpty);
+        if (parts.isNotEmpty) {
+          await _apiService.saveCookie(parts.join('; '));
         }
       }
 
@@ -99,7 +107,7 @@ class AuthService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/user',
+        ApiEndpoints.user,
         data: {
           'action': 'register',
           'data': {

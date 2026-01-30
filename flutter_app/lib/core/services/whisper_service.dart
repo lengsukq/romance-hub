@@ -1,3 +1,4 @@
+import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/whisper_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -11,7 +12,7 @@ class WhisperService {
   Future<ApiResponse<List<WhisperModel>>> getMyWhisperList({String? searchWords}) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/whisper',
+        ApiEndpoints.whisper,
         data: {
           'action': 'mylist',
           'data': {'searchWords': searchWords ?? ''},
@@ -41,7 +42,7 @@ class WhisperService {
   Future<ApiResponse<List<WhisperModel>>> getTAWhisperList({String? searchWords}) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/whisper',
+        ApiEndpoints.whisper,
         data: {
           'action': 'talist',
           'data': {'searchWords': searchWords ?? ''},
@@ -74,7 +75,7 @@ class WhisperService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/whisper',
+        ApiEndpoints.whisper,
         data: {
           'action': 'create',
           'data': {
@@ -99,7 +100,7 @@ class WhisperService {
   Future<ApiResponse<void>> deleteWhisper(int whisperId) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/whisper',
+        ApiEndpoints.whisper,
         data: {
           'action': 'delete',
           'data': {'whisperId': whisperId},

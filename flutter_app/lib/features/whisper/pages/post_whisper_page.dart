@@ -4,7 +4,7 @@ import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/whisper_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 
-/// 发布留言页面
+/// 写私语页面
 class PostWhisperPage extends StatefulWidget {
   const PostWhisperPage({super.key});
 
@@ -68,26 +68,30 @@ class _PostWhisperPageState extends State<PostWhisperPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('写私语'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           children: [
             TextFormField(
               controller: _contentController,
               decoration: const InputDecoration(
-                labelText: '留言内容',
-                border: OutlineInputBorder(),
-                hintText: '写下你想说的话...',
+                labelText: '私语内容',
+                hintText: '写下你想说的话…',
               ),
               maxLines: 10,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '请输入留言内容';
+                  return '请输入私语内容';
                 }
                 return null;
               },
@@ -95,12 +99,16 @@ class _PostWhisperPageState extends State<PostWhisperPage> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitWhisper,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
               child: _isSubmitting
-                  ? const CircularProgressIndicator()
-                  : const Text('发布留言'),
+                  ? SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                      ),
+                    )
+                  : const Text('发布'),
             ),
           ],
         ),

@@ -1,3 +1,4 @@
+import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -16,7 +17,7 @@ class TaskService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/task',
+        ApiEndpoints.task,
         data: {
           'action': 'list',
           'data': {
@@ -51,7 +52,7 @@ class TaskService {
   Future<ApiResponse<TaskModel>> getTaskDetail(int taskId) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/task',
+        ApiEndpoints.task,
         data: {
           'action': 'detail',
           'data': {'taskId': taskId},
@@ -81,7 +82,7 @@ class TaskService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/task',
+        ApiEndpoints.task,
         data: {
           'action': 'create',
           'data': {
@@ -111,7 +112,7 @@ class TaskService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/task',
+        ApiEndpoints.task,
         data: {
           'action': 'update',
           'data': {
@@ -136,7 +137,7 @@ class TaskService {
   Future<ApiResponse<void>> deleteTask(int taskId) async {
     try {
       final response = await _apiService.post(
-        '/api/v1/task',
+        ApiEndpoints.task,
         data: {
           'action': 'delete',
           'data': {'taskId': taskId},

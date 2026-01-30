@@ -90,12 +90,12 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
             const { userId, userEmail, lover, score } = result;
             const oneDay = 60 * 1000 * 60 * 24 * 365;
             const cookie = encryptData({
-                userEmail: userEmail, 
-                userId: userId, 
-                userName: username, 
+                userEmail: userEmail,
+                userId: userId,
+                userName: username,
                 lover: lover
             });
-            
+
             (await cookies()).set({
                 name: userEmail,
                 value: cookie,
@@ -103,11 +103,18 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
                 path: '/',
                 expires: Date.now() + oneDay
             });
-            
-            return NextResponse.json(BizResult.success(result, '登录成功'), {
-                status: 200,
-                headers: {'Set-Cookie': `cookie=${JSON.stringify((await cookies()).get(userEmail))}`},
+
+            const expiresUtc = new Date(Date.now() + oneDay).toUTCString();
+            const cookieNameEnc = encodeURIComponent(userEmail);
+            const cookieJson = JSON.stringify({
+                name: cookieNameEnc,
+                value: cookie,
+                expires: expiresUtc
             });
+            const res = NextResponse.json(BizResult.success(result, '登录成功'), { status: 200 });
+            res.headers.append('Set-Cookie', `cookie=${encodeURIComponent(cookieJson)}; Path=/; Max-Age=${365 * 24 * 60 * 60}; SameSite=Lax`);
+            res.headers.append('Set-Cookie', `${cookieNameEnc}=${encodeURIComponent(cookie)}; Path=/; Max-Age=${365 * 24 * 60 * 60}; SameSite=Lax`);
+            return res;
         } else {
             return NextResponse.json(BizResult.fail('', '用户名或密码错误'));
         }
