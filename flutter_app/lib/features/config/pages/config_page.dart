@@ -43,12 +43,14 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   Future<void> _loadUserInfo() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
 
     try {
       final response = await _userService.getUserInfo();
+      if (!mounted) return;
       if (response.isSuccess && response.data != null) {
         setState(() {
           _userInfo = response.data;
@@ -62,17 +64,17 @@ class _ConfigPageState extends State<ConfigPage> {
         setState(() {
           _isLoading = false;
         });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.msg)),
+        );
       }
     } catch (e) {
       AppLogger.e('加载用户信息失败', e);
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -87,7 +89,8 @@ class _ConfigPageState extends State<ConfigPage> {
       });
 
       final uploadRes = await _uploadService.uploadImage(File(image.path));
-      if (uploadRes.isSuccess && uploadRes.data != null && mounted) {
+      if (!mounted) return;
+      if (uploadRes.isSuccess && uploadRes.data != null) {
         setState(() {
           _avatarController.text = uploadRes.data!;
           _isUploadingAvatar = false;
@@ -96,14 +99,12 @@ class _ConfigPageState extends State<ConfigPage> {
           const SnackBar(content: Text('头像上传成功，请点击保存')),
         );
       } else {
-        if (mounted) {
-          setState(() {
-            _isUploadingAvatar = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(uploadRes.msg)),
-          );
-        }
+        setState(() {
+          _isUploadingAvatar = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(uploadRes.msg)),
+        );
       }
     } catch (e) {
       AppLogger.e('选择或上传头像失败', e);
@@ -119,6 +120,7 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   Future<void> _saveUserInfo() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -130,33 +132,32 @@ class _ConfigPageState extends State<ConfigPage> {
         avatar: _avatarController.text.isEmpty ? null : _avatarController.text,
       );
 
+      if (!mounted) return;
       if (response.isSuccess) {
         setState(() {
           _isEditing = false;
           _isLoading = false;
           _pickedAvatarFile = null;
         });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('保存成功')),
-          );
-          _loadUserInfo();
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('保存成功')),
+        );
+        _loadUserInfo();
       } else {
         setState(() {
           _isLoading = false;
         });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.msg)),
+        );
       }
     } catch (e) {
       AppLogger.e('保存用户信息失败', e);
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -226,7 +227,7 @@ class _ConfigPageState extends State<ConfigPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _isUploadingAvatar ? '上传中…' : '点击头像从相册选择',
+                            _isUploadingAvatar ? '上传中…' : '仅支持从相册上传',
                             style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                           const SizedBox(height: 16),
@@ -242,14 +243,6 @@ class _ConfigPageState extends State<ConfigPage> {
                       controller: _describeController,
                       decoration: const InputDecoration(labelText: '一言'),
                       maxLines: 3,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _avatarController,
-                      decoration: const InputDecoration(
-                        labelText: '头像URL（可选，或从相册上传）',
-                        hintText: '上传后自动填充，也可手动输入',
-                      ),
                     ),
                   ] else ...[
                     _buildInfoRow(context, '用户名', _userInfo?.username ?? '未设置'),

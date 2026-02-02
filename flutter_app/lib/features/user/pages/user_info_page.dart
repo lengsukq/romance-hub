@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:romance_hub_flutter/core/auth/auth_notifier.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
-import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/core/services/user_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/core/utils/snackbar_utils.dart';
 import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/features/user/widgets/cloud_section_card.dart';
+import 'package:romance_hub_flutter/features/user/widgets/edit_user_info_dialog.dart';
 import 'package:romance_hub_flutter/features/user/widgets/info_row_card.dart';
 import 'package:romance_hub_flutter/features/user/widgets/section_title.dart';
 import 'package:romance_hub_flutter/features/user/widgets/user_avatar.dart';
@@ -32,6 +31,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   UserModel? _loverInfo;
   bool _isLoading = true;
   String _baseUrl = '';
+  int _avatarCacheKey = 0;
 
   @override
   void initState() {
@@ -64,23 +64,34 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   Future<void> _loadUserInfo() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
       final userResponse = await _userService.getUserInfo();
+      if (!mounted) return;
       if (userResponse.isSuccess && userResponse.data != null) {
-        setState(() => _userInfo = userResponse.data);
+        setState(() {
+          _userInfo = userResponse.data;
+          _avatarCacheKey = DateTime.now().millisecondsSinceEpoch;
+        });
       }
 
       final loverResponse = await _userService.getLoverInfo();
+      if (!mounted) return;
       if (loverResponse.isSuccess && loverResponse.data != null) {
         setState(() => _loverInfo = loverResponse.data);
       }
     } catch (e) {
       AppLogger.e('加载用户信息失败', e);
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String? _avatarUrlWithCacheBuster(String? url) {
+    if (url == null || url.isEmpty) return null;
+    return '$url${url.contains('?') ? '&' : '?'}t=$_avatarCacheKey';
   }
 
   Future<void> _logout() async {
@@ -115,10 +126,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            onPressed: () => context.go(AppRoutes.config),
-          ),
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: _logout,
@@ -169,13 +176,33 @@ class _UserInfoPageState extends State<UserInfoPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: SectionTitle(title: '吾之信息', verse: ClassicVerses.ziJin),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: SectionTitle(title: '吾之信息', verse: ClassicVerses.ziJin),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final saved = await EditUserInfoDialog.show(context, _userInfo!);
+                        if (saved == true && mounted) _loadUserInfo();
+                      },
+                      icon: Icon(Icons.edit_rounded, size: 18, color: colorScheme.primary),
+                      label: Text('编辑', style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: UserAvatar(avatarUrl: _userInfo!.avatar),
+                child: UserAvatar(avatarUrl: _avatarUrlWithCacheBuster(_userInfo!.avatar)),
               ),
             ),
             SliverPadding(
