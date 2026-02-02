@@ -19,7 +19,7 @@ dependencies:
   
   # 本地存储
   shared_preferences: ^2.2.2
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^10.0.0
   
   # UI 组件
   cupertino_icons: ^1.0.6
@@ -28,11 +28,11 @@ dependencies:
   json_annotation: ^4.8.1
   
   # 路由管理
-  go_router: ^13.0.0
+  go_router: ^17.0.1
   
   # 表单验证（9.x 兼容 Dart 3.6，与 CI Flutter 3.27 一致）
-  flutter_form_builder: ^9.7.0
-  form_builder_validators: ^10.0.0
+  flutter_form_builder: ^10.3.0+1
+  form_builder_validators: ^11.2.0
   
   # 工具类（intl 由 flutter_localizations 传递，无需重复声明）
   logger: ^2.0.2+1
@@ -43,7 +43,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^6.0.0
   build_runner: ^2.4.7
   json_serializable: ^6.7.1
 

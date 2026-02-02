@@ -1,11 +1,11 @@
 {
-    "name": "romance_hub_flutter",
-    "short_name": "romance_hub_flutter",
+    "name": "锦书",
+    "short_name": "锦书",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "两心相知，一事一诺。全端通用应用。",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

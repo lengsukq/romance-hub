@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="romance_hub_flutter"
+        android:label="锦书"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

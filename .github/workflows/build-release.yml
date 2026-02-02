@@ -192,12 +192,9 @@ jobs:
     name: 创建 GitHub Release
     runs-on: ubuntu-latest
     needs: [prepare, build-android, build-windows, build-macos, build-linux]
+    # 任意一个平台构建成功即发布（其余可失败或未勾选）
     if: |
       always() &&
-      (needs.build-android.result == 'success' || needs.build-android.result == 'skipped') &&
-      (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped') &&
-      (needs.build-macos.result == 'success' || needs.build-macos.result == 'skipped') &&
-      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
       (needs.build-android.result == 'success' || needs.build-windows.result == 'success' || needs.build-macos.result == 'success' || needs.build-linux.result == 'success')
     permissions:
       contents: write

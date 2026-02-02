@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "romance_hub_flutter" "\0"
+            VALUE "FileDescription", "锦书" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "romance_hub_flutter" "\0"
+            VALUE "InternalName", "锦书" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "romance_hub_flutter.exe" "\0"
-            VALUE "ProductName", "romance_hub_flutter" "\0"
+            VALUE "ProductName", "锦书" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
