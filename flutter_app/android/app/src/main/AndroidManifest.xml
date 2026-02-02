@@ -2,7 +2,9 @@
     <application
         android:label="锦书"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- 允许 HTTP，便于本地/内网云阁地址（如 http://192.168.x.x:3000） -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

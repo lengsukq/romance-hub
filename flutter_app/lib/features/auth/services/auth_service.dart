@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
@@ -60,8 +61,9 @@ class AuthService {
 
       return apiResponse;
     } on DioException catch (e) {
-      final msg = _loginDioErrorMessage(e);
-      AppLogger.e('登录失败', e);
+      final baseUrl = await AppConfig.getBaseUrl();
+      final msg = _loginDioErrorMessage(e, baseUrl);
+      AppLogger.e('登录失败 baseUrl=$baseUrl', e);
       return ApiResponse(code: 500, msg: msg);
     } catch (e, stack) {
       AppLogger.e('登录失败', e);
@@ -73,11 +75,11 @@ class AuthService {
     }
   }
 
-  String _loginDioErrorMessage(DioException e) {
+  String _loginDioErrorMessage(DioException e, String baseUrl) {
     switch (e.type) {
       case DioExceptionType.connectionError:
       case DioExceptionType.connectionTimeout:
-        return '无法连接云阁，请检查网络与云阁地址';
+        return '无法连接云阁（当前地址: $baseUrl），请检查网络与云阁地址';
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
         return '连接超时，请稍后重试';

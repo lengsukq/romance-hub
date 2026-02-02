@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
@@ -26,6 +29,14 @@ class ApiService {
     return _instance!;
   }
 
+  /// 是否为本机/内网地址（用于放宽 HTTPS 证书校验，便于本地云阁）
+  static bool _isLocalOrPrivateHost(String host) {
+    if (host.isEmpty) return false;
+    if (host == 'localhost' || host == '127.0.0.1') return true;
+    if (host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')) return true;
+    return false;
+  }
+
   /// 初始化 Dio 配置
   void _initializeDio() {
     _dio.options = BaseOptions(
@@ -36,20 +47,31 @@ class ApiService {
       },
     );
 
+    // 本地/内网 HTTPS 自签名证书时放宽校验，公网仍严格校验
+    final adapter = IOHttpClientAdapter();
+    adapter.onHttpClientCreate = (client) {
+      client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+        return _isLocalOrPrivateHost(host);
+      };
+      return client;
+    };
+    _dio.httpClientAdapter = adapter;
+
     // 添加请求拦截器
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         // 动态获取 baseUrl
         final baseUrl = await AppConfig.getBaseUrl();
         options.baseUrl = baseUrl;
-        
+
         // 添加 cookie（如果存在）
         final cookie = await _getCookie();
         if (cookie != null) {
           options.headers['Cookie'] = cookie;
         }
-        
-        AppLogger.d('请求: ${options.method} ${options.path}');
+
+        final fullUrl = (baseUrl.endsWith('/') ? baseUrl : '$baseUrl/') + (options.path.startsWith('/') ? options.path.substring(1) : options.path);
+        AppLogger.d('请求: ${options.method} $fullUrl');
         return handler.next(options);
       },
       onResponse: (response, handler) {
@@ -61,7 +83,9 @@ class ApiService {
           await ApiService().clearCookie();
           _on401?.call();
         }
-        AppLogger.e('错误: ${error.message}');
+        final uri = error.requestOptions.uri.toString();
+        AppLogger.e('请求失败: ${error.type} ${error.message}', error);
+        AppLogger.d('失败 URL: $uri');
         return handler.next(error);
       },
     ));
