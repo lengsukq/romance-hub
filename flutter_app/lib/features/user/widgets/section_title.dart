@@ -22,6 +22,7 @@ class SectionTitle extends StatelessWidget {
             title,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
               color: colorScheme.onSurface,
             ),
           ),
@@ -32,6 +33,7 @@ class SectionTitle extends StatelessWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
                 fontStyle: FontStyle.italic,
+                letterSpacing: 0.3,
               ),
             ),
           ],

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/sweet_talk_service.dart';
+import 'package:romance_hub_flutter/core/utils/snackbar_utils.dart';
 
 /// 首页：入口导航 + 情话展示，无切换动画（由 StatefulShellRoute 保证）
 class HomePage extends StatefulWidget {
@@ -29,6 +31,17 @@ class _HomePageState extends State<HomePage> {
         _sweetTalkLoading = false;
       });
     }
+  }
+
+  void _copySweetTalk(BuildContext context) {
+    if (_sweetTalk == null || _sweetTalk!.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: _sweetTalk!));
+    SnackBarUtils.showSuccess(context, '已复制到剪贴板');
+  }
+
+  void _refreshSweetTalk() {
+    setState(() => _sweetTalkLoading = true);
+    _loadSweetTalk();
   }
 
   @override
@@ -241,6 +254,33 @@ class _HomePageState extends State<HomePage> {
               color: colorScheme.onSurface,
               height: 1.55,
             ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () => _copySweetTalk(context),
+                icon: Icon(Icons.copy_rounded, size: 18, color: colorScheme.primary),
+                label: Text('复制', style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: _refreshSweetTalk,
+                icon: Icon(Icons.refresh_rounded, size: 18, color: colorScheme.primary),
+                label: Text('更新', style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
           ),
         ],
       ),

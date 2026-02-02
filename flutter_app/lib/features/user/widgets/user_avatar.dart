@@ -9,17 +9,22 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    if (avatarUrl == null || avatarUrl!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Center(
-        child: CircleAvatar(
-          radius: 48,
-          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          backgroundImage: NetworkImage(avatarUrl!),
-        ),
+    const double radius = 48;
+
+    return Center(
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        backgroundImage: (avatarUrl != null && avatarUrl!.isNotEmpty)
+            ? NetworkImage(avatarUrl!)
+            : null,
+        child: (avatarUrl == null || avatarUrl!.isEmpty)
+            ? Icon(
+                Icons.person_rounded,
+                size: 48,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              )
+            : null,
       ),
     );
   }

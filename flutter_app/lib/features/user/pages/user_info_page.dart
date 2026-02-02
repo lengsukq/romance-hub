@@ -103,12 +103,15 @@ class _UserInfoPageState extends State<UserInfoPage> {
       return const Scaffold(body: LoadingWidget());
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('吾心'),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
@@ -122,35 +125,99 @@ class _UserInfoPageState extends State<UserInfoPage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        children: [
-          SectionTitle(title: '云阁', verse: ClassicVerses.jianJia),
-          CloudSectionCard(baseUrl: _baseUrl, onConfig: _showConfigDialog),
-          const SizedBox(height: 24),
-          if (_userInfo != null) ...[
-            SectionTitle(title: '吾之信息', verse: ClassicVerses.ziJin),
-            UserAvatar(avatarUrl: _userInfo!.avatar),
-            InfoRowCard(
-              label: '用户名',
-              value: _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '吾心',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    ClassicVerses.xiSang,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            InfoRowCard(label: '邮箱', value: _userInfo!.userEmail),
-            InfoRowCard(label: '积分', value: '${_userInfo!.score}'),
-            if (_userInfo!.describeBySelf != null)
-              InfoRowCard(label: '一言', value: _userInfo!.describeBySelf!),
-            const SizedBox(height: 24),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: SectionTitle(title: '云阁', verse: ClassicVerses.jianJia),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: CloudSectionCard(baseUrl: _baseUrl, onConfig: _showConfigDialog),
+            ),
+          ),
+          if (_userInfo != null) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: SectionTitle(title: '吾之信息', verse: ClassicVerses.ziJin),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: UserAvatar(avatarUrl: _userInfo!.avatar),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  InfoRowCard(
+                    label: '用户名',
+                    value: _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username,
+                  ),
+                  InfoRowCard(label: '邮箱', value: _userInfo!.userEmail),
+                  InfoRowCard(label: '积分', value: '${_userInfo!.score}'),
+                  if (_userInfo!.describeBySelf != null)
+                    InfoRowCard(label: '一言', value: _userInfo!.describeBySelf!),
+                ]),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
           if (_loverInfo != null) ...[
-            SectionTitle(title: '良人信息', verse: ClassicVerses.chouMou),
-            InfoRowCard(
-              label: '用户名',
-              value: _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: SectionTitle(title: '良人信息', verse: ClassicVerses.chouMou),
+              ),
             ),
-            InfoRowCard(label: '邮箱', value: _loverInfo!.userEmail),
-            if (_loverInfo!.describeBySelf != null)
-              InfoRowCard(label: '一言', value: _loverInfo!.describeBySelf!),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  InfoRowCard(
+                    label: '用户名',
+                    value: _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username,
+                  ),
+                  InfoRowCard(label: '邮箱', value: _loverInfo!.userEmail),
+                  if (_loverInfo!.describeBySelf != null)
+                    InfoRowCard(label: '一言', value: _loverInfo!.describeBySelf!),
+                ]),
+              ),
+            ),
           ],
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );
