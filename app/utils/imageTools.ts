@@ -40,17 +40,22 @@ export async function upImgMain(fileData: UploadFileData, userEmail: string): Pr
             }
         }
 
+        const effectiveConfig = config;
+        if (!effectiveConfig) {
+            throw new Error('未设置图床，请先在「设置」中配置图床');
+        }
+
         const upImgObj: Record<string, UploadFunction> = {
             "smms": (fileData: any, config: any) => upImgBySM(fileData, config),
             "imgbb": (fileData: any, config: any) => upImgByImgBB(fileData, config),
         };
 
-        const bedType = (config.bedType || '').toLowerCase();
+        const bedType = (effectiveConfig.bedType || '').toLowerCase();
         if (!upImgObj[bedType]) {
-            throw new Error(`不支持的图床类型: ${config.bedType}`);
+            throw new Error(`不支持的图床类型: ${effectiveConfig.bedType}`);
         }
 
-        return await upImgObj[bedType](fileData, config);
+        return await upImgObj[bedType](fileData, effectiveConfig);
     } catch (error) {
         console.error('图片上传失败:', error);
         const message = error instanceof Error ? error.message : '图床上传失败，请检查图床配置或网络';
