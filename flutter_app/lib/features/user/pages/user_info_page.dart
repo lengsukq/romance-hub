@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:romance_hub_flutter/core/auth/auth_notifier.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -69,6 +71,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
     try {
       final userResponse = await _userService.getUserInfo();
+      AppLogger.i('[吾之信息-获取] isSuccess=${userResponse.isSuccess}, code=${userResponse.code}, msg=${userResponse.msg}');
+      if (userResponse.data != null) {
+        final u = userResponse.data!;
+        AppLogger.i('[吾之信息-获取数据] userId=${u.userId}, username=${u.username}, avatar=${u.avatar ?? "(空)"}, describeBySelf=${u.describeBySelf ?? "(空)"}');
+      }
       if (!mounted) return;
       if (userResponse.isSuccess && userResponse.data != null) {
         setState(() {
@@ -127,8 +134,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
         scrolledUnderElevation: 0,
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings_rounded),
+            onPressed: () => context.go(AppRoutes.config),
+            tooltip: '设置',
+          ),
+          IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: _logout,
+            tooltip: '退出',
           ),
         ],
       ),
@@ -170,6 +183,23 @@ class _UserInfoPageState extends State<UserInfoPage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
               child: CloudSectionCard(baseUrl: _baseUrl, onConfig: _showConfigDialog),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: SectionTitle(title: '设置', verse: '与良人共用'),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: _SettingsTile(
+                title: '图床设置',
+                subtitle: '未设置则无法上传图片',
+                icon: Icons.cloud_rounded,
+                onTap: () => context.go(AppRoutes.config),
+              ),
             ),
           ),
           if (_userInfo != null) ...[
@@ -246,6 +276,86 @@ class _UserInfoPageState extends State<UserInfoPage> {
           ],
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
+      ),
+    );
+  }
+}
+
+/// 设置入口长条：与首页入口风格一致
+class _SettingsTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const radius = 24.0;
+
+    return Material(
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      borderRadius: BorderRadius.circular(radius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(radius),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(
+              color: colorScheme.outline.withValues(alpha: 0.4),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: colorScheme.primary, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colorScheme.onSurfaceVariant,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

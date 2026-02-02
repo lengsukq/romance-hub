@@ -24,4 +24,7 @@ class ApiEndpoints {
 
   /// 通用：上传等
   static String get common => '$_base/common';
+
+  /// 配置：图床 / 通知 / 系统
+  static String get config => '$_base/config';
 }

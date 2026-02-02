@@ -70,7 +70,8 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
 
       final uploadRes = await _uploadService.uploadImage(File(image.path));
       if (!mounted) return;
-      if (uploadRes.isSuccess && uploadRes.data != null) {
+      AppLogger.i('[吾之信息-头像上传] isSuccess=${uploadRes.isSuccess}, code=${uploadRes.code}, msg=${uploadRes.msg}, url=${uploadRes.data ?? "(空)"}');
+      if (uploadRes.isSuccess && uploadRes.data != null && uploadRes.data!.isNotEmpty) {
         setState(() {
           _avatarController.text = uploadRes.data!;
           _isUploadingAvatar = false;
@@ -78,7 +79,7 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
         SnackBarUtils.showSuccess(context, '头像上传成功，请点击保存');
       } else {
         setState(() => _isUploadingAvatar = false);
-        SnackBarUtils.showError(context, uploadRes.msg);
+        SnackBarUtils.showError(context, uploadRes.msg.isNotEmpty ? uploadRes.msg : '头像上传失败，未拿到图片地址');
       }
     } catch (e) {
       AppLogger.e('选择或上传头像失败', e);
@@ -93,12 +94,20 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
     if (!mounted) return;
     setState(() => _isSaving = true);
 
+    final username = _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim();
+    final describeBySelf = _describeController.text.trim().isEmpty ? null : _describeController.text.trim();
+    final avatar = _avatarController.text.trim().isEmpty ? null : _avatarController.text.trim();
+
+    AppLogger.i('[吾之信息-上传] username=$username, describeBySelf=$describeBySelf, avatar=${avatar != null ? avatar : "(空)"}');
+
     try {
       final response = await _userService.updateUserInfo(
-        username: _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
-        describeBySelf: _describeController.text.trim().isEmpty ? null : _describeController.text.trim(),
-        avatar: _avatarController.text.trim().isEmpty ? null : _avatarController.text.trim(),
+        username: username,
+        describeBySelf: describeBySelf,
+        avatar: avatar,
       );
+
+      AppLogger.i('[吾之信息-上传响应] isSuccess=${response.isSuccess}, code=${response.code}, msg=${response.msg}');
 
       if (!mounted) return;
       if (response.isSuccess) {

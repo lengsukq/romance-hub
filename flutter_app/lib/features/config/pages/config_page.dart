@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:romance_hub_flutter/core/models/image_bed_model.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
-import 'package:romance_hub_flutter/core/services/user_service.dart';
+import 'package:romance_hub_flutter/core/services/config_service.dart';
 import 'package:romance_hub_flutter/core/services/upload_service.dart';
+import 'package:romance_hub_flutter/core/services/user_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/core/utils/snackbar_utils.dart';
 
 /// 配置页面
 class ConfigPage extends StatefulWidget {
@@ -17,11 +20,14 @@ class ConfigPage extends StatefulWidget {
 class _ConfigPageState extends State<ConfigPage> {
   final UserService _userService = UserService();
   final UploadService _uploadService = UploadService();
+  final ConfigService _configService = ConfigService();
   final ImagePicker _imagePicker = ImagePicker();
   UserModel? _userInfo;
   bool _isLoading = false;
   bool _isEditing = false;
   bool _isUploadingAvatar = false;
+  List<ImageBedModel> _imageBeds = [];
+  bool _imageBedsLoading = true;
 
   final _usernameController = TextEditingController();
   final _describeController = TextEditingController();
@@ -32,6 +38,18 @@ class _ConfigPageState extends State<ConfigPage> {
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadImageBeds();
+  }
+
+  Future<void> _loadImageBeds() async {
+    if (!mounted) return;
+    setState(() => _imageBedsLoading = true);
+    final res = await _configService.getImageBeds();
+    if (!mounted) return;
+    setState(() {
+      _imageBeds = res.data ?? [];
+      _imageBedsLoading = false;
+    });
   }
 
   @override
@@ -256,6 +274,9 @@ class _ConfigPageState extends State<ConfigPage> {
             ),
           ),
           const SizedBox(height: 24),
+          _buildSectionTitle(context, '图床设置'),
+          _buildImageBedSection(context),
+          const SizedBox(height: 24),
           _buildSectionTitle(context, '其他'),
           Card(
             child: ListTile(
@@ -333,6 +354,207 @@ class _ConfigPageState extends State<ConfigPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildImageBedSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (_imageBedsLoading) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '与良人共用。上传时由后端决定使用此处配置或服务端兜底。',
+              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            if (_imageBeds.isEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                '暂无图床，请添加并设为默认。',
+                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+            ] else ...[
+              const SizedBox(height: 12),
+              ..._imageBeds.map((bed) => ListTile(
+                dense: true,
+                leading: Icon(Icons.cloud_rounded, color: colorScheme.primary, size: 22),
+                title: Text(bed.bedName, style: theme.textTheme.bodyMedium),
+                subtitle: Text(
+                  '${bed.bedType} · ${bed.apiUrl}${bed.isDefault ? " · 默认" : ""}',
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              )),
+            ],
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () => _showAddImageBedDialog(context),
+              icon: Icon(Icons.add_rounded, size: 20, color: colorScheme.primary),
+              label: Text('添加图床', style: TextStyle(color: colorScheme.primary)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAddImageBedDialog(BuildContext context) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final nameCtrl = TextEditingController();
+    final apiUrlCtrl = TextEditingController(text: 'https://api.imgbb.com/1/upload');
+    final apiKeyCtrl = TextEditingController();
+    String bedType = 'imgbb';
+    bool isDefault = _imageBeds.isEmpty;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('添加图床'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '图床名称',
+                        hintText: '如：IMGBB',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: bedType,
+                      decoration: const InputDecoration(
+                        labelText: '图床类型',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'imgbb', child: Text('imgBB')),
+                        DropdownMenuItem(value: 'smms', child: Text('SM.MS')),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) {
+                          setDialogState(() {
+                            bedType = v;
+                            apiUrlCtrl.text = v == 'imgbb'
+                                ? 'https://api.imgbb.com/1/upload'
+                                : 'https://sm.ms/api/v2/upload';
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: apiUrlCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'API 地址',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: apiKeyCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'API Key',
+                        hintText: '必填',
+                        border: OutlineInputBorder(),
+                      ),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isDefault,
+                          onChanged: (v) => setDialogState(() => isDefault = v ?? false),
+                          activeColor: colorScheme.primary,
+                        ),
+                        GestureDetector(
+                          onTap: () => setDialogState(() => isDefault = !isDefault),
+                          child: Text('设为默认（与良人共用）', style: theme.textTheme.bodyMedium),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('取消'),
+                ),
+                FilledButton(
+                  onPressed: () async {
+                    final bedName = nameCtrl.text.trim();
+                    final apiUrl = apiUrlCtrl.text.trim();
+                    final apiKey = apiKeyCtrl.text.trim();
+                    if (bedName.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('请填写图床名称')),
+                      );
+                      return;
+                    }
+                    if (apiUrl.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('请填写 API 地址')),
+                      );
+                      return;
+                    }
+                    if (apiKey.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('请填写 API Key')),
+                      );
+                      return;
+                    }
+                    Navigator.pop(ctx);
+                    final res = await _configService.updateImageBed(
+                      bedName: bedName,
+                      bedType: bedType,
+                      apiUrl: apiUrl,
+                      apiKey: apiKey,
+                      isDefault: isDefault,
+                    );
+                    if (!mounted) return;
+                    if (res.isSuccess) {
+                      SnackBarUtils.showSuccess(context, '图床已保存，与良人共用');
+                      _loadImageBeds();
+                    } else {
+                      SnackBarUtils.showError(context, res.msg);
+                    }
+                  },
+                  child: const Text('保存'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

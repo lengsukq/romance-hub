@@ -14,12 +14,30 @@ interface UploadResponse {
 // 上传函数类型
 type UploadFunction = (fileData: any, config: any) => Promise<UploadResponse>;
 
+/** 从 .env 读取图床配置作为兜底（数据库无配置时使用） */
+function getEnvImageBedConfig(): { bedType: string; apiUrl: string; apiKey: string } | null {
+    const drawingBed = (process.env.DRAWING_BED || '').toUpperCase();
+    if (drawingBed === 'IMGBB') {
+        const apiKey = process.env.IMGBB_API?.trim();
+        if (apiKey) {
+            return { bedType: 'imgbb', apiUrl: 'https://api.imgbb.com/1/upload', apiKey };
+        }
+    }
+    return null;
+}
+
 export async function upImgMain(fileData: UploadFileData, userEmail: string): Promise<UploadResponse> {
     try {
-        // 从数据库获取默认图床配置
-        const defaultBed = await ConfigService.getDefaultImageBed(userEmail);
-        if (!defaultBed) {
-            throw new Error('未找到可用的图床配置');
+        // 优先从数据库获取默认图床配置（应用内图床设置，与关联者共用）
+        let config = await ConfigService.getDefaultImageBed(userEmail);
+        if (!config) {
+            // 数据库无配置时，使用 .env 兜底（DRAWING_BED=IMGBB + IMGBB_API）
+            const envConfig = getEnvImageBedConfig();
+            if (envConfig) {
+                config = envConfig as any;
+            } else {
+                throw new Error('未设置图床，请先在「设置」中配置图床（与良人共用），或在服务端 .env 中配置 DRAWING_BED 与 IMGBB_API 作为兜底');
+            }
         }
 
         const upImgObj: Record<string, UploadFunction> = {
@@ -27,14 +45,16 @@ export async function upImgMain(fileData: UploadFileData, userEmail: string): Pr
             "imgbb": (fileData: any, config: any) => upImgByImgBB(fileData, config),
         };
 
-        if (!upImgObj[defaultBed.bedType]) {
-            throw new Error(`不支持的图床类型: ${defaultBed.bedType}`);
+        const bedType = (config.bedType || '').toLowerCase();
+        if (!upImgObj[bedType]) {
+            throw new Error(`不支持的图床类型: ${config.bedType}`);
         }
 
-        return await upImgObj[defaultBed.bedType](fileData, defaultBed);
+        return await upImgObj[bedType](fileData, config);
     } catch (error) {
         console.error('图片上传失败:', error);
-        return {msg: '上传失败，使用默认图片', url: 'https://s2.loli.net/2024/01/08/ek3fUIuh6gPR47G.jpg'};
+        const message = error instanceof Error ? error.message : '图床上传失败，请检查图床配置或网络';
+        throw new Error(message);
     }
 }
 
@@ -58,16 +78,22 @@ export async function upImgBySM(fileData: UploadFileData, config: any): Promise<
         });
         
         if (!response.ok) {
-            console.log('response', response)
-            return {msg: '上传失败，使用默认图片', url: 'https://s2.loli.net/2024/01/08/ek3fUIuh6gPR47G.jpg'}
+            const text = await response.text();
+            console.error('SM 图床上传失败', response.status, text);
+            throw new Error('SM 图床上传失败，请检查图床配置或 API 额度');
         }
 
         const data = await response.json();
-        console.log('sm', data);
-        return {msg: '上传成功', url: data.data.url};
+        const url = data?.data?.url;
+        if (!url) {
+            console.error('SM 返回数据异常', data);
+            throw new Error('图床返回格式异常，未拿到图片地址');
+        }
+        return { msg: '上传成功', url };
     } catch (error) {
+        if (error instanceof Error) throw error;
         console.error('There was a problem with the fetch operation:', error);
-        return {msg: '上传失败，使用默认图片', url: 'https://s2.loli.net/2024/01/08/ek3fUIuh6gPR47G.jpg'}
+        throw new Error('图床上传失败，请检查网络或图床配置');
     }
 }
 
@@ -86,16 +112,22 @@ export async function upImgByImgBB(fileData: UploadFileData, config: any): Promi
             body: formData,
         });
         if (!response.ok) {
-            console.log('response', response)
-            return {msg: '上传失败，使用默认图片', url: 'https://s2.loli.net/2024/01/08/ek3fUIuh6gPR47G.jpg'}
+            const text = await response.text();
+            console.error('imgBB 图床上传失败', response.status, text);
+            throw new Error('imgBB 图床上传失败，请检查图床配置或 API 额度');
         }
 
         const data = await response.json();
-        console.log('imgbb', data);
-        return {msg: '上传成功', url: data.data.url};
+        const url = data?.data?.url;
+        if (!url) {
+            console.error('imgBB 返回数据异常', data);
+            throw new Error('图床返回格式异常，未拿到图片地址');
+        }
+        return { msg: '上传成功', url };
     } catch (error) {
+        if (error instanceof Error) throw error;
         console.error('There was a problem with the fetch operation:', error);
-        return {msg: '上传失败，使用默认图片', url: 'https://s2.loli.net/2024/01/08/ek3fUIuh6gPR47G.jpg'}
+        throw new Error('图床上传失败，请检查网络或图床配置');
     }
 }
 

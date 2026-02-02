@@ -68,7 +68,8 @@ async function handleFileUpload(req: NextRequest): Promise<NextResponse> {
 
     } catch (error) {
         console.error('文件上传失败:', error);
-        return NextResponse.json(BizResult.fail('', '文件上传失败'));
+        const message = error instanceof Error ? error.message : '文件上传失败';
+        return NextResponse.json(BizResult.fail('', message));
     }
 }
 
