@@ -29,7 +29,7 @@ on:
         type: boolean
 
 env:
-  FLUTTER_VERSION: '3.27.0'
+  FLUTTER_VERSION: '3.38.9'
   PROJECT_DIR: flutter_app
 
 jobs:

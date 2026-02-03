@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.6.0 <4.0.0'
+  sdk: '>=3.8.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -30,9 +30,9 @@ dependencies:
   # 路由管理
   go_router: ^17.0.1
   
-  # 表单验证（兼容 Dart 3.6，与 CI Flutter 3.27 一致）
-  flutter_form_builder: ^9.7.0
-  form_builder_validators: ^10.0.0
+  # 表单验证
+  flutter_form_builder: ^10.3.0+1
+  form_builder_validators: ^11.2.0
   
   # 工具类（intl 由 flutter_localizations 传递，无需重复声明）
   logger: ^2.0.2+1
@@ -43,7 +43,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^6.0.0
   build_runner: ^2.4.7
   json_serializable: ^6.7.1
 
