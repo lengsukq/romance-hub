@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/constants/app_constants.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -25,11 +26,44 @@ class DebugPanelDialog extends StatefulWidget {
 class _DebugPanelDialogState extends State<DebugPanelDialog> {
   String _connectionStatus = '';
   bool _isTesting = false;
+  bool _trustSslForCurrentHost = false;
+  bool _trustSslLoaded = false;
 
   String get _buildMode {
     if (kReleaseMode) return 'Release（正式包）';
     if (kProfileMode) return 'Profile';
     return 'Debug（调试包）';
+  }
+
+  Future<void> _loadTrustSsl() async {
+    if (_trustSslLoaded) return;
+    final host = AppConfig.hostFromUrl(widget.currentBaseUrl);
+    if (host == null) return;
+    final saved = await AppConfig.getInsecureSslHost();
+    if (mounted) {
+      setState(() {
+        _trustSslLoaded = true;
+        _trustSslForCurrentHost = saved == host;
+      });
+    }
+  }
+
+  Future<void> _toggleTrustSsl(bool value) async {
+    final host = AppConfig.hostFromUrl(widget.currentBaseUrl);
+    if (host == null) return;
+    setState(() => _trustSslForCurrentHost = value);
+    if (value) {
+      await AppConfig.setInsecureSslHost(host);
+      await ApiService().setInsecureSslHost(host);
+    } else {
+      await AppConfig.setInsecureSslHost(null);
+      await ApiService().setInsecureSslHost(null);
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(value ? '已信任此云阁证书，可重试登入' : '已关闭信任此云阁证书')),
+      );
+    }
   }
 
   Future<void> _testConnection() async {
@@ -50,11 +84,21 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
 
     try {
       final url = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+      final uri = Uri.parse(url);
       final dio = Dio(BaseOptions(
         baseUrl: url,
         connectTimeout: const Duration(seconds: 8),
         receiveTimeout: const Duration(seconds: 5),
       ));
+      // 测试时对该 host 放宽证书校验，以排除“浏览器能开、App 报证书错误”的情况
+      final testHost = uri.host;
+      final adapter = IOHttpClientAdapter();
+      adapter.onHttpClientCreate = (client) {
+        client.badCertificateCallback = (_, String host, __) => host == testHost;
+        return client;
+      };
+      dio.httpClientAdapter = adapter;
+
       final path = '${AppConstants.apiBasePath}/common';
       final response = await dio.get(path);
       if (response.statusCode == 200) {
@@ -68,7 +112,7 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
           e.type == DioExceptionType.receiveTimeout) {
         msg = '连接超时，请检查地址与网络';
       } else if (e.type == DioExceptionType.connectionError) {
-        msg = '无法连接（请确认云阁地址、网络及防火墙）';
+        msg = '无法连接。若浏览器能打开而 App 不能，多为证书校验：请开启下方「信任此云阁证书」后重试';
       } else {
         msg = '${e.type}: ${e.message ?? ""}';
       }
@@ -102,9 +146,16 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadTrustSsl());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final hasHost = AppConfig.hostFromUrl(widget.currentBaseUrl) != null;
 
     return AlertDialog(
       title: Row(
@@ -171,6 +222,32 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
                 ),
               ],
             ),
+            if (hasHost) ...[
+              const SizedBox(height: 16),
+              _SectionTitle(theme: theme, colorScheme: colorScheme, title: '证书校验'),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '信任此云阁证书（不校验 SSL）',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Switch(
+                    value: _trustSslForCurrentHost,
+                    onChanged: _toggleTrustSsl,
+                  ),
+                ],
+              ),
+              Text(
+                '若浏览器能打开默认地址而 App 连不上，多为证书校验差异，开启后即可连接。仅对当前云阁域名生效。',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
             if (_connectionStatus.isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(

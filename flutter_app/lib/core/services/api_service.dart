@@ -14,6 +14,10 @@ class ApiService {
   final _storage = const FlutterSecureStorage();
   static void Function()? _on401;
 
+  /// 对该 host 不校验 SSL（浏览器能访问但 App 报证书错误时可开启）
+  String? _insecureSslHost;
+  bool _insecureSslHostLoaded = false;
+
   ApiService._internal() {
     _dio = Dio();
     _initializeDio();
@@ -47,11 +51,14 @@ class ApiService {
       },
     );
 
-    // 本地/内网 HTTPS 自签名证书时放宽校验，公网仍严格校验
+    // 本地/内网或已勾选“信任此云阁证书”时放宽 HTTPS 校验
     final adapter = IOHttpClientAdapter();
     adapter.onHttpClientCreate = (client) {
       client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-        return _isLocalOrPrivateHost(host);
+        if (_isLocalOrPrivateHost(host)) return true;
+        if (host == AppConfig.defaultBaseUrlHost) return true; // 默认云阁：浏览器可访问时 App 也放宽校验
+        if (_insecureSslHost != null && host == _insecureSslHost) return true;
+        return false;
       };
       return client;
     };
@@ -60,6 +67,10 @@ class ApiService {
     // 添加请求拦截器
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        if (!_insecureSslHostLoaded) {
+          _insecureSslHostLoaded = true;
+          _insecureSslHost = await AppConfig.getInsecureSslHost();
+        }
         // 动态获取 baseUrl
         final baseUrl = await AppConfig.getBaseUrl();
         options.baseUrl = baseUrl;
@@ -95,6 +106,12 @@ class ApiService {
   Future<void> updateBaseUrl(String url) async {
     await AppConfig.setBaseUrl(url);
     _dio.options.baseUrl = url;
+  }
+
+  /// 设置“不校验 SSL”的云阁 host，传 null 表示关闭。用于浏览器可访问但 App 证书校验失败时。
+  Future<void> setInsecureSslHost(String? host) async {
+    await AppConfig.setInsecureSslHost(host);
+    _insecureSslHost = host;
   }
 
   /// 获取 Dio 实例
