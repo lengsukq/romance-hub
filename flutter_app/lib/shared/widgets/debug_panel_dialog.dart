@@ -2,10 +2,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/constants/app_constants.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/shared/widgets/config_dialog.dart';
+
+/// 通用地址：用于判断是网络权限/整体不通，还是仅云阁不通
+const List<({String label, String url})> _kNetworkTestUrls = [
+  (label: '百度', url: 'https://www.baidu.com'),
+  (label: '谷歌', url: 'https://www.google.com'),
+  (label: '苹果', url: 'https://www.apple.com'),
+  (label: '腾讯', url: 'https://www.qq.com'),
+  (label: '阿里', url: 'https://www.taobao.com'),
+];
 
 /// 调试面板对话框
 /// 连点登录页锦书爱心 5 次后显示，用于排查打包后无法连接云阁等问题
@@ -28,6 +38,8 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
   bool _isTesting = false;
   bool _trustSslForCurrentHost = false;
   bool _trustSslLoaded = false;
+  final Map<String, String> _networkResults = {};
+  String? _networkTestingLabel;
 
   String get _buildMode {
     if (kReleaseMode) return 'Release（正式包）';
@@ -124,6 +136,69 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
     }
   }
 
+  Future<void> _openInBrowser(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('无法打开浏览器')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('打开失败: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _testNetworkUrl(String label, String url) async {
+    setState(() {
+      _networkTestingLabel = label;
+      _networkResults[label] = '…';
+    });
+    try {
+      final dio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 6),
+        receiveTimeout: const Duration(seconds: 6),
+      ));
+      final response = await dio.get(url);
+      if (mounted) {
+        setState(() {
+          _networkTestingLabel = null;
+          _networkResults[label] = response.statusCode == 200 ? '✓' : '${response.statusCode}';
+        });
+      }
+    } on DioException catch (e) {
+      String msg = '✗';
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        msg = '超时';
+      } else if (e.type == DioExceptionType.connectionError) {
+        msg = '连不上';
+      } else {
+        msg = '${e.type}';
+      }
+      if (mounted) {
+        setState(() {
+          _networkTestingLabel = null;
+          _networkResults[label] = msg;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _networkTestingLabel = null;
+          _networkResults[label] = '异常';
+        });
+      }
+    }
+  }
+
   void _openConfigDialog() {
     Navigator.of(context).pop();
     showDialog(
@@ -186,6 +261,51 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
                 ),
               ),
             ],
+            const SizedBox(height: 20),
+            _SectionTitle(theme: theme, colorScheme: colorScheme, title: '网络连通性'),
+            Text(
+              '点下面地址可测本机是否能上网。若都连不上，多为权限或网络问题；若只有云阁连不上，多为云阁地址/证书问题。',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final entry in _kNetworkTestUrls)
+                  _NetworkTestChip(
+                    label: entry.label,
+                    result: _networkResults[entry.label],
+                    isLoading: _networkTestingLabel == entry.label,
+                    onTap: () => _testNetworkUrl(entry.label, entry.url),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () {
+                    final url = widget.currentBaseUrl.trim().isNotEmpty
+                        ? (widget.currentBaseUrl.endsWith('/') ? widget.currentBaseUrl : '${widget.currentBaseUrl}/')
+                        : AppConfig.defaultBaseUrl;
+                    _openInBrowser(url);
+                  },
+                  icon: Icon(Icons.open_in_browser_rounded, size: 18, color: colorScheme.primary),
+                  label: const Text('用浏览器打开云阁'),
+                  style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: () => _openInBrowser('https://www.baidu.com'),
+                  icon: Icon(Icons.language_rounded, size: 18, color: colorScheme.primary),
+                  label: const Text('用浏览器打开百度'),
+                  style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
             _SectionTitle(theme: theme, colorScheme: colorScheme, title: '云阁地址'),
             Text(
@@ -309,6 +429,69 @@ class _SectionTitle extends StatelessWidget {
         style: theme.textTheme.titleSmall?.copyWith(
           fontWeight: FontWeight.w600,
           color: colorScheme.primary,
+        ),
+      ),
+    );
+  }
+}
+
+class _NetworkTestChip extends StatelessWidget {
+  const _NetworkTestChip({
+    required this.label,
+    required this.result,
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  final String label;
+  final String? result;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isOk = result == '✓';
+
+    return Material(
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: isLoading ? null : onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              if (result != null) ...[
+                const SizedBox(width: 6),
+                Text(
+                  result!,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: isOk ? colorScheme.primary : colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              if (isLoading)
+                const Padding(
+                  padding: EdgeInsets.only(left: 6),
+                  child: SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

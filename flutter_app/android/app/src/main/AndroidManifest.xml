@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 上网权限：正式包必须显式声明，否则无法访问云阁 -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="锦书"
         android:name="${applicationName}"

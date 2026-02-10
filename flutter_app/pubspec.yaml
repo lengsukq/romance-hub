@@ -40,6 +40,9 @@ dependencies:
   # 图片选择
   image_picker: ^1.0.7
 
+  # 打开系统浏览器/外部链接
+  url_launcher: ^6.2.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
