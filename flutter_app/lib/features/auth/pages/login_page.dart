@@ -7,6 +7,7 @@ import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/features/auth/services/auth_service.dart';
 import 'package:romance_hub_flutter/shared/widgets/config_dialog.dart';
+import 'package:romance_hub_flutter/shared/widgets/debug_panel_dialog.dart';
 
 /// 登录页面
 /// 支持配置后端服务器地址
@@ -27,6 +28,11 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
   String? _errorMessage;
 
+  int _heartTapCount = 0;
+  DateTime? _heartTapTime;
+  static const _debugTapCount = 5;
+  static const _debugTapWindow = Duration(seconds: 2);
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +45,31 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _baseUrlController.text = baseUrl;
     });
+  }
+
+  /// 连点爱心 5 次打开调试面板
+  void _onHeartTap() {
+    final now = DateTime.now();
+    if (_heartTapTime != null && now.difference(_heartTapTime!) > _debugTapWindow) {
+      _heartTapCount = 0;
+    }
+    _heartTapTime = now;
+    _heartTapCount++;
+    if (_heartTapCount >= _debugTapCount) {
+      _heartTapCount = 0;
+      _heartTapTime = null;
+      _showDebugPanel();
+    }
+  }
+
+  void _showDebugPanel() {
+    showDialog(
+      context: context,
+      builder: (context) => DebugPanelDialog(
+        currentBaseUrl: _baseUrlController.text,
+        onUrlUpdated: () => _loadBaseUrl(),
+      ),
+    );
   }
 
   /// 显示配置对话框
@@ -134,11 +165,14 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 品牌区：图标 + 标题 + 副标题（8pt 网格，留白充足）
-                  Icon(
-                    Icons.favorite_rounded,
-                    size: 72,
-                    color: colorScheme.primary,
+                  // 品牌区：图标 + 标题 + 副标题（连点爱心 5 次可打开调试面板）
+                  GestureDetector(
+                    onTap: _onHeartTap,
+                    child: Icon(
+                      Icons.favorite_rounded,
+                      size: 72,
+                      color: colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
