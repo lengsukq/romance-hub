@@ -18,72 +18,139 @@ class AddGiftPage extends StatefulWidget {
 class _AddGiftPageState extends State<AddGiftPage> {
   final _formKey = GlobalKey<FormState>();
   final _giftNameController = TextEditingController();
-  final _giftDescController = TextEditingController();
+  final _giftDetailController = TextEditingController();
   final _scoreController = TextEditingController();
+  final _remainedController = TextEditingController(text: '10');
   final GiftService _giftService = GiftService();
   final UploadService _uploadService = UploadService();
   final ImagePicker _imagePicker = ImagePicker();
   
   File? _selectedImage;
+  String? _uploadedImageUrl;
+  bool _isUploadingImage = false;
   bool _isSubmitting = false;
 
   @override
   void dispose() {
     _giftNameController.dispose();
-    _giftDescController.dispose();
+    _giftDetailController.dispose();
     _scoreController.dispose();
+    _remainedController.dispose();
     super.dispose();
   }
 
   Future<void> _pickImage() async {
+    if (_isUploadingImage) return;
     try {
       final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
+      if (image == null || !mounted) return;
+      final file = File(image.path);
+      setState(() {
+        _selectedImage = file;
+        _uploadedImageUrl = null;
+        _isUploadingImage = true;
+      });
+      final uploadResponse = await _uploadService.uploadImage(file);
+      if (!mounted) return;
+      if (uploadResponse.isSuccess && uploadResponse.data != null && uploadResponse.data!.isNotEmpty) {
         setState(() {
-          _selectedImage = File(image.path);
+          _uploadedImageUrl = uploadResponse.data;
+          _isUploadingImage = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('图片上传成功')),
+        );
+      } else {
+        setState(() {
+          _selectedImage = null;
+          _uploadedImageUrl = null;
+          _isUploadingImage = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(uploadResponse.msg.isNotEmpty ? uploadResponse.msg : '图片上传失败')),
+        );
       }
     } catch (e) {
-      AppLogger.e('选择图片失败', e);
+      AppLogger.e('选择或上传图片失败', e);
       if (mounted) {
+        setState(() {
+          _selectedImage = null;
+          _uploadedImageUrl = null;
+          _isUploadingImage = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('选择图片失败')),
+          const SnackBar(content: Text('选择或上传图片失败')),
         );
       }
     }
   }
 
+  List<String> _collectMissingFields() {
+    final missing = <String>[];
+    final name = _giftNameController.text.trim();
+    if (name.isEmpty) {
+      missing.add('赠礼名称');
+    } else if (name.length > 10) {
+      missing.add('赠礼名称（最多10字）');
+    }
+    final detail = _giftDetailController.text.trim();
+    if (detail.isEmpty) {
+      missing.add('心意说明');
+    } else if (detail.length > 20) {
+      missing.add('心意说明（最多20字）');
+    }
+    final scoreStr = _scoreController.text.trim();
+    final score = int.tryParse(scoreStr);
+    if (scoreStr.isEmpty) {
+      missing.add('所需积分');
+    } else if (score == null || score < 0) {
+      missing.add('所需积分（须≥0）');
+    }
+    final remainedStr = _remainedController.text.trim();
+    final remained = int.tryParse(remainedStr);
+    if (remainedStr.isEmpty) {
+      missing.add('库存数量');
+    } else if (remained == null || remained <= 0) {
+      missing.add('库存数量（须大于0）');
+    }
+    return missing;
+  }
+
   Future<void> _submitGift() async {
+    final missing = _collectMissingFields();
+    if (missing.isNotEmpty) {
+      _formKey.currentState!.validate();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('请填写或修正：${missing.join('、')}'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
+    if (_isUploadingImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请等待图片上传完成')),
+      );
+      return;
+    }
 
     setState(() {
       _isSubmitting = true;
     });
 
     try {
-      String? imageUrl;
-      if (_selectedImage != null) {
-        final uploadResponse = await _uploadService.uploadImage(_selectedImage!);
-        if (uploadResponse.isSuccess && uploadResponse.data != null) {
-          imageUrl = uploadResponse.data;
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(uploadResponse.msg)),
-            );
-          }
-          setState(() {
-            _isSubmitting = false;
-          });
-          return;
-        }
-      }
-
+      final needScore = int.parse(_scoreController.text);
+      final remained = int.tryParse(_remainedController.text) ?? 0;
       final response = await _giftService.createGift(
-        giftName: _giftNameController.text,
-        giftDesc: _giftDescController.text.isEmpty ? null : _giftDescController.text,
-        giftImage: imageUrl,
-        score: int.parse(_scoreController.text),
+        giftName: _giftNameController.text.trim(),
+        giftDetail: _giftDetailController.text.trim(),
+        needScore: needScore,
+        remained: remained,
+        giftImg: _uploadedImageUrl,
       );
 
       if (response.isSuccess) {
@@ -134,21 +201,23 @@ class _AddGiftPageState extends State<AddGiftPage> {
           children: [
             TextFormField(
               controller: _giftNameController,
-              decoration: const InputDecoration(labelText: '赠礼名称'),
+              decoration: const InputDecoration(labelText: '赠礼名称（最多10字）'),
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return '请输入赠礼名称';
-                }
+                if (value == null || value.trim().isEmpty) return '请输入赠礼名称';
+                if (value.trim().length > 10) return '名称不能超过10个字';
                 return null;
               },
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: _giftDescController,
-              decoration: const InputDecoration(
-                labelText: '心意说明（可选）',
-              ),
-              maxLines: 3,
+              controller: _giftDetailController,
+              decoration: const InputDecoration(labelText: '心意说明（最多20字）'),
+              maxLines: 2,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) return '请填写心意说明';
+                if (value.trim().length > 20) return '说明不能超过20个字';
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -156,35 +225,73 @@ class _AddGiftPageState extends State<AddGiftPage> {
               decoration: const InputDecoration(labelText: '所需积分'),
               keyboardType: TextInputType.number,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return '请输入所需积分';
-                }
-                if (int.tryParse(value) == null) {
-                  return '请输入有效的数字';
-                }
+                if (value == null || value.isEmpty) return '请输入所需积分';
+                final n = int.tryParse(value);
+                if (n == null) return '请输入有效的数字';
+                if (n < 0) return '积分不能小于0';
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _remainedController,
+              decoration: const InputDecoration(labelText: '库存数量'),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) return '请输入库存数量';
+                final n = int.tryParse(value);
+                if (n == null) return '请输入有效的数字';
+                if (n <= 0) return '库存必须大于0';
                 return null;
               },
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.image_rounded),
-              label: const Text('选择图片'),
+              onPressed: _isUploadingImage ? null : _pickImage,
+              icon: _isUploadingImage
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.onPrimary),
+                    )
+                  : const Icon(Icons.image_rounded),
+              label: Text(_isUploadingImage ? '上传中…' : '选择图片（选填）'),
             ),
             if (_selectedImage != null) ...[
               const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.file(
-                  _selectedImage!,
-                  height: 200,
-                  fit: BoxFit.cover,
-                ),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.file(
+                      _selectedImage!,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  if (_isUploadingImage)
+                    Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(color: colorScheme.primary),
+                          const SizedBox(height: 8),
+                          Text('上传中…', style: TextStyle(color: colorScheme.onSurface)),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ],
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitGift,
+              onPressed: (_isSubmitting || _isUploadingImage) ? null : _submitGift,
               child: _isSubmitting
                   ? SizedBox(
                       height: 22,

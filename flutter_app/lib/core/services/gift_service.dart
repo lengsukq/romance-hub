@@ -74,12 +74,14 @@ class GiftService {
     }
   }
 
-  /// 创建礼物
+  /// 创建礼物（与后端字段一致：giftDetail, needScore, remained, giftImg）
   Future<ApiResponse<void>> createGift({
     required String giftName,
-    String? giftDesc,
-    String? giftImage,
-    required int score,
+    required String giftDetail,
+    required int needScore,
+    required int remained,
+    String? giftImg,
+    bool isShow = true,
   }) async {
     try {
       final response = await _apiService.post(
@@ -88,9 +90,11 @@ class GiftService {
           'action': 'create',
           'data': {
             'giftName': giftName,
-            'giftDesc': giftDesc,
-            'giftImage': giftImage,
-            'score': score,
+            'giftDetail': giftDetail,
+            'needScore': needScore,
+            'remained': remained,
+            'giftImg': giftImg,
+            'isShow': isShow,
           },
         },
       );

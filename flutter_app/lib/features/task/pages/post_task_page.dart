@@ -26,6 +26,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
   
   List<File> _selectedImages = [];
   bool _isSubmitting = false;
+  String? _uploadPhaseHint;
 
   @override
   void dispose() {
@@ -53,31 +54,61 @@ class _PostTaskPageState extends State<PostTaskPage> {
     }
   }
 
+  List<String> _collectMissingFields() {
+    final missing = <String>[];
+    if (_taskNameController.text.trim().isEmpty) missing.add('心诺名称');
+    if (_taskDescController.text.trim().isEmpty) missing.add('诺言');
+    final scoreStr = _taskScoreController.text.trim();
+    final score = int.tryParse(scoreStr);
+    if (scoreStr.isEmpty) {
+      missing.add('积分');
+    } else if (score == null || score < 0) {
+      missing.add('积分（须为不小于0的数字）');
+    }
+    if (_selectedImages.isEmpty) missing.add('任务图片');
+    return missing;
+  }
+
   Future<void> _submitTask() async {
+    final missing = _collectMissingFields();
+    if (missing.isNotEmpty) {
+      _formKey.currentState!.validate();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('请填写或修正：${missing.join('、')}'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isSubmitting = true;
+      _uploadPhaseHint = '上传中…';
     });
 
     try {
-      // 上传图片
       List<String> imageUrls = [];
-      if (_selectedImages.isNotEmpty) {
-        final uploadResponse = await _uploadService.uploadImages(_selectedImages);
-        if (uploadResponse.isSuccess && uploadResponse.data != null) {
-          imageUrls = uploadResponse.data!;
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(uploadResponse.msg)),
-            );
-          }
-          setState(() {
-            _isSubmitting = false;
-          });
-          return;
+      final uploadResponse = await _uploadService.uploadImages(_selectedImages);
+      if (!uploadResponse.isSuccess || uploadResponse.data == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(uploadResponse.msg)),
+          );
         }
+        setState(() {
+          _isSubmitting = false;
+          _uploadPhaseHint = null;
+        });
+        return;
+      }
+      imageUrls = uploadResponse.data!;
+
+      if (mounted) {
+        setState(() => _uploadPhaseHint = '发布中…');
       }
 
       // 发布任务
@@ -113,6 +144,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
       if (mounted) {
         setState(() {
           _isSubmitting = false;
+          _uploadPhaseHint = null;
         });
       }
     }
@@ -165,9 +197,9 @@ class _PostTaskPageState extends State<PostTaskPage> {
                 if (value == null || value.isEmpty) {
                   return '请输入积分';
                 }
-                if (int.tryParse(value) == null) {
-                  return '请输入有效的数字';
-                }
+                final n = int.tryParse(value);
+                if (n == null) return '请输入有效的数字';
+                if (n < 0) return '积分不能小于0';
                 return null;
               },
             ),
@@ -222,6 +254,16 @@ class _PostTaskPageState extends State<PostTaskPage> {
               ),
             ],
             const SizedBox(height: 24),
+            if (_uploadPhaseHint != null) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  _uploadPhaseHint!,
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.primary),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitTask,
               child: _isSubmitting

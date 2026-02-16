@@ -33,6 +33,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   File? _avatarFile;
   File? _loverAvatarFile;
+  String? _avatarUploadUrl;
+  String? _loverAvatarUploadUrl;
+  bool _isUploadingAvatar = false;
+  bool _isUploadingLoverAvatar = false;
   bool _obscurePassword = true;
   bool _obscurePassword2 = true;
   bool _isLoading = false;
@@ -51,23 +55,106 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  List<String> _collectMissingFields() {
+    final missing = <String>[];
+    if (_usernameController.text.trim().isEmpty) missing.add('昵称');
+    final userEmail = _userEmailController.text.trim();
+    if (userEmail.isEmpty) {
+      missing.add('邮箱');
+    } else if (!ValidationUtils.isValidEmail(userEmail)) {
+      missing.add('邮箱（格式不正确）');
+    }
+    if (_describeBySelfController.text.trim().isEmpty) missing.add('一言');
+    final loverEmail = _loverEmailController.text.trim();
+    if (loverEmail.isEmpty) {
+      missing.add('良人邮箱');
+    } else if (!ValidationUtils.isValidEmail(loverEmail)) {
+      missing.add('良人邮箱（格式不正确）');
+    }
+    if (_loverUsernameController.text.trim().isEmpty) missing.add('良人昵称');
+    if (_loverDescribeBySelfController.text.trim().isEmpty) missing.add('良人一言');
+    final pwd = _passwordController.text;
+    if (pwd.isEmpty) {
+      missing.add('密码');
+    } else if (!ValidationUtils.isValidPassword(pwd)) {
+      missing.add('密码（至少6位）');
+    }
+    final pwd2 = _password2Controller.text;
+    if (pwd2.isEmpty) {
+      missing.add('确认密码');
+    } else if (pwd2 != pwd) {
+      missing.add('确认密码（与密码不一致）');
+    }
+    return missing;
+  }
+
   Future<void> _pickAvatar(bool isLover) async {
+    if (isLover && _isUploadingLoverAvatar) return;
+    if (!isLover && _isUploadingAvatar) return;
     try {
       final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
+      if (image == null || !mounted) return;
+      final file = File(image.path);
+      if (isLover) {
         setState(() {
-          if (isLover) {
-            _loverAvatarFile = File(image.path);
-          } else {
-            _avatarFile = File(image.path);
-          }
+          _loverAvatarFile = file;
+          _loverAvatarUploadUrl = null;
+          _isUploadingLoverAvatar = true;
+        });
+      } else {
+        setState(() {
+          _avatarFile = file;
+          _avatarUploadUrl = null;
+          _isUploadingAvatar = true;
         });
       }
-    } catch (e) {
-      AppLogger.e('选择图片失败', e);
-      if (mounted) {
+      final uploadRes = await _uploadService.uploadImage(file);
+      if (!mounted) return;
+      if (uploadRes.isSuccess && uploadRes.data != null && uploadRes.data!.isNotEmpty) {
+        setState(() {
+          if (isLover) {
+            _loverAvatarUploadUrl = uploadRes.data;
+            _isUploadingLoverAvatar = false;
+          } else {
+            _avatarUploadUrl = uploadRes.data;
+            _isUploadingAvatar = false;
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('选择图片失败')),
+          const SnackBar(content: Text('头像上传成功')),
+        );
+      } else {
+        setState(() {
+          if (isLover) {
+            _loverAvatarFile = null;
+            _loverAvatarUploadUrl = null;
+            _isUploadingLoverAvatar = false;
+          } else {
+            _avatarFile = null;
+            _avatarUploadUrl = null;
+            _isUploadingAvatar = false;
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(uploadRes.msg.isNotEmpty ? uploadRes.msg : '头像上传失败')),
+        );
+      }
+    } catch (e) {
+      AppLogger.e('选择或上传头像失败', e);
+      if (mounted) {
+        setState(() {
+          if (isLover) {
+            _loverAvatarFile = null;
+            _loverAvatarUploadUrl = null;
+            _isUploadingLoverAvatar = false;
+          } else {
+            _avatarFile = null;
+            _avatarUploadUrl = null;
+            _isUploadingAvatar = false;
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('选择或上传头像失败')),
         );
       }
     }
@@ -77,6 +164,20 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() {
       _errorMessage = null;
     });
+
+    final missing = _collectMissingFields();
+    if (missing.isNotEmpty) {
+      _formKey.currentState!.validate();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('请填写或修正：${missing.join('、')}'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
 
     if (!_formKey.currentState!.validate()) {
       return;
@@ -96,24 +197,7 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      // 头像可选：后端上传需登录，注册时未登录则传 null，后端使用默认头像
-      String? avatarUrl;
-      if (_avatarFile != null) {
-        final uploadRes = await _uploadService.uploadImage(_avatarFile!);
-        if (uploadRes.isSuccess && uploadRes.data != null) {
-          avatarUrl = uploadRes.data;
-        }
-        // 上传失败（如未登录）时继续注册，后端会使用随机默认头像
-      }
-
-      String? loverAvatarUrl;
-      if (_loverAvatarFile != null) {
-        final uploadRes = await _uploadService.uploadImage(_loverAvatarFile!);
-        if (uploadRes.isSuccess && uploadRes.data != null) {
-          loverAvatarUrl = uploadRes.data;
-        }
-      }
-
+      // 头像已在上传完成后得到 URL，直接使用
       final response = await _authService.register(
         userEmail: userEmail,
         username: _usernameController.text.trim(),
@@ -122,8 +206,8 @@ class _RegisterPageState extends State<RegisterPage> {
         lover: lover,
         loverUsername: _loverUsernameController.text.trim(),
         loverDescribeBySelf: _loverDescribeBySelfController.text.trim(),
-        avatar: avatarUrl,
-        loverAvatar: loverAvatarUrl,
+        avatar: _avatarUploadUrl,
+        loverAvatar: _loverAvatarUploadUrl,
       );
 
       if (mounted) {
@@ -198,7 +282,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       children: [
                         _sectionTitle(context, '君之契', colorScheme.primary),
                         const SizedBox(height: 12),
-                        _avatarPicker(context, file: _avatarFile, onTap: () => _pickAvatar(false)),
+                        _avatarPicker(context, file: _avatarFile, onTap: () => _pickAvatar(false), isUploading: _isUploadingAvatar),
                         const SizedBox(height: 6),
                         Text(
                           '选填，不选则用默认头像',
@@ -261,7 +345,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       children: [
                         _sectionTitle(context, '良人契', colorScheme.primary),
                         const SizedBox(height: 12),
-                        _avatarPicker(context, file: _loverAvatarFile, onTap: () => _pickAvatar(true)),
+                        _avatarPicker(context, file: _loverAvatarFile, onTap: () => _pickAvatar(true), isUploading: _isUploadingLoverAvatar),
                         const SizedBox(height: 6),
                         Text(
                           '选填，不选则用默认头像',
@@ -403,8 +487,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 ],
 
                 ElevatedButton(
-                  onPressed: _isLoading ? null : _handleRegister,
-                  child: _isLoading
+                  onPressed: (_isLoading || _isUploadingAvatar || _isUploadingLoverAvatar) ? null : _handleRegister,
+                  child: (_isLoading || _isUploadingAvatar || _isUploadingLoverAvatar)
                       ? SizedBox(
                           height: 22,
                           width: 22,
@@ -447,18 +531,44 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _avatarPicker(BuildContext context, {required File? file, required VoidCallback onTap}) {
+  Widget _avatarPicker(BuildContext context, {required File? file, required VoidCallback onTap, required bool isUploading}) {
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: onTap,
+      onTap: isUploading ? null : onTap,
       child: Center(
-        child: CircleAvatar(
-          radius: 40,
-          backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          backgroundImage: file != null ? FileImage(file) : null,
-          child: file == null
-              ? Icon(Icons.add_a_photo_rounded, size: 36, color: colorScheme.onSurfaceVariant)
-              : null,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              backgroundImage: file != null ? FileImage(file) : null,
+              child: file == null
+                  ? Icon(Icons.add_a_photo_rounded, size: 36, color: colorScheme.onSurfaceVariant)
+                  : null,
+            ),
+            if (isUploading)
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withValues(alpha: 0.8),
+                  shape: BoxShape.circle,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('上传中…', style: TextStyle(fontSize: 10, color: colorScheme.onSurface)),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
