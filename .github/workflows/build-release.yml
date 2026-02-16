@@ -79,15 +79,24 @@ jobs:
       # 使用固定的 release 签名，保证每次打包签名一致（需在仓库 Settings → Secrets 配置）
       - name: 配置 Android Release 签名
         working-directory: ${{ env.PROJECT_DIR }}/android
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > app/upload-keystore.jks
-          cat >> key.properties << EOF
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          if [ -n "$ANDROID_KEYSTORE_B64" ]; then
+            echo "$ANDROID_KEYSTORE_B64" | base64 -d > app/upload-keystore.jks
+            cat >> key.properties << EOF
+          storePassword=$ANDROID_KEYSTORE_PASS
+          keyPassword=$ANDROID_KEY_PASS
+          keyAlias=$ANDROID_KEY_ALIAS
           storeFile=app/upload-keystore.jks
           EOF
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+            echo "Release 签名已配置"
+          else
+            echo "未配置 ANDROID_KEYSTORE_BASE64，将使用 debug 签名"
+          fi
 
       - name: 构建 Android APK (Release)
         working-directory: ${{ env.PROJECT_DIR }}
