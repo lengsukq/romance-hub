@@ -14,10 +14,11 @@ interface LoginParams {
   password: string;
 }
 
-// 用户信息接口
+// 用户信息接口（登录/信息接口返回）
 interface UserInfo {
   userId: number;
   userEmail: string;
+  username?: string;
   lover: string;
   score: number;
 }

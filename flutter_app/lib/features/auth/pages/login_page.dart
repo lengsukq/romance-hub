@@ -274,13 +274,13 @@ class _LoginPageState extends State<LoginPage> {
                           TextFormField(
                             controller: _usernameController,
                             decoration: InputDecoration(
-                              labelText: '用户名',
-                              hintText: '请输入用户名',
+                              labelText: '昵称或邮箱',
+                              hintText: '请输入昵称或邮箱',
                               prefixIcon: Icon(Icons.person_rounded, color: colorScheme.onSurfaceVariant),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return '请输入用户名';
+                                return '请输入昵称或邮箱';
                               }
                               return null;
                             },

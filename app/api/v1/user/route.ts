@@ -74,7 +74,7 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
     const { username, password } = data;
     
     if (!username || !password) {
-        return NextResponse.json(BizResult.fail('', '用户名或密码不能为空'));
+        return NextResponse.json(BizResult.fail('', '请输入昵称/邮箱和密码'));
     }
 
     // 验证密码格式
@@ -87,12 +87,12 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
         const result = await UserService.login(username, password);
 
         if (result) {
-            const { userId, userEmail, lover, score } = result;
+            const { userId, userEmail, username: dbUsername, lover, score } = result;
             const oneDay = 60 * 1000 * 60 * 24 * 365;
             const cookie = encryptData({
                 userEmail: userEmail,
                 userId: userId,
-                userName: username,
+                userName: dbUsername ?? username,
                 lover: lover
             });
 
@@ -116,7 +116,7 @@ async function handleLogin(data: LoginData): Promise<NextResponse> {
             res.headers.append('Set-Cookie', `${cookieNameEnc}=${encodeURIComponent(cookie)}; Path=/; Max-Age=${365 * 24 * 60 * 60}; SameSite=Lax`);
             return res;
         } else {
-            return NextResponse.json(BizResult.fail('', '用户名或密码错误'));
+            return NextResponse.json(BizResult.fail('', '昵称/邮箱或密码错误'));
         }
     } catch (error) {
         console.error('登录失败:', error);

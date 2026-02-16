@@ -3,16 +3,19 @@ import { PasswordUtils } from './passwordUtils';
 
 // 用户相关ORM操作
 export class UserService {
-  // 用户登录
-  static async login(username: string, password: string) {
-    // 先根据用户名查找用户
+  // 用户登录（支持昵称或邮箱）
+  static async login(usernameOrEmail: string, password: string) {
     const user = await prisma.userInfo.findFirst({
       where: {
-        username
+        OR: [
+          { username: usernameOrEmail },
+          { userEmail: usernameOrEmail }
+        ]
       },
       select: {
         userId: true,
         userEmail: true,
+        username: true,
         lover: true,
         score: true,
         password: true

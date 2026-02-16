@@ -48,7 +48,7 @@ export default function Home() {
 
   const login = async () => {
     if (!username || !password) {
-      Notify.show({ type: 'warning', message: '请输入用户名和密码' });
+      Notify.show({ type: 'warning', message: '请输入昵称/邮箱和密码' });
       return;
     }
 
@@ -64,7 +64,7 @@ export default function Home() {
 
       if (res.code === 200) {
         const userInfo: UserInfo = {
-          username,
+          username: res.data.username ?? username,
           userId: res.data.userId,
           userEmail: res.data.userEmail,
           lover: res.data.lover,
@@ -116,12 +116,13 @@ export default function Home() {
         <div className="flex w-full max-w-md flex-col gap-4 mt-6 mb-6">
           <Input
             type="text"
-            label="昵称"
-            placeholder="请输入昵称"
+            label="昵称或邮箱"
+            placeholder="请输入昵称或邮箱"
             value={username}
             onChange={handleUsernameChange}
             isRequired
             variant="bordered"
+            autoComplete="username"
             classNames={{
               input: 'text-[var(--text-primary)]',
               inputWrapper: 'border-[var(--border-color)] hover:border-[var(--primary-color)]',
