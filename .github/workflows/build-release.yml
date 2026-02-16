@@ -71,6 +71,19 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: flutter pub get
 
+      # 使用固定的 release 签名，保证每次打包签名一致（需在仓库 Settings → Secrets 配置）
+      - name: 配置 Android Release 签名
+        working-directory: ${{ env.PROJECT_DIR }}/android
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > app/upload-keystore.jks
+          cat >> key.properties << EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=app/upload-keystore.jks
+          EOF
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+
       - name: 构建 Android APK (Release)
         working-directory: ${{ env.PROJECT_DIR }}
         run: flutter build apk --release

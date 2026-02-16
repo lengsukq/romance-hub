@@ -12,3 +12,6 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+keystore-password.txt
+keystore-base64.txt
+GITHUB_SECRETS_VALUES.txt
