@@ -114,13 +114,17 @@ class HttpClass {
     post(url: string, params: RequestParams = {}, option: HttpOptions = {}): Promise<BaseResponse> {
         const options = Object.assign({ method: 'POST' }, option);
 
-        //可以是上传键值对形式，也可以是文件，使用append创造键值对数据
+        // 上传：若 body 已是 FormData 则直接使用，否则从普通对象构建 FormData
         if (options.type === 'FormData' && options.body !== undefined) {
-            const formData = new FormData();
-            for (const key of Object.keys(options.body as Record<string, any>)) {
-                formData.append(key, (options.body as Record<string, any>)[key]);
+            if (options.body instanceof FormData) {
+                // 已是 FormData，直接使用，避免 Object.keys(FormData) 为空导致上传无文件
+            } else {
+                const formData = new FormData();
+                for (const key of Object.keys(options.body as Record<string, any>)) {
+                    formData.append(key, (options.body as Record<string, any>)[key]);
+                }
+                options.body = formData;
             }
-            options.body = formData;
         } else {
             //一般我们常用场景用的是json，所以需要在headers加Content-Type类型
             options.body = JSON.stringify(params);

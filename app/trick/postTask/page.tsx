@@ -11,44 +11,55 @@ export default function App() {
     const [taskDetail, setTaskDetail] = useState('');
     const [taskReward, setTaskReward] = useState('');
     const [taskScore, setTaskScore] = useState(0);
+    const [taskImage, setTaskImage] = useState<string[]>([]);
 
     const vantUpload = async (file: File) => {
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            const img = await imgUpload({target: {files: [file]}} as any);
-            return {url: img};
+            const img = await imgUpload({ target: { files: [file] } } as any);
+            if (img) {
+                setTaskImage([img]);
+            }
+            return { url: img };
         } catch (error) {
             console.error('Upload failed:', error);
-            return {url: ''};
+            return { url: '' };
         }
-    }
+    };
 
     const imgUploadDelete = () => {
-        console.log('Image deleted');
-    }
+        setTaskImage([]);
+    };
 
     const onChangeEnd = (value: number | number[]) => {
         const score = Array.isArray(value) ? value[0] : value;
         setTaskScore(score);
-    }
+    };
 
     const postTaskAct = async () => {
-        const params = {taskName, taskDetail, taskReward, taskScore};
         if (isInvalidFn(taskName) || isInvalidFn(taskDetail) || isInvalidFn(taskReward)) {
+            Notify.show({ type: 'warning', message: '请填写完整的任务信息' });
             return;
         }
-        
+        if (!taskImage || taskImage.length === 0) {
+            Notify.show({ type: 'warning', message: '请至少上传一张任务图片' });
+            return;
+        }
+        const params = {
+            taskName,
+            taskDesc: taskDetail,
+            taskImage,
+            taskScore,
+        };
         await postTask(params).then(res => {
-            Notify.show({type: res.code === 200 ? 'success' : 'warning', message: `${res.msg}`})
+            Notify.show({ type: res.code === 200 ? 'success' : 'warning', message: `${res.msg}` });
             if (res.code === 200) {
-                // Reset form
                 setTaskName('');
                 setTaskDetail('');
                 setTaskReward('');
                 setTaskScore(0);
+                setTaskImage([]);
             }
-        })
+        });
     }
 
     return (

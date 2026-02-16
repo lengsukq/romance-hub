@@ -35,10 +35,10 @@ interface TaskInfoParams {
   taskId: number;
 }
 
-// 任务状态更新参数接口
+// 任务状态更新参数接口（后端 taskStatus 为 string）
 interface TaskStateParams {
   taskId: number;
-  taskStatus: number;
+  taskStatus: string;
 }
 
 // 图片上传参数接口
@@ -53,12 +53,14 @@ interface UserInfoUpdateParams {
   lover?: string;
 }
 
-// 礼物参数接口
+// 礼物参数接口（与后端 create 一致）
 interface GiftParams {
   giftName?: string;
-  giftDesc?: string;
-  giftImage?: string;
-  score?: number;
+  giftDetail?: string;
+  giftImg?: string;
+  needScore?: number;
+  remained?: number;
+  isShow?: boolean;
 }
 
 // 礼物操作参数接口

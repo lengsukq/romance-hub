@@ -63,7 +63,7 @@ export interface TaskInfoParams {
 
 export interface TaskStateParams {
   taskId: number;
-  taskStatus: number;
+  taskStatus: string;
 }
 
 export interface PostTaskParams {
@@ -92,9 +92,11 @@ export interface GiftItem {
 
 export interface GiftParams {
   giftName?: string;
-  giftDesc?: string;
-  giftImage?: string;
-  score?: number;
+  giftDetail?: string;
+  giftImg?: string;
+  needScore?: number;
+  remained?: number;
+  isShow?: boolean;
 }
 
 export interface GiftOperationParams {

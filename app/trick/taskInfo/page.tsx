@@ -42,12 +42,22 @@ export default function App() {
     }, [taskId])
 
     const getTaskInfoAct = async () => {
-        await getTaskInfo({taskId}).then(res => {
-            if (res.code === 200) {
-                setTaskDetail(res.data);
+        await getTaskInfo({ taskId }).then(res => {
+            if (res.code === 200 && res.data) {
+                const d = res.data;
+                setTaskDetail({
+                    taskId: d.taskId,
+                    taskName: d.taskName ?? '',
+                    taskDetail: d.taskDesc ?? d.taskDetail ?? '',
+                    taskReward: d.taskReward ?? '',
+                    taskScore: d.taskScore ?? 0,
+                    taskStatus: d.taskStatus ?? '',
+                    taskImg: Array.isArray(d.taskImage) ? d.taskImage[0] ?? '' : (d.taskImage ?? ''),
+                    favId: d.favId ?? null
+                });
             }
-        })
-    }
+        });
+    };
 
     const deleteButton = () => {
         setIsOpen(true);
