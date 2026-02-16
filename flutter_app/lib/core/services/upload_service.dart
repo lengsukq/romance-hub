@@ -42,45 +42,20 @@ class UploadService {
     }
   }
 
-  /// 上传多张图片
+  /// 上传多张图片（后端单次只支持单文件，逐张上传）
   Future<ApiResponse<List<String>>> uploadImages(List<File> files) async {
-    try {
-      final formData = FormData();
-      for (var file in files) {
-        formData.files.add(
-          MapEntry(
-            'files',
-            await MultipartFile.fromFile(file.path),
-          ),
+    final List<String> urls = [];
+    for (final file in files) {
+      final res = await uploadImage(file);
+      if (!res.isSuccess || res.data == null || res.data!.isEmpty) {
+        return ApiResponse(
+          code: res.code,
+          msg: res.msg.isNotEmpty ? res.msg : '第${urls.length + 1}张图片上传失败',
+          data: null,
         );
       }
-
-      final response = await _apiService.dio.post(
-        ApiEndpoints.common,
-        data: formData,
-        options: Options(
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
-      );
-
-      final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<List<String>>.fromJson(
-        responseData,
-        (data) {
-          if (data is List) {
-            return data.map((item) => (item as Map<String, dynamic>)['url'] as String? ?? item.toString()).toList().cast<String>();
-          }
-          return [];
-        },
-      );
-    } catch (e) {
-      AppLogger.e('上传图片失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '上传图片失败: ${e.toString()}',
-      );
+      urls.add(res.data!);
     }
+    return ApiResponse(code: 200, msg: '上传成功', data: urls);
   }
 }

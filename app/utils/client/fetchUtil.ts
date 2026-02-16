@@ -120,8 +120,9 @@ class HttpClass {
                 // 已是 FormData，直接使用，避免 Object.keys(FormData) 为空导致上传无文件
             } else {
                 const formData = new FormData();
-                for (const key of Object.keys(options.body as Record<string, any>)) {
-                    formData.append(key, (options.body as Record<string, any>)[key]);
+                const bodyObj = options.body as unknown as Record<string, unknown>;
+                for (const key of Object.keys(bodyObj)) {
+                    formData.append(key, bodyObj[key] as string | Blob);
                 }
                 options.body = formData;
             }
