@@ -38,13 +38,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+      version_code: ${{ steps.version.outputs.version_code }}
     steps:
       - name: 生成版本号 (1.YYYYMMDDHHmm)
         id: version
         run: |
           TIMESTAMP=$(date -u +%Y%m%d%H%M)
+          # versionName: 1.YYYYMMDDHHmm
           echo "version=1.${TIMESTAMP}" >> $GITHUB_OUTPUT
-          echo "Generated version: 1.${TIMESTAMP}"
+          # versionCode: 取前 10 位数字，保证在 Android int32 范围内且单调递增
+          VERSION_CODE="${TIMESTAMP:0:10}"
+          echo "version_code=${VERSION_CODE}" >> $GITHUB_OUTPUT
+          echo "Generated version: 1.${TIMESTAMP}, version_code: ${VERSION_CODE}"
 
   build-android:
     name: 构建 Android Release
@@ -86,7 +91,7 @@ jobs:
 
       - name: 构建 Android APK (Release)
         working-directory: ${{ env.PROJECT_DIR }}
-        run: flutter build apk --release
+        run: flutter build apk --release --build-name=${{ needs.prepare.outputs.version }} --build-number=${{ needs.prepare.outputs.version_code }}
 
       - name: 上传 Android 产物
         uses: actions/upload-artifact@v4
@@ -115,7 +120,7 @@ jobs:
 
       - name: 构建 Windows (Release)
         working-directory: ${{ env.PROJECT_DIR }}
-        run: flutter build windows --release
+        run: flutter build windows --release --build-name=${{ needs.prepare.outputs.version }} --build-number=${{ needs.prepare.outputs.version_code }}
 
       - name: 打包 Windows 发布目录
         shell: pwsh
@@ -149,7 +154,7 @@ jobs:
 
       - name: 构建 macOS (Release)
         working-directory: ${{ env.PROJECT_DIR }}
-        run: flutter build macos --release
+        run: flutter build macos --release --build-name=${{ needs.prepare.outputs.version }} --build-number=${{ needs.prepare.outputs.version_code }}
 
       - name: 打包 macOS 应用
         run: |
@@ -188,7 +193,7 @@ jobs:
 
       - name: 构建 Linux (Release)
         working-directory: ${{ env.PROJECT_DIR }}
-        run: flutter build linux --release
+        run: flutter build linux --release --build-name=${{ needs.prepare.outputs.version }} --build-number=${{ needs.prepare.outputs.version_code }}
 
       - name: 打包 Linux 发布目录
         run: |
