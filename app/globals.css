@@ -194,6 +194,71 @@ button:focus-visible {
   box-shadow: 0 0 0 2px var(--primary-color);
 }
 
+/* 2026 登录页 */
+.login-2026 {
+  background: linear-gradient(
+    180deg,
+    var(--bg-primary) 0%,
+    var(--bg-secondary) 40%,
+    var(--bg-primary) 100%
+  );
+}
+.login-2026__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  box-shadow: var(--shadow-md);
+}
+.login-2026__year {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #fff;
+}
+
+/* 2026 主页（trick 首页） */
+.home-2026 {
+  background: linear-gradient(
+    180deg,
+    var(--bg-primary) 0%,
+    var(--bg-secondary) 30%,
+    var(--bg-primary) 100%
+  );
+}
+.home-2026__header {
+  border-bottom: 1px solid var(--border-color);
+}
+.home-2026__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.5rem;
+}
+.home-2026__year {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fff;
+}
+.home-2026__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.home-2026__subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0 0;
+}
+
 /* Responsive text sizing */
 .text-responsive {
   font-size: clamp(0.875rem, 2vw, 1rem);

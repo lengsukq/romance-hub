@@ -28,9 +28,7 @@ export default function App() {
     useEffect(() => {
         setCurrentPage(1)
         setSearchWords('');
-        getTaskList(taskStatusStore, '',1).then(() => {
-            // console.log('useEffect', r)
-        });
+        getTaskList(taskStatusStore, '', 1);
     }, [taskStatusStore])
     
     const keyToFalse = () => {
@@ -70,22 +68,36 @@ export default function App() {
 
     useInfiniteScroll(() => {
         if (currentPage < totalPages) {
-            setCurrentPage(currentPage+1)
-            getTaskList(taskStatusStore, searchWords, currentPage+1);
+            setCurrentPage(currentPage + 1);
+            getTaskList(taskStatusStore, searchWords, currentPage + 1);
         }
-    })
-    
+    });
+
     return (
         <>
-            <SearchModal openKey={isSearch}
-                         keyToFalse={keyToFalse}
-                         searchWords={searchWords}
-                         setSearchWords={setSearchWords}
-                         onKeyDown={onKeyDown}/>
-            {(taskList?.length ?? 0) > 0 ?
-                <div className="gap-2 grid grid-cols-2 sm:grid-cols-4 p-5">
-                    <TaskCard taskList={taskList ?? []} checkDetails={checkDetails}/>
-                </div> : <NoDataCom/>}
+            <SearchModal
+                openKey={isSearch}
+                keyToFalse={keyToFalse}
+                searchWords={searchWords}
+                setSearchWords={setSearchWords}
+                onKeyDown={onKeyDown}
+            />
+            <div className="home-2026 min-h-screen">
+                <header className="home-2026__header px-5 pt-5 pb-3">
+                    <div className="home-2026__badge">
+                        <span className="home-2026__year">2026</span>
+                    </div>
+                    <p className="home-2026__title">任务</p>
+                    <p className="home-2026__subtitle">RomanceHub · 新岁共赴</p>
+                </header>
+                {(taskList?.length ?? 0) > 0 ? (
+                    <div className="gap-2 grid grid-cols-2 sm:grid-cols-4 px-5 pb-24">
+                        <TaskCard taskList={taskList ?? []} checkDetails={checkDetails} />
+                    </div>
+                ) : (
+                    <NoDataCom />
+                )}
+            </div>
         </>
-    )
+    );
 }
