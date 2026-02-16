@@ -181,27 +181,48 @@ class _WhisperListPageState extends State<WhisperListPage> {
                     itemBuilder: (context, index) {
                       final whisper = _whisperList[index];
                       final isFavourite = _favouriteWhisperIds.contains(whisper.whisperId);
+                      final isTAList = widget.type == 'ta';
+                      final fromMe = whisper.fromMe ?? false;
+                      final showAsMine = isTAList && fromMe;
+                      final showDelete = widget.type == 'my' || showAsMine;
+
                       return Card(
                         margin: const EdgeInsets.only(bottom: 10),
+                        color: isTAList
+                            ? (showAsMine ? colorScheme.primaryContainer : colorScheme.surfaceContainerHighest)
+                            : null,
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           title: Text(
                             whisper.content,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: isTAList && showAsMine ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+                            ),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 6),
                               Text(
-                                '来自：${whisper.fromUserName}',
-                                style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                                isTAList
+                                    ? (showAsMine ? '我' : 'TA')
+                                    : '来自：${whisper.fromUserName}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isTAList && showAsMine
+                                      ? colorScheme.onPrimaryContainer
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: isTAList ? FontWeight.w600 : null,
+                                ),
                               ),
                               Text(
                                 whisper.creationTime,
-                                style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isTAList && showAsMine
+                                      ? colorScheme.onPrimaryContainer.withValues(alpha: 0.8)
+                                      : colorScheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
@@ -215,7 +236,7 @@ class _WhisperListPageState extends State<WhisperListPage> {
                                 ),
                                 onPressed: () => _toggleFavourite(whisper.whisperId),
                               ),
-                              if (widget.type == 'my')
+                              if (showDelete)
                                 IconButton(
                                   icon: Icon(Icons.delete_outline_rounded, color: colorScheme.onSurfaceVariant),
                                   onPressed: () => _deleteWhisper(whisper),

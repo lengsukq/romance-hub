@@ -452,13 +452,19 @@ export class WhisperService {
     });
   }
 
-  // 获取TA的留言列表
+  // 获取「与 TA 的对话」列表：我发给对方的 + 对方发给我的，按时间倒序，每条带 fromMe 便于前端区分展示
   static async getTAWhispers(userEmail: string, lover: string, searchWords: string = '') {
-    return await prisma.whisperList.findMany({
-      where: {
-        publisherEmail: lover,
-        title: { contains: searchWords }
-      },
+    const where: { OR: Array<Record<string, unknown>>; title?: { contains: string } } = {
+      OR: [
+        { publisherEmail: userEmail, toUserEmail: lover },
+        { publisherEmail: lover, toUserEmail: userEmail }
+      ]
+    };
+    if (searchWords) {
+      where.title = { contains: searchWords };
+    }
+    const rows = await prisma.whisperList.findMany({
+      where,
       include: {
         publisher: {
           select: {
@@ -468,6 +474,10 @@ export class WhisperService {
       },
       orderBy: { whisperId: 'desc' }
     });
+    return rows.map((row) => ({
+      ...row,
+      fromMe: row.publisherEmail === userEmail
+    }));
   }
 
   // 检查留言收藏状态

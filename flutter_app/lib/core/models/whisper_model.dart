@@ -11,6 +11,8 @@ class WhisperModel {
   final String creationTime;
   final bool isRead;
   final int? favId;
+  /// TA的私语列表中：true=我发的，false=对方发的，用于区分展示
+  final bool? fromMe;
 
   WhisperModel({
     required this.whisperId,
@@ -24,6 +26,7 @@ class WhisperModel {
     required this.creationTime,
     this.isRead = false,
     this.favId,
+    this.fromMe,
   });
 
   factory WhisperModel.fromJson(Map<String, dynamic> json) {
@@ -32,13 +35,14 @@ class WhisperModel {
       title: json['title'] as String?,
       content: json['content'] as String,
       fromUserId: json['fromUserId'] as String? ?? json['publisherEmail'] as String? ?? '',
-      fromUserName: json['fromUserName'] as String? ?? json['userName'] as String? ?? '',
+      fromUserName: json['fromUserName'] as String? ?? json['publisherName'] as String? ?? json['userName'] as String? ?? '',
       toUserId: json['toUserId'] as String? ?? json['toUserEmail'] as String?,
       toUserName: json['toUserName'] as String?,
-      userName: json['userName'] as String? ?? json['fromUserName'] as String? ?? '',
+      userName: json['userName'] as String? ?? json['fromUserName'] as String? ?? json['publisherName'] as String? ?? '',
       creationTime: json['creationTime'] as String,
       isRead: json['isRead'] as bool? ?? false,
       favId: json['favId'] as int?,
+      fromMe: json['fromMe'] as bool?,
     );
   }
 
@@ -55,6 +59,7 @@ class WhisperModel {
       'creationTime': creationTime,
       'isRead': isRead,
       'favId': favId,
+      'fromMe': fromMe,
     };
   }
 }
