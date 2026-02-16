@@ -76,7 +76,7 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: flutter pub get
 
-      # 使用固定的 release 签名，保证每次打包签名一致（需在仓库 Settings → Secrets 配置）
+      # 使用固定的 release 签名（Secrets 中 ANDROID_KEY_ALIAS 须与生成 keystore 时 -alias 一致，本项目为 upload）
       - name: 配置 Android Release 签名
         working-directory: ${{ env.PROJECT_DIR }}/android
         env:
@@ -86,14 +86,25 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           if [ -n "$ANDROID_KEYSTORE_B64" ]; then
-            echo "$ANDROID_KEYSTORE_B64" | base64 -d > app/upload-keystore.jks
+            # 去掉 Base64 中的换行/空格，避免解码失败或 keystore 损坏
+            echo "$ANDROID_KEYSTORE_B64" | tr -d '\n\r \t' | base64 -d > app/upload-keystore.jks
+            # key.properties 中的 keyAlias 必须与 keystore 内密钥别名完全一致（生成时用的 -alias upload）
+            ALIAS_TRIM=$(echo "$ANDROID_KEY_ALIAS" | tr -d '\n\r \t')
+            : "${ALIAS_TRIM:=upload}"
             cat >> key.properties << EOF
           storePassword=$ANDROID_KEYSTORE_PASS
           keyPassword=$ANDROID_KEY_PASS
-          keyAlias=$ANDROID_KEY_ALIAS
+          keyAlias=$ALIAS_TRIM
           storeFile=app/upload-keystore.jks
           EOF
-            echo "Release 签名已配置"
+            # 校验 keystore 内是否包含该 alias，避免打包时报 No key with alias found
+            if keytool -list -keystore app/upload-keystore.jks -storepass "$ANDROID_KEYSTORE_PASS" 2>/dev/null | grep -q "$ALIAS_TRIM"; then
+              echo "Release 签名已配置 (alias=$ALIAS_TRIM)"
+            else
+              echo "::error::keystore 中未找到别名 \"$ALIAS_TRIM\"。若使用本项目生成的 keystore，请将 Secret ANDROID_KEY_ALIAS 设为: upload"
+              keytool -list -keystore app/upload-keystore.jks -storepass "$ANDROID_KEYSTORE_PASS" 2>/dev/null | head -15 || true
+              exit 1
+            fi
           else
             echo "未配置 ANDROID_KEYSTORE_BASE64，将使用 debug 签名"
           fi

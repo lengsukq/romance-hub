@@ -33,7 +33,7 @@ keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -vali
 | `ANDROID_KEYSTORE_BASE64` | 将 `upload-keystore.jks` 做 Base64 编码后的内容。PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("upload-keystore.jks"))`；Linux/macOS: `base64 -w0 upload-keystore.jks` |
 | `ANDROID_KEYSTORE_PASSWORD` | 上面的 **storePassword** |
 | `ANDROID_KEY_PASSWORD` | 上面的 **keyPassword** |
-| `ANDROID_KEY_ALIAS` | 上面的 **keyAlias**（如 `upload`） |
+| `ANDROID_KEY_ALIAS` | 上面的 **keyAlias**，必须与生成时 `-alias` 完全一致。本项目生成时用的是 **`upload`**（小写），Secret 里填 **upload** 即可。 |
 
 配置完成后，每次 workflow 构建 Android Release 时会用同一套 keystore 签名，**签名将保持一致**。
 
