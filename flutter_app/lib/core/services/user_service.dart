@@ -93,7 +93,12 @@ class UserService {
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<int>.fromJson(
         responseData,
-        (data) => data as int? ?? 0,
+        (data) {
+          if (data == null) return 0;
+          if (data is int) return data;
+          if (data is Map && data['score'] != null) return (data['score'] as num).toInt();
+          return 0;
+        },
       );
     } catch (e) {
       AppLogger.e('获取积分失败', e);

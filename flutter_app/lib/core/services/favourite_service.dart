@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:romance_hub_flutter/core/constants/api_endpoints.dart';
 import 'package:romance_hub_flutter/core/models/api_response.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
@@ -75,22 +76,59 @@ class FavouriteService {
         },
       );
 
-      final responseData = response.data as Map<String, dynamic>;
+      final responseData = response.data;
+      if (responseData is! Map<String, dynamic>) {
+        AppLogger.e('获取收藏列表失败', '响应格式异常: 非 JSON 对象');
+        return ApiResponse(code: 500, msg: '响应格式异常，请检查云阁地址');
+      }
       return ApiResponse<List<FavouriteModel>>.fromJson(
         responseData,
         (data) {
-          if (data is! List) return <FavouriteModel>[];
-          return data
-              .map((item) => FavouriteModel.fromJson(item as Map<String, dynamic>))
-              .toList();
+          if (data == null || data is! List) return <FavouriteModel>[];
+          final list = <FavouriteModel>[];
+          for (final e in data) {
+            if (e is Map<String, dynamic>) {
+              try {
+                list.add(FavouriteModel.fromJson(e));
+              } catch (err) {
+                AppLogger.d('收藏项解析跳过: $err');
+              }
+            }
+          }
+          return list;
         },
       );
-    } catch (e) {
+    } on DioException catch (e) {
+      final msg = _dioErrorMessage(e);
       AppLogger.e('获取收藏列表失败', e);
+      return ApiResponse(code: e.response?.statusCode ?? 500, msg: msg);
+    } catch (e, stack) {
+      AppLogger.e('获取收藏列表失败', e);
+      AppLogger.d(stack.toString());
       return ApiResponse(
         code: 500,
         msg: '获取收藏列表失败: ${e.toString()}',
       );
+    }
+  }
+
+  static String _dioErrorMessage(DioException e) {
+    if (e.response?.data is Map) {
+      final msg = e.response!.data['msg'];
+      if (msg != null && msg.toString().isNotEmpty) return msg.toString();
+    }
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        return '网络超时，请检查云阁地址与网络';
+      case DioExceptionType.connectionError:
+        return '无法连接服务器，请检查云阁地址与网络';
+      case DioExceptionType.badResponse:
+        if (e.response?.statusCode == 401) return '请先登录';
+        return '请求失败: ${e.response?.statusCode}';
+      default:
+        return e.message ?? '网络请求失败';
     }
   }
 }

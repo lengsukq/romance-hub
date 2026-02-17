@@ -12,16 +12,20 @@ interface UserInfo {
 
 interface UserInfoCardProps {
     userInfo?: UserInfo;
-    onOpen: () => void;
+    onAction?: () => void;
     isLover?: boolean;
     avatarBtn?: () => void;
+    actionLabel?: string;
+    hideAction?: boolean;
 }
 
 export default function UserInfoCard ({
     userInfo, 
-    onOpen,
+    onAction = () => {},
     isLover = false,
-    avatarBtn = () => {}
+    avatarBtn = () => {},
+    actionLabel = '编辑',
+    hideAction = false
 }: UserInfoCardProps) {
     if (userInfo) {
         return (
@@ -38,13 +42,14 @@ export default function UserInfoCard ({
                             </div>
                         </div>
                         <Button
-                            className={isLover?"hidden":"bg-transparent text-foreground border-default-200"}
+                            className={(isLover || hideAction) ? "hidden" : "bg-transparent text-foreground border-default-200"}
                             color="primary"
                             radius="full"
                             size="sm"
                             variant={"bordered"}
-                            onClick={onOpen}>
-                            配置
+                            onClick={onAction}
+                        >
+                            {actionLabel}
                         </Button>
                     </CardHeader>
                     <CardBody className="px-3 py-0 text-small text-default-400">
@@ -54,7 +59,7 @@ export default function UserInfoCard ({
                     </CardBody>
                     <CardFooter className="gap-3">
                         <div className="flex gap-1">
-                            <p className=" text-default-400 text-small">注册时间：</p>
+                            <p className=" text-default-400 text-small">初遇：</p>
                         </div>
                         <div className="flex gap-1">
                             <p className="text-default-400 text-small">{userInfo.registrationTime}</p>

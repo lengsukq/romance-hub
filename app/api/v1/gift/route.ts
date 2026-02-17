@@ -103,11 +103,12 @@ async function handleGetGiftList(req: NextRequest, data: GiftListData): Promise<
 
         const result = await GiftService.getAvailableGifts(searchWords);
 
-        // 转换数据格式以匹配原有的返回结构
-        const transformedResult = result.map(gift => ({
-            ...gift,
-            publisherName: gift.publisher.username
-        }));
+        // 统一返回 publisherName，移除 publisher 嵌套（Web/App 共用）
+        const transformedResult = result.map((gift: any) => {
+            const item = { ...gift, publisherName: gift.publisher?.username ?? gift.publisherEmail ?? '' };
+            delete item.publisher;
+            return item;
+        });
 
         return NextResponse.json(BizResult.success(transformedResult, '获取礼物列表成功'));
 
@@ -134,7 +135,14 @@ async function handleGetMyGiftList(req: NextRequest, data: GiftListData): Promis
             type
         });
 
-        return NextResponse.json(BizResult.success(result, '获取我的礼物列表成功'));
+        // 统一返回 publisherName，移除 publisher 嵌套（Web/App 共用）
+        const transformedResult = (result as any[]).map((gift: any) => {
+            const item = { ...gift, publisherName: gift.publisher?.username ?? gift.publisherEmail ?? '' };
+            delete item.publisher;
+            return item;
+        });
+
+        return NextResponse.json(BizResult.success(transformedResult, '获取我的礼物列表成功'));
 
     } catch (error) {
         console.error('获取我的礼物列表失败:', error);
@@ -160,10 +168,11 @@ async function handleGetGiftDetail(req: NextRequest, data: GiftOperationData): P
         const result = await GiftService.getGiftDetail(giftId);
 
         if (result) {
-            const transformedResult = {
+            const transformedResult: any = {
                 ...result,
-                publisherName: result.publisher.username
+                publisherName: result.publisher?.username ?? result.publisherEmail ?? ''
             };
+            delete transformedResult.publisher;
             return NextResponse.json(BizResult.success(transformedResult, '获取礼物详情成功'));
         } else {
             return NextResponse.json(BizResult.fail('', '礼物不存在'));

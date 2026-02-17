@@ -114,11 +114,13 @@ export interface WhisperItem {
   whisperId: number;
   title?: string;
   content: string;
-  fromUserId: string;
-  fromUserName: string;
-  toUserId: string;
-  toUserName: string;
-  userName: string;
+  fromUserId?: string;
+  fromUserName?: string;
+  toUserId?: string;
+  toUserName?: string;
+  /** 发布人昵称（与 publisherName 二选一，API 可能返回其一） */
+  userName?: string;
+  publisherName?: string;
   creationTime: string;
   isRead?: boolean;
   favId?: number | null;

@@ -102,12 +102,17 @@ async function handleGetTaskList(req: NextRequest, data: TaskListData): Promise<
 
         const totalPages = Math.ceil(totalCount / pageSize);
 
-        // 处理任务图片数组
+        // 处理任务图片数组并补充发布人昵称（供 App 等客户端展示）
         result.forEach((item: any) => {
             if (item.taskImage) {
-                item.taskImage = item.taskImage.split(',');
+                item.taskImage = typeof item.taskImage === 'string' ? item.taskImage.split(',') : item.taskImage;
             }
             item.isApprove = item.isApprove !== 0;
+            item.publisherName = item.publisher?.username ?? item.publisherEmail ?? '';
+            item.publisherId = item.publisherEmail;
+            item.recipientId = item.receiverEmail ?? null;
+            delete item.publisher;
+            delete item.receiver;
         });
 
         return NextResponse.json(BizResult.success({
@@ -143,14 +148,19 @@ async function handleGetTaskDetail(req: NextRequest, data: TaskDetailData): Prom
         const favourite = await TaskService.checkTaskFavourite(taskId, userEmail);
 
         if (task) {
-            const result = {
+            const taskImage = task.taskImage ? task.taskImage.split(',') : [];
+            const result: any = {
                 ...task,
-                taskImage: task.taskImage ? task.taskImage.split(',') : [],
+                taskImage,
                 isApprove: task.isApprove,
                 isFavorite: !!favourite,
-                favId: favourite?.favId || null
+                favId: favourite?.favId || null,
+                publisherName: task.publisher?.username ?? task.publisherEmail ?? '',
+                publisherId: task.publisherEmail,
+                recipientId: task.receiverEmail ?? null,
             };
-
+            delete result.publisher;
+            delete result.receiver;
             return NextResponse.json(BizResult.success(result, '获取任务详情成功'));
         } else {
             return NextResponse.json(BizResult.fail('', '任务不存在'));

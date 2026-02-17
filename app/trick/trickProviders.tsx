@@ -9,7 +9,7 @@ interface TrickProvidersProps {
 export function TrickProviders({children}: TrickProvidersProps) {
     return (
         <Suspense>
-                <div className={"pb-14"}>{children}</div>
+                <div className={"pb-24"}>{children}</div>
                 <GlobalComponent/>
         </Suspense>
     );

@@ -28,7 +28,7 @@ class FavouriteModel {
   });
 
   factory FavouriteModel.fromJson(Map<String, dynamic> json) {
-    final typeStr = json['collectionType'] as String;
+    final typeStr = json['collectionType'] as String? ?? '';
     FavouriteType type;
     switch (typeStr) {
       case 'task':
@@ -44,27 +44,40 @@ class FavouriteModel {
         type = FavouriteType.task;
     }
 
+    final favouriteId = json['favouriteId'] as int? ?? json['favId'] as int? ?? 0;
+    final collectionIdRaw = json['collectionId'];
+    final collectionId = collectionIdRaw is int
+        ? collectionIdRaw
+        : (int.tryParse(collectionIdRaw?.toString() ?? '') ?? 0);
+    final userId = json['userId'] as String? ?? '';
+    final creationTime = json['creationTime'] as String? ?? json['favTime']?.toString() ?? '';
+
     dynamic itemData;
-    if (json['item'] != null) {
-      switch (type) {
-        case FavouriteType.task:
-          itemData = TaskModel.fromJson(json['item'] as Map<String, dynamic>);
-          break;
-        case FavouriteType.gift:
-          itemData = GiftModel.fromJson(json['item'] as Map<String, dynamic>);
-          break;
-        case FavouriteType.whisper:
-          itemData = WhisperModel.fromJson(json['item'] as Map<String, dynamic>);
-          break;
+    final itemJson = json['item'];
+    if (itemJson is Map<String, dynamic>) {
+      try {
+        switch (type) {
+          case FavouriteType.task:
+            itemData = TaskModel.fromJson(itemJson);
+            break;
+          case FavouriteType.gift:
+            itemData = GiftModel.fromJson(itemJson);
+            break;
+          case FavouriteType.whisper:
+            itemData = WhisperModel.fromJson(itemJson);
+            break;
+        }
+      } catch (_) {
+        itemData = null;
       }
     }
 
     return FavouriteModel(
-      favouriteId: json['favouriteId'] as int,
-      collectionId: json['collectionId'] as int,
+      favouriteId: favouriteId,
+      collectionId: collectionId,
       collectionType: type,
-      userId: json['userId'] as String,
-      creationTime: json['creationTime'] as String,
+      userId: userId,
+      creationTime: creationTime,
       item: itemData,
     );
   }

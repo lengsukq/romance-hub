@@ -99,7 +99,11 @@
 }
 
 /* Mobile keyboard handling */
-@media only screen and (max-height: 600px) {
+/* NOTE:
+   之前用 max-height: 600px 直接隐藏底部栏，会导致桌面端/横屏/小窗口下底部导航不显示，
+   让“私语/赠礼”等入口看似“消失”。
+   这里仅在极端小高度时隐藏，避免遮挡输入区。 */
+@media only screen and (max-height: 420px) {
   .GlobalComponent {
     display: none;
   }

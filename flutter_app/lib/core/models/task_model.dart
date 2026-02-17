@@ -27,20 +27,22 @@ class TaskModel {
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
+    final taskImage = json['taskImage'];
+    final recordList = taskImage is List
+        ? List<String>.from(taskImage.map((e) => e?.toString() ?? ''))
+        : (taskImage != null ? [taskImage.toString()] : <String>[]);
     return TaskModel(
-      taskId: json['taskId'] as int,
-      taskName: json['taskName'] as String,
+      taskId: json['taskId'] as int? ?? 0,
+      taskName: json['taskName'] as String? ?? '',
       taskDesc: json['taskDesc'] as String?,
-      taskImage: json['taskImage'] is List
-          ? List<String>.from(json['taskImage'])
-          : (json['taskImage'] != null ? [json['taskImage'] as String] : []),
-      taskScore: json['taskScore'] as int,
-      publisherName: json['publisherName'] as String,
-      taskStatus: json['taskStatus'] as String,
-      creationTime: json['creationTime'] as String,
-      completionTime: json['completionTime'] as String?,
-      publisherId: json['publisherId'] as String?,
-      recipientId: json['recipientId'] as String?,
+      taskImage: recordList,
+      taskScore: json['taskScore'] as int? ?? 0,
+      publisherName: json['publisherName'] as String? ?? json['publisherEmail'] as String? ?? '',
+      taskStatus: json['taskStatus'] as String? ?? '未开始',
+      creationTime: json['creationTime'] != null ? json['creationTime'].toString() : '',
+      completionTime: json['completionTime'] != null ? json['completionTime'].toString() : null,
+      publisherId: json['publisherId'] as String? ?? json['publisherEmail'] as String?,
+      recipientId: json['recipientId'] as String? ?? json['receiverEmail'] as String?,
     );
   }
 

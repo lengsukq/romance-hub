@@ -127,6 +127,7 @@ export class UserService {
     return await prisma.userInfo.findUnique({
       where: { userEmail: user.lover },
       select: {
+        userId: true,
         username: true,
         avatar: true,
         userEmail: true,
@@ -209,7 +210,10 @@ export class TaskService {
         where,
         orderBy: { taskId: 'desc' },
         skip: offset,
-        take: pageSize
+        take: pageSize,
+        include: {
+          publisher: { select: { username: true } }
+        }
       }),
       prisma.taskList.count({ where })
     ]);
@@ -217,10 +221,14 @@ export class TaskService {
     return { tasks, totalCount };
   }
 
-  // 获取任务详情
+  // 获取任务详情（含发布人昵称，Web/App 共用）
   static async getTaskDetail(taskId: number) {
     return await prisma.taskList.findUnique({
-      where: { taskId }
+      where: { taskId },
+      include: {
+        publisher: { select: { username: true } },
+        receiver: { select: { username: true } }
+      }
     });
   }
 
@@ -337,7 +345,10 @@ export class GiftService {
 
     return await prisma.giftList.findMany({
       where,
-      orderBy: { giftId: 'desc' }
+      orderBy: { giftId: 'desc' },
+      include: {
+        publisher: { select: { username: true } }
+      }
     });
   }
 

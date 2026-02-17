@@ -75,6 +75,7 @@ async function handleGetMyWhisperList(req: NextRequest, data: WhisperListData): 
             result.push({
                 ...whisper,
                 publisherName: whisper.publisher.username,
+                userName: whisper.publisher.username,
                 isFavorite: !!favourite,
                 favId: favourite?.favId || null
             });
@@ -108,6 +109,7 @@ async function handleGetTAWhisperList(req: NextRequest, data: WhisperListData): 
             result.push({
                 ...whisper,
                 publisherName: whisper.publisher.username,
+                userName: whisper.publisher.username,
                 isFavorite: !!favourite,
                 favId: favourite?.favId || null
             });

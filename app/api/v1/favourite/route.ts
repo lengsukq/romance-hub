@@ -162,46 +162,75 @@ async function handleGetFavouriteList(req: NextRequest, data: FavouriteListData)
                 return NextResponse.json(BizResult.fail('', '不支持的收藏类型'));
         }
 
-        // 格式化返回数据
+        // 格式化返回数据：同时兼容 Web 与 App
+        // - Web：期望数组每项为「扁平」结构，直接有 taskId/giftId/whisperId 等，用于 TaskCard / GiftList / WhisperForm
+        // - App：期望每项有 favouriteId, collectionId, userId, creationTime, item（嵌套）
+        // 因此每项同时包含 base + item（嵌套）+ 展开 item 到顶层，便于 Web 直接当 TaskItem[]/GiftItem[]/WhisperItem[] 使用
         const formattedResult = result.map((item: any) => {
+            const collectionIdNum = parseInt(item.collectionId, 10) || 0;
             const baseData = {
-                favId: item.favId,
-                collectionId: item.collectionId,
+                favouriteId: item.favId,
+                collectionId: collectionIdNum,
                 collectionType: item.collectionType,
-                favTime: item.creationTime
+                userId: userEmail,
+                creationTime: item.creationTime != null ? String(item.creationTime) : '',
             };
 
             if (type === 'task' && item.task) {
-                return {
-                    ...baseData,
-                    ...item.task,
-                    publisherName: item.task.publisher?.username
+                const t = item.task;
+                const taskImage = typeof t.taskImage === 'string' ? (t.taskImage ? t.taskImage.split(',') : []) : (t.taskImage || []);
+                const taskItem = {
+                    taskId: t.taskId,
+                    taskName: t.taskName,
+                    taskDesc: t.taskDesc ?? null,
+                    taskImage,
+                    taskScore: t.taskScore ?? 0,
+                    taskStatus: t.taskStatus ?? '未开始',
+                    creationTime: t.creationTime != null ? String(t.creationTime) : '',
+                    completionTime: t.completionTime != null ? String(t.completionTime) : null,
+                    isApprove: t.isApprove !== 0 && t.isApprove !== false,
+                    publisherEmail: t.publisherEmail,
+                    receiverEmail: t.receiverEmail ?? null,
+                    publisherName: t.publisher?.username ?? t.publisherEmail ?? '',
+                    publisherId: t.publisherEmail,
+                    recipientId: t.receiverEmail ?? null,
                 };
-            } else if (type === 'gift' && item.gift) {
-                return {
-                    ...baseData,
-                    ...item.gift,
-                    publisherName: item.gift.publisher?.username
-                };
-            } else if (type === 'whisper' && item.whisper) {
-                return {
-                    ...baseData,
-                    ...item.whisper,
-                    publisherName: item.whisper.publisher?.username
-                };
+                return { ...baseData, item: taskItem, ...taskItem };
             }
-            return baseData;
-        }).filter(item => item);
-
-        // 处理任务图片数组
-        if (type === 'task') {
-            formattedResult.forEach((item: any) => {
-                if (item.taskImage) {
-                    item.taskImage = item.taskImage.split(',');
-                }
-                item.isApprove = item.isApprove;
-            });
-        }
+            if (type === 'gift' && item.gift) {
+                const g = item.gift;
+                const giftItem = {
+                    giftId: g.giftId,
+                    giftName: g.giftName,
+                    giftDetail: g.giftDetail ?? null,
+                    giftImg: g.giftImg ?? null,
+                    needScore: g.needScore ?? 0,
+                    remained: g.remained ?? 0,
+                    isShow: g.isShow !== false,
+                    creationTime: g.creationTime != null ? String(g.creationTime) : '',
+                    publisherEmail: g.publisherEmail,
+                    publisherName: g.publisher?.username ?? g.publisherEmail ?? '',
+                    publisherId: g.publisherEmail,
+                };
+                return { ...baseData, item: giftItem, ...giftItem };
+            }
+            if (type === 'whisper' && item.whisper) {
+                const w = item.whisper;
+                const whisperItem = {
+                    whisperId: w.whisperId,
+                    title: w.title ?? null,
+                    content: w.content ?? '',
+                    publisherEmail: w.publisherEmail,
+                    toUserEmail: w.toUserEmail ?? null,
+                    creationTime: w.creationTime != null ? String(w.creationTime) : '',
+                    isRead: w.isRead === true,
+                    publisherName: w.publisher?.username ?? w.publisherEmail ?? '',
+                    userName: w.publisher?.username ?? w.publisherEmail ?? '',
+                };
+                return { ...baseData, item: whisperItem, ...whisperItem };
+            }
+            return null;
+        }).filter((x: any) => x != null);
 
         return NextResponse.json(BizResult.success(formattedResult, `获取${type === 'task' ? '任务' : type === 'gift' ? '礼物' : '留言'}收藏列表成功`));
 

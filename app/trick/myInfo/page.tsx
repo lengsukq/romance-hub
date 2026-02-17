@@ -1,229 +1,155 @@
 'use client'
-import React, {useEffect, useState} from "react";
-import {getUserInfo, logoutApi, updateUserInfo} from "@/utils/client/apihttp";
+import React from "react";
+import { useRouter } from "next/navigation";
 import {
-    Avatar,
-    Button,
-    Card,
-    CardBody,
-    CardFooter,
-    CardHeader,
-    Chip,
-    Divider,
-    Input,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
-    useDisclosure
+  Avatar,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Divider,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
 } from "@heroui/react";
-import {Notify} from "@/utils/client/notificationUtils";
-import {useRouter} from "next/navigation";
-import {imgUpload} from "@/utils/client/fileTools";
+import { logoutApi, updateUserInfo } from "@/utils/client/apihttp";
+import { Notify } from "@/utils/client/notificationUtils";
+import { imgUpload } from "@/utils/client/fileTools";
 import UserInfoCard from "@/components/userInfoCard";
-import {post} from "@/utils/client/fetchUtil";
-
-interface UserInfo {
-    userId: number;
-    userEmail: string;
-    username: string;
-    avatar: string;
-    lover: string;
-    describeBySelf: string;
-    score: number;
-    registrationTime: string;
-}
-
-interface LoverInfo {
-    username: string;
-    avatar: string;
-    userEmail: string;
-    describeBySelf: string;
-    score: number;
-    registrationTime: string;
-}
+import { useUserAndLoverInfo } from "./hooks/useUserAndLoverInfo";
 
 export default function App() {
-    const router = useRouter();
-    const {isOpen, onOpen, onClose} = useDisclosure();
-    
-    const handleConfigClick = () => {
-        router.push('/trick/config');
-    };
-    
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [loverInfo, setLoverInfo] = useState<LoverInfo | null>(null);
-    const [editUserInfo, setEditUserInfo] = useState({
-        username: '',
-        avatar: '',
-        describeBySelf: ''
-    });
+  const router = useRouter();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isLoading, userInfo, loverInfo, editUserInfo, setEditUserInfo, reload } = useUserAndLoverInfo();
 
-    useEffect(() => {
-        getUserInfoAct();
-    }, [])
+  const logoutAct = async () => {
+    const res = await logoutApi();
+    Notify.show({ type: res.code === 200 ? "success" : "warning", message: `${res.msg}` });
+    if (res.code === 200) router.push("/");
+  };
 
-    const getUserInfoAct = async () => {
-        await getUserInfo().then(res => {
-            if (res.code === 200 && res.data) {
-                setUserInfo(res.data);
-                setEditUserInfo({
-                    username: res.data.username || '',
-                    avatar: res.data.avatar || '',
-                    describeBySelf: res.data.describeBySelf || ''
-                });
-                
-                // 获取关联者信息
-                getLoverInfoAct();
-            } else {
-                console.error('获取用户信息失败:', res);
-                Notify.show({type: 'warning', message: '获取用户信息失败'});
-            }
-        }).catch(error => {
-            console.error('API调用失败:', error);
-            Notify.show({type: 'warning', message: '网络请求失败'});
-        })
+  const updateUserInfoAct = async () => {
+    const res = await updateUserInfo(editUserInfo);
+    Notify.show({ type: res.code === 200 ? "success" : "warning", message: `${res.msg}` });
+    if (res.code === 200) {
+      await reload();
+      onClose();
     }
+  };
 
-    const getLoverInfoAct = async () => {
-        try {
-            const res = await post('/api/v1/user', {
-                action: 'lover'
-            });
-            if (res.code === 200 && res.data) {
-                setLoverInfo(res.data);
-            } else {
-                console.log('未找到关联者信息或关联者未注册');
-                setLoverInfo(null);
-            }
-        } catch (error) {
-            console.error('获取关联者信息失败:', error);
-            setLoverInfo(null);
-        }
+  const upAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const img = await imgUpload(event);
+      setEditUserInfo({ ...editUserInfo, avatar: img });
+    } catch (error) {
+      console.error("Avatar upload failed:", error);
     }
+  };
 
-    const logoutAct = async () => {
-        await logoutApi().then(res => {
-            Notify.show({type: res.code === 200 ? 'success' : 'warning', message: `${res.msg}`})
-            if (res.code === 200) {
-                router.push('/');
-            }
-        })
-    }
+  if (isLoading || !userInfo) {
+    return <div className="p-5">Loading...</div>;
+  }
 
-    const updateUserInfoAct = async () => {
-        await updateUserInfo(editUserInfo).then(res => {
-            Notify.show({type: res.code === 200 ? 'success' : 'warning', message: `${res.msg}`})
-            if (res.code === 200) {
-                getUserInfoAct();
-                onClose();
-            }
-        })
-    }
+  return (
+    <div className="p-5">
+      <div className="mb-4">
+        <p className="text-2xl font-semibold text-default-700">吾心</p>
+        <p className="text-xs text-default-400">与良人共用 · 通知与图床等设置皆在此处</p>
+      </div>
 
-    const upAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        try {
-            const img = await imgUpload(event);
-            setEditUserInfo(prev => ({...prev, avatar: img}));
-        } catch (error) {
-            console.error('Avatar upload failed:', error);
-        }
-    }
+      <Card isPressable onPress={() => router.push("/trick/config")} className="mb-5">
+        <CardHeader className="justify-between">
+          <div className="flex flex-col">
+            <p className="text-base font-semibold text-default-700">设置</p>
+            <p className="text-xs text-default-400">通知 / 图床等配置</p>
+          </div>
+          <Button size="sm" variant="bordered">
+            前往
+          </Button>
+        </CardHeader>
+      </Card>
 
-    if (!userInfo) {
-        return <div className="p-5">Loading...</div>;
-    }
+      <Divider className="my-4" />
 
-    return (
-        <div className={"p-5"}>
-            <UserInfoCard userInfo={userInfo} onOpen={handleConfigClick} />
-            
-            <Divider className="my-4" />
-            
-            {loverInfo ? (
-                <UserInfoCard 
-                    userInfo={loverInfo} 
-                    onOpen={() => {}} 
-                    isLover={true} 
-                />
-            ) : (
-                <Card className="mb-5">
-                    <CardHeader>
-                        <h4 className="font-bold text-large">关联者信息</h4>
-                    </CardHeader>
-                    <CardBody>
-                        <div className="text-center text-gray-500">
-                            <p>关联者账号尚未注册或信息不可用</p>
-                            <p className="text-sm mt-2">关联邮箱: {userInfo.lover}</p>
-                        </div>
-                    </CardBody>
-                </Card>
-            )}
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-sm font-semibold text-default-700">吾之信息</p>
+        <Button size="sm" variant="light" onPress={onOpen}>
+          编辑
+        </Button>
+      </div>
+      <UserInfoCard userInfo={userInfo} hideAction={true} />
 
-            <Card className="mt-5">
-                <CardHeader>
-                    <h4 className="font-bold text-large">操作</h4>
-                </CardHeader>
-                <CardBody>
-                    <Button 
-                        color="danger" 
-                        variant="flat" 
-                        onClick={logoutAct}
-                        className="w-full"
-                    >
-                        退出登录
-                    </Button>
-                </CardBody>
-            </Card>
+      <Divider className="my-4" />
 
-            {/* Edit Modal */}
-            <Modal isOpen={isOpen} onClose={onClose} size="lg">
-                <ModalContent>
-                    <ModalHeader>编辑个人信息</ModalHeader>
-                    <ModalBody>
-                        <div className={"w-full flex justify-center mb-4"}>
-                            <input 
-                                type="file" 
-                                name="file" 
-                                className={"hidden"} 
-                                id="editUpload"
-                                onChange={upAvatar}
-                            />
-                            <label htmlFor="editUpload">
-                                <Avatar 
-                                    isBordered 
-                                    src={editUserInfo.avatar} 
-                                    className="w-20 h-20 text-large cursor-pointer"
-                                />
-                            </label>
-                        </div>
-                        
-                        <Input
-                            value={editUserInfo.username}
-                            onChange={(e) => setEditUserInfo(prev => ({...prev, username: e.target.value}))}
-                            label="昵称"
-                            placeholder="请输入昵称"
-                            className="mb-3"
-                        />
-                        
-                        <Input
-                            value={editUserInfo.describeBySelf}
-                            onChange={(e) => setEditUserInfo(prev => ({...prev, describeBySelf: e.target.value}))}
-                            label="个人描述"
-                            placeholder="请输入个人描述"
-                        />
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button variant="flat" onPress={onClose}>
-                            取消
-                        </Button>
-                        <Button color="primary" onPress={updateUserInfoAct}>
-                            保存
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </div>
-    );
+      <p className="mb-2 text-sm font-semibold text-default-700">良人信息</p>
+      {loverInfo ? (
+        <UserInfoCard userInfo={loverInfo} isLover={true} />
+      ) : (
+        <Card className="mb-5">
+          <CardHeader>
+            <p className="text-base font-semibold text-default-700">未见良人</p>
+          </CardHeader>
+          <CardBody>
+            <div className="text-center text-default-500">
+              <p>良人尚未入阁，或其信息暂不可得。</p>
+              <p className="text-sm mt-2">良人邮箱：{userInfo.lover}</p>
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
+      <Card className="mt-5">
+        <CardHeader>
+          <p className="text-base font-semibold text-default-700">离阁</p>
+        </CardHeader>
+        <CardBody>
+          <Button color="danger" variant="flat" onClick={logoutAct} className="w-full">
+            退出
+          </Button>
+        </CardBody>
+      </Card>
+
+      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+        <ModalContent>
+          <ModalHeader>编辑吾之信息</ModalHeader>
+          <ModalBody>
+            <div className="w-full flex justify-center mb-4">
+              <input type="file" name="file" className="hidden" id="editUpload" onChange={upAvatar} />
+              <label htmlFor="editUpload">
+                <Avatar isBordered src={editUserInfo.avatar} className="w-20 h-20 text-large cursor-pointer" />
+              </label>
+            </div>
+
+            <Input
+              value={editUserInfo.username}
+              onChange={(e) => setEditUserInfo({ ...editUserInfo, username: e.target.value })}
+              label="用户名"
+              placeholder="请输入用户名"
+              className="mb-3"
+            />
+
+            <Input
+              value={editUserInfo.describeBySelf}
+              onChange={(e) => setEditUserInfo({ ...editUserInfo, describeBySelf: e.target.value })}
+              label="一言"
+              placeholder="写一句，寄此心"
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="flat" onPress={onClose}>
+              取消
+            </Button>
+            <Button color="primary" onPress={updateUserInfoAct}>
+              保存
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </div>
+  );
 }

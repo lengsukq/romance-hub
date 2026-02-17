@@ -52,6 +52,8 @@ interface UserInfoUpdateParams {
   username?: string;
   userEmail?: string;
   lover?: string;
+  avatar?: string;
+  describeBySelf?: string;
 }
 
 // 礼物参数接口（与后端 create 一致）

@@ -1,10 +1,17 @@
 import {Button, Card, CardBody, CardFooter, CardHeader, Input, Textarea,} from "@heroui/react";
 import React, {useEffect, useState} from "react";
+import dayjs from "dayjs";
 import {isInvalidFn} from "@/utils/client/dataTools";
 import {addWhisper} from "@/utils/client/apihttp";
 import {Notify} from "@/utils/client/notificationUtils";
 import FavButton from "@/components/buttonCom/FavButton";
 import { WhisperItem } from "@/types";
+
+function formatWhisperDate(creationTime: string | undefined): string {
+    if (!creationTime) return '—';
+    const d = dayjs(creationTime);
+    return d.isValid() ? d.format('YYYY-MM-DD HH:mm') : creationTime;
+}
 
 interface WhisperFormProps {
     item?: WhisperItem | null;
@@ -46,11 +53,16 @@ export default function WhisperForm({
     
     const FooterLeftCom = () => {
         if (item) {
+            const publisherName = item.userName ?? item.publisherName ?? '—';
+            const formattedTime = formatWhisperDate(item.creationTime);
             return (
                 <>
-                    <div className={"gap-1 pl-1 pb-0"}>
-                        <p className=" text-default-400 text-small">{item.userName}发布于</p>
-                        <p className="font-semibold text-default-400 text-small">{item.creationTime}</p>
+                    <div className="flex flex-col gap-0.5 pl-1 pb-0">
+                        <p className="text-default-500 text-small">
+                            <span className="font-medium text-default-600">{publisherName}</span>
+                            <span className="text-default-400"> 发布于 </span>
+                            <span className="text-default-500">{formattedTime}</span>
+                        </p>
                     </div>
                     <FavButton isFav={!!item.favId} btnSize={'sm'} iconSize={18} buttonAct={()=>addFavAct && addFavAct(item)} isLoading={addLoading}/>
                 </>

@@ -87,8 +87,8 @@ export default function App() {
                     <div className="home-2026__badge">
                         <span className="home-2026__year">2026</span>
                     </div>
-                    <p className="home-2026__title">任务</p>
-                    <p className="home-2026__subtitle">RomanceHub · 新岁共赴</p>
+                    <p className="home-2026__title">心诺</p>
+                    <p className="home-2026__subtitle">一事一诺，与君共赴</p>
                 </header>
                 {(taskList?.length ?? 0) > 0 ? (
                     <div className="gap-2 grid grid-cols-2 sm:grid-cols-4 px-5 pb-24">
