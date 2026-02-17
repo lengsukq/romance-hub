@@ -7,6 +7,7 @@ import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/task_card.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/year_2026_badge.dart';
 
 /// 任务列表页面
 class TaskListPage extends StatefulWidget {
@@ -123,7 +124,14 @@ class _TaskListPageState extends State<TaskListPage> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('心诺一览'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Year2026Badge(label: '2026', large: false),
+            const SizedBox(width: 10),
+            Text('心诺', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+          ],
+        ),
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [

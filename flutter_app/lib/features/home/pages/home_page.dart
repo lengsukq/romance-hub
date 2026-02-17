@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/sweet_talk_service.dart';
 import 'package:romance_hub_flutter/core/utils/snackbar_utils.dart';
+import 'package:romance_hub_flutter/shared/widgets/year_2026_badge.dart';
 
 /// 首页：入口导航 + 情话展示，无切换动画（由 StatefulShellRoute 保证）
 class HomePage extends StatefulWidget {
@@ -60,13 +61,15 @@ class _HomePageState extends State<HomePage> {
       ),
       body: CustomScrollView(
         slivers: [
-          // 欢迎区：君归矣 + 副标题，紧凑优雅
+          // 2026 马年专属模块：标识 + 欢迎区（与 Web 端一致）
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Year2026Badge(label: '2026', large: false),
+                  const SizedBox(height: 10),
                   Text(
                     '君归矣',
                     style: theme.textTheme.headlineSmall?.copyWith(
