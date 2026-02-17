@@ -24,6 +24,12 @@ interface TaskInfoProps {
     deleteButton?: () => void;
     onChangeEnd?: (value: number | number[]) => void;
     addFavAct?: () => void;
+    showAccept?: boolean;
+    showComplete?: boolean;
+    onAccept?: () => void;
+    onComplete?: () => void;
+    onImageClick?: (index: number) => void;
+    isStateLoading?: boolean;
 }
 
 export default function TaskInfoCom({
@@ -43,6 +49,12 @@ export default function TaskInfoCom({
     deleteButton = () => "",
     onChangeEnd = () => "",
     addFavAct = () => "",
+    showAccept = false,
+    showComplete = false,
+    onAccept = () => "",
+    onComplete = () => "",
+    onImageClick,
+    isStateLoading = false,
 }: TaskInfoProps) {
     const getScoreAct = async () => {
         await getScore().then(res => {
@@ -51,7 +63,14 @@ export default function TaskInfoCom({
     }
     const [sliderMax, setSliderMax] = useState(1000)
     const [sliderValue, setSliderValue] = useState(0)
-    
+
+    const statusText: Record<string, string> = {
+        pending: '待接受',
+        accepted: '进行中',
+        completed: '已完成',
+    };
+    const displayStatus = statusText[taskStatus] ?? taskStatus;
+
     useEffect(() => {
         if (isPost) {
             // 获取积分
@@ -66,8 +85,16 @@ export default function TaskInfoCom({
     return (
         <>
             <Card className={isPost ? "hidden" : "mb-5"}>
-                <CardBody className="flex justify-between flex-row items-center">
-                    <p>{taskStatus}</p>
+                <CardBody className="flex justify-between flex-row items-center flex-wrap gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <p>{displayStatus}</p>
+                        {showAccept && (
+                            <Button size="sm" color="primary" variant="flat" onPress={onAccept} isLoading={isStateLoading}>接受</Button>
+                        )}
+                        {showComplete && (
+                            <Button size="sm" color="success" variant="flat" onPress={onComplete} isLoading={isStateLoading}>完成任务</Button>
+                        )}
+                    </div>
                     <div className={"flex"}>
                         <FavButton buttonAct={addFavAct} isFav={!!favId}/>
                         <Button isIconOnly variant="faded" onClick={() => deleteButton()} className={"ml-1"}>
@@ -86,6 +113,7 @@ export default function TaskInfoCom({
                             value={defaultValue}
                             deletable={false}
                             showUpload={false}
+                            onImageClick={defaultValue?.length && defaultValue[0]?.url ? onImageClick : undefined}
                         />}
                 </CardBody>
             </Card>

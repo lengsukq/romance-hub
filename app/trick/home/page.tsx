@@ -105,6 +105,7 @@ export default function HomePage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 px-5 pt-2">
         <EntryCard title="心诺" subtitle="立一诺，择一事" to="/trick" />
         <EntryCard title="赠礼" subtitle="以心意，换欢喜" to="/trick/gift/getList" />
+        <EntryCard title="我的赠礼" subtitle="吾架 · 已上架/待使用/已用完" to="/trick/gift" />
         <EntryCard title="私语" subtitle="锦书寄语，念念相闻" to="/trick/whisper/TAWhisper" />
         <EntryCard title="藏心" subtitle="所爱所念，尽收于此" to="/trick/favourite/taskList" />
         <EntryCard title="设置" subtitle="通知与图床等配置" to="/trick/config" />

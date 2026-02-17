@@ -6,6 +6,7 @@ import 'package:romance_hub_flutter/core/services/whisper_service.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
 import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
+import 'package:romance_hub_flutter/core/utils/date_utils.dart' as app_date_utils;
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
@@ -217,7 +218,7 @@ class _WhisperListPageState extends State<WhisperListPage> {
                                 ),
                               ),
                               Text(
-                                whisper.creationTime,
+                                app_date_utils.DateUtils.formatDateTimeDisplay(whisper.creationTime),
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: isTAList && showAsMine
                                       ? colorScheme.onPrimaryContainer.withValues(alpha: 0.8)

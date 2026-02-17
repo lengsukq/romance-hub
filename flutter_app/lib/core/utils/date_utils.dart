@@ -38,4 +38,15 @@ class DateUtils {
       return dateTimeString;
     }
   }
+
+  /// 格式化日期时间展示（与 Web 一致：yyyy-MM-dd HH:mm）
+  static String formatDateTimeDisplay(String? dateTimeString) {
+    if (dateTimeString == null || dateTimeString.isEmpty) return '—';
+    try {
+      final dateTime = DateTime.parse(dateTimeString);
+      return DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+    } catch (e) {
+      return dateTimeString;
+    }
+  }
 }

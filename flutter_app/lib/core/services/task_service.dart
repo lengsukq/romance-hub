@@ -141,10 +141,10 @@ class TaskService {
     }
   }
 
-  /// 更新任务状态
-  Future<ApiResponse<void>> updateTaskStatus({
+  /// 更新任务状态（与后端一致：taskStatus 为字符串 pending/accepted/completed）
+  Future<ApiResponse<void>> updateTaskState({
     required int taskId,
-    required int taskStatus,
+    required String taskStatus,
   }) async {
     try {
       final response = await _apiService.post(

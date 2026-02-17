@@ -4,8 +4,10 @@ import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
+import 'package:romance_hub_flutter/core/services/user_service.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/core/utils/date_utils.dart' as app_date_utils;
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/image_viewer.dart';
 import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
@@ -26,14 +28,25 @@ class TaskDetailPage extends StatefulWidget {
 class _TaskDetailPageState extends State<TaskDetailPage> {
   final TaskService _taskService = TaskService();
   final FavouriteService _favouriteService = FavouriteService();
+  final UserService _userService = UserService();
   TaskModel? _task;
   bool _isLoading = true;
   bool _isFavourite = false;
+  String? _userEmail;
+  bool _stateLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _loadUserEmail();
     _loadTaskDetail();
+  }
+
+  Future<void> _loadUserEmail() async {
+    final res = await _userService.getUserInfo();
+    if (res.isSuccess && res.data != null && mounted) {
+      setState(() => _userEmail = res.data!.userEmail);
+    }
   }
 
   Future<void> _loadTaskDetail() async {
@@ -145,6 +158,48 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     }
   }
 
+  Future<void> _acceptTask() async {
+    if (_task == null || _stateLoading) return;
+    setState(() => _stateLoading = true);
+    final res = await _taskService.updateTaskState(taskId: _task!.taskId, taskStatus: 'accepted');
+    if (mounted) {
+      setState(() => _stateLoading = false);
+      if (res.isSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已接受')));
+        _loadTaskDetail();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res.msg)));
+      }
+    }
+  }
+
+  Future<void> _completeTask() async {
+    if (_task == null || _stateLoading) return;
+    setState(() => _stateLoading = true);
+    final res = await _taskService.updateTaskState(taskId: _task!.taskId, taskStatus: 'completed');
+    if (mounted) {
+      setState(() => _stateLoading = false);
+      if (res.isSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已完成')));
+        _loadTaskDetail();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res.msg)));
+      }
+    }
+  }
+
+  bool get _showAccept =>
+      _userEmail != null &&
+      _task != null &&
+      _task!.taskStatus == 'pending' &&
+      _task!.recipientId == _userEmail;
+
+  bool get _showComplete =>
+      _userEmail != null &&
+      _task != null &&
+      _task!.taskStatus == 'accepted' &&
+      (_task!.recipientId == _userEmail || _task!.publisherId == _userEmail);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -248,10 +303,32 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             ],
             _buildInfoRow(context, '发布者', _task!.publisherName),
             _buildInfoRow(context, '状态', _getStatusText(_task!.taskStatus)),
+            if (_showAccept || _showComplete) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    if (_showAccept)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilledButton(
+                          onPressed: _stateLoading ? null : _acceptTask,
+                          child: const Text('接受'),
+                        ),
+                      ),
+                    if (_showComplete)
+                      FilledButton.tonal(
+                        onPressed: _stateLoading ? null : _completeTask,
+                        child: const Text('完成任务'),
+                      ),
+                  ],
+                ),
+              ),
+            ],
             _buildInfoRow(context, '积分', '${_task!.taskScore}'),
-            _buildInfoRow(context, '创建时间', _task!.creationTime),
+            _buildInfoRow(context, '创建时间', app_date_utils.DateUtils.formatDateTimeDisplay(_task!.creationTime)),
             if (_task!.completionTime != null)
-              _buildInfoRow(context, '完成时间', _task!.completionTime!),
+              _buildInfoRow(context, '完成时间', app_date_utils.DateUtils.formatDateTimeDisplay(_task!.completionTime)),
           ],
         ),
       ),

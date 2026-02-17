@@ -13,6 +13,7 @@ interface CustomUploaderProps {
   value?: UploadFile[];
   upload?: (file: File) => Promise<{ url: string }>;
   onDelete?: () => void;
+  onImageClick?: (index: number) => void;
   deletable?: boolean;
   showUpload?: boolean;
   resultType?: 'dataUrl' | 'file';
@@ -24,6 +25,7 @@ export default function CustomUploader({
   value = [],
   upload,
   onDelete,
+  onImageClick,
   deletable = true,
   showUpload = true,
   resultType = 'dataUrl',
@@ -85,7 +87,11 @@ export default function CustomUploader({
         <div className="flex flex-wrap gap-2 mb-4">
           {files.map((file, index) => (
             <div key={index} className="relative">
-              <Card className="w-20 h-20">
+              <Card
+                className={`w-20 h-20 ${!deletable && onImageClick ? 'cursor-pointer' : ''}`}
+                isPressable={!deletable && !!onImageClick}
+                onPress={!deletable && onImageClick ? () => onImageClick(index) : undefined}
+              >
                 <CardBody className="p-0 overflow-hidden">
                   <img
                     src={file.url}
