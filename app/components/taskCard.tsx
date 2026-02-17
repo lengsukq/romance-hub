@@ -1,6 +1,7 @@
 import { Card, CardBody, CardFooter, CardHeader, Image } from "@heroui/react";
 import React from "react";
 import { TaskItem } from "@/types";
+import { formatDateTime } from "@/utils/dateFormat";
 
 interface TaskCardProps {
   taskList: TaskItem[];
@@ -23,7 +24,7 @@ export default function TaskCard({ taskList, checkDetails }: TaskCardProps) {
                             {item.taskName}
                         </p>
                         <small className="text-default-500">
-                            {item.creationTime}
+                            {formatDateTime(item.creationTime)}
                         </small>
                     </CardHeader>
                     <CardBody className="overflow-visible p-0">

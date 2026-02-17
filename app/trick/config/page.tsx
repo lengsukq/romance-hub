@@ -24,6 +24,7 @@ import { Notify } from "@/utils/client/notificationUtils";
 import { post } from "@/utils/client/fetchUtil";
 import { getUserInfo, updateUserInfo } from "@/utils/client/apihttp";
 import { imgUpload } from "@/utils/client/fileTools";
+import { formatDateTime } from "@/utils/dateFormat";
 
 interface ImageBedConfig {
     id: string;
@@ -420,7 +421,7 @@ export default function ConfigPage() {
                                             
                                             <div className="flex items-center gap-4 text-sm text-gray-500">
                                                 <span>❤️ {userInfo.score}</span>
-                                                <span>注册时间: {userInfo.registrationTime}</span>
+                                                <span>注册时间: {formatDateTime(userInfo.registrationTime)}</span>
                                             </div>
                                             
                                             <Button 

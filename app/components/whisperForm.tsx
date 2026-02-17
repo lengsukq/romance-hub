@@ -1,17 +1,12 @@
 import {Button, Card, CardBody, CardFooter, CardHeader, Input, Textarea,} from "@heroui/react";
 import React, {useEffect, useState} from "react";
-import dayjs from "dayjs";
+import { formatDateTime } from "@/utils/dateFormat";
 import {isInvalidFn} from "@/utils/client/dataTools";
 import {addWhisper} from "@/utils/client/apihttp";
 import {Notify} from "@/utils/client/notificationUtils";
 import FavButton from "@/components/buttonCom/FavButton";
 import { WhisperItem } from "@/types";
 
-function formatWhisperDate(creationTime: string | undefined): string {
-    if (!creationTime) return '—';
-    const d = dayjs(creationTime);
-    return d.isValid() ? d.format('YYYY-MM-DD HH:mm') : creationTime;
-}
 
 interface WhisperFormProps {
     item?: WhisperItem | null;
@@ -54,7 +49,7 @@ export default function WhisperForm({
     const FooterLeftCom = () => {
         if (item) {
             const publisherName = item.userName ?? item.publisherName ?? '—';
-            const formattedTime = formatWhisperDate(item.creationTime);
+            const formattedTime = formatDateTime(item.creationTime);
             return (
                 <>
                     <div className="flex flex-col gap-0.5 pl-1 pb-0">

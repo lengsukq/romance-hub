@@ -1,5 +1,6 @@
-import {Avatar, Button, Card, CardBody, CardFooter, CardHeader,} from "@heroui/react";
+import { Avatar, Button, Card, CardBody, CardFooter, CardHeader } from "@heroui/react";
 import React from "react";
+import { formatDateTime } from "@/utils/dateFormat";
 
 interface UserInfo {
     avatar: string;
@@ -65,7 +66,7 @@ export default function UserInfoCard ({
                             <p className=" text-default-400 text-small">初遇：</p>
                         </div>
                         <div className="flex gap-1">
-                            <p className="text-default-400 text-small">{userInfo.registrationTime}</p>
+                            <p className="text-default-400 text-small">{formatDateTime(userInfo.registrationTime)}</p>
                         </div>
                     </CardFooter>
                 </Card>

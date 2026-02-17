@@ -1,5 +1,6 @@
-import {Avatar, Button, Card, CardBody, CardFooter, CardHeader} from "@heroui/react";
+import { Avatar, Button, Card, CardBody, CardFooter, CardHeader } from "@heroui/react";
 import FavButton from "@/components/buttonCom/FavButton";
+import { formatDateTime } from "@/utils/dateFormat";
 
 interface GiftItem {
     giftId: number;
@@ -92,7 +93,7 @@ export default function GiftList({
             valueRight = item.used || 0;
         } else if (listType === 'favList'){
             textLeft = `${item.collectionName}发布于`;
-            valueLeft = item.creationTime || '';
+            valueLeft = formatDateTime(item.creationTime);
             textRight = "";
             valueRight = "";
         }
