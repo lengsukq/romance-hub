@@ -68,7 +68,7 @@ export default function App() {
             <p className="text-base font-semibold text-default-700">设置</p>
             <p className="text-xs text-default-400">通知 / 图床等配置</p>
           </div>
-          <Button size="sm" variant="bordered">
+          <Button size="sm" variant="bordered" onPress={() => router.push("/trick/config")}>
             前往
           </Button>
         </CardHeader>

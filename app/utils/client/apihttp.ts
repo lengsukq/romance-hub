@@ -1,4 +1,4 @@
-import {deleteAct, get, post} from "./fetchUtil";
+import { post } from "./fetchUtil";
 import type { RegisterParams } from "@/types";
 
 // 基础响应接口

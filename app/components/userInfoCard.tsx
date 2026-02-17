@@ -6,7 +6,7 @@ interface UserInfo {
     username: string;
     score: number;
     userEmail: string;
-    describeBySelf: string;
+    describeBySelf?: string;
     registrationTime: string;
 }
 
@@ -52,10 +52,13 @@ export default function UserInfoCard ({
                             {actionLabel}
                         </Button>
                     </CardHeader>
-                    <CardBody className="px-3 py-0 text-small text-default-400">
-                        <p>
-                            {userInfo.describeBySelf}
-                        </p>
+                    <CardBody className="px-3 py-0">
+                        <div className="text-small">
+                            <p className="text-default-500 font-medium mb-1">一言</p>
+                            <p className="text-default-600">
+                                {userInfo.describeBySelf?.trim() ? userInfo.describeBySelf : '未设置'}
+                            </p>
+                        </div>
                     </CardBody>
                     <CardFooter className="gap-3">
                         <div className="flex gap-1">

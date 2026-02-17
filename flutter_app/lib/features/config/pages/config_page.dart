@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:romance_hub_flutter/core/models/image_bed_model.dart';
+import 'package:romance_hub_flutter/core/models/notification_config_model.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/services/config_service.dart';
 import 'package:romance_hub_flutter/core/services/upload_service.dart';
@@ -28,10 +29,15 @@ class _ConfigPageState extends State<ConfigPage> {
   bool _isUploadingAvatar = false;
   List<ImageBedModel> _imageBeds = [];
   bool _imageBedsLoading = true;
+  List<NotificationConfigModel> _notifications = [];
+  bool _notificationsLoading = true;
+  Map<String, String> _systemConfigs = {};
+  bool _systemConfigsLoading = true;
 
   final _usernameController = TextEditingController();
   final _describeController = TextEditingController();
   final _avatarController = TextEditingController();
+  final _webUrlController = TextEditingController();
   File? _pickedAvatarFile;
 
   @override
@@ -39,6 +45,8 @@ class _ConfigPageState extends State<ConfigPage> {
     super.initState();
     _loadUserInfo();
     _loadImageBeds();
+    _loadNotifications();
+    _loadSystemConfigs();
   }
 
   Future<void> _loadImageBeds() async {
@@ -52,11 +60,35 @@ class _ConfigPageState extends State<ConfigPage> {
     });
   }
 
+  Future<void> _loadNotifications() async {
+    if (!mounted) return;
+    setState(() => _notificationsLoading = true);
+    final res = await _configService.getNotifications();
+    if (!mounted) return;
+    setState(() {
+      _notifications = res.data ?? [];
+      _notificationsLoading = false;
+    });
+  }
+
+  Future<void> _loadSystemConfigs() async {
+    if (!mounted) return;
+    setState(() => _systemConfigsLoading = true);
+    final res = await _configService.getSystemConfigs();
+    if (!mounted) return;
+    setState(() {
+      _systemConfigs = res.data ?? {};
+      _webUrlController.text = _systemConfigs['WEB_URL'] ?? '';
+      _systemConfigsLoading = false;
+    });
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
     _describeController.dispose();
     _avatarController.dispose();
+    _webUrlController.dispose();
     super.dispose();
   }
 
@@ -276,6 +308,12 @@ class _ConfigPageState extends State<ConfigPage> {
           const SizedBox(height: 24),
           _buildSectionTitle(context, '图床设置'),
           _buildImageBedSection(context),
+          const SizedBox(height: 24),
+          _buildSectionTitle(context, '通知配置'),
+          _buildNotificationSection(context),
+          const SizedBox(height: 24),
+          _buildSectionTitle(context, '系统配置'),
+          _buildSystemConfigSection(context),
           const SizedBox(height: 24),
           _buildSectionTitle(context, '其他'),
           Card(
@@ -553,6 +591,234 @@ class _ConfigPageState extends State<ConfigPage> {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildNotificationSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (_notificationsLoading) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '与良人共用。任务/礼物等通知将按此处配置推送。',
+              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            if (_notifications.isEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                '暂无通知配置，可添加钉钉、飞书、企业微信等。',
+                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+            ] else ...[
+              const SizedBox(height: 12),
+              ..._notifications.map((n) => ListTile(
+                dense: true,
+                leading: Icon(Icons.notifications_rounded, color: colorScheme.primary, size: 22),
+                title: Text('${n.notifyName} (${n.notifyType})', style: theme.textTheme.bodyMedium),
+                subtitle: Text(
+                  n.webhookUrl ?? n.description ?? '',
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () => _showNotificationDialog(context, existing: n),
+              )),
+            ],
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () => _showNotificationDialog(context),
+              icon: Icon(Icons.add_rounded, size: 20, color: colorScheme.primary),
+              label: Text('添加通知', style: TextStyle(color: colorScheme.primary)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSystemConfigSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (_systemConfigsLoading) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '与良人共用。如网站地址等。',
+              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _webUrlController,
+              decoration: const InputDecoration(
+                labelText: '网站地址 (WEB_URL)',
+                hintText: 'https://...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () async {
+                final value = _webUrlController.text.trim();
+                final res = await _configService.updateSystemConfig(
+                  configKey: 'WEB_URL',
+                  configValue: value,
+                  configType: 'other',
+                  description: '网站地址',
+                );
+                if (!mounted) return;
+                if (res.isSuccess) {
+                  SnackBarUtils.showSuccess(context, '已保存');
+                  _loadSystemConfigs();
+                } else {
+                  SnackBarUtils.showError(context, res.msg);
+                }
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showNotificationDialog(BuildContext context, {NotificationConfigModel? existing}) async {
+    final nameCtrl = TextEditingController(text: existing?.notifyName ?? '');
+    final typeCtrl = TextEditingController(text: existing?.notifyType ?? '');
+    final webhookCtrl = TextEditingController(text: existing?.webhookUrl ?? '');
+    final apiKeyCtrl = TextEditingController(text: existing?.apiKey ?? '');
+    final descCtrl = TextEditingController(text: existing?.description ?? '');
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(existing == null ? '添加通知' : '编辑通知'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: typeCtrl,
+                  decoration: const InputDecoration(
+                    labelText: '通知类型',
+                    hintText: '钉钉 / 飞书 / 企业微信 / 自定义',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: '名称',
+                    hintText: '如：我的钉钉',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: webhookCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Webhook 地址',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: apiKeyCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'API Key（可选）',
+                    border: OutlineInputBorder(),
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descCtrl,
+                  decoration: const InputDecoration(
+                    labelText: '备注',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final notifyType = typeCtrl.text.trim();
+                final notifyName = nameCtrl.text.trim();
+                if (notifyType.isEmpty || notifyName.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('请填写通知类型和名称')),
+                  );
+                  return;
+                }
+                Navigator.pop(ctx);
+                final res = await _configService.updateNotification(
+                  notifyType: notifyType,
+                  notifyName: notifyName,
+                  webhookUrl: webhookCtrl.text.trim(),
+                  apiKey: apiKeyCtrl.text.trim(),
+                  description: descCtrl.text.trim(),
+                );
+                if (!mounted) return;
+                if (res.isSuccess) {
+                  SnackBarUtils.showSuccess(context, '通知配置已保存，与良人共用');
+                  _loadNotifications();
+                } else {
+                  SnackBarUtils.showError(context, res.msg);
+                }
+              },
+              child: const Text('保存'),
+            ),
+          ],
         );
       },
     );

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:romance_hub_flutter/core/auth/auth_notifier.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
+import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/core/services/user_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/core/utils/snackbar_utils.dart';
-import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/features/user/widgets/cloud_section_card.dart';
 import 'package:romance_hub_flutter/features/user/widgets/edit_user_info_dialog.dart';
 import 'package:romance_hub_flutter/features/user/widgets/info_row_card.dart';
@@ -15,7 +17,6 @@ import 'package:romance_hub_flutter/features/user/widgets/section_title.dart';
 import 'package:romance_hub_flutter/features/user/widgets/user_avatar.dart';
 import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
 import 'package:romance_hub_flutter/shared/widgets/config_dialog.dart';
-import 'package:romance_hub_flutter/shared/widgets/image_bed_settings_dialog.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 
 /// 用户信息页面（吾心）：符合锦书 UI 准则，组件原子化
@@ -189,10 +190,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
               child: _SettingsTile(
-                title: '图床设置',
-                subtitle: '未设置则无法上传图片',
-                icon: Icons.cloud_rounded,
-                onTap: () => ImageBedSettingsDialog.show(context),
+                title: '设置',
+                subtitle: '图床 / 通知 / 系统配置（与良人共用）',
+                icon: Icons.settings_rounded,
+                onTap: () => context.go(AppRoutes.config),
               ),
             ),
           ),
