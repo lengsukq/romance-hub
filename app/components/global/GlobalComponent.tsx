@@ -164,12 +164,12 @@ export function GlobalComponent() {
     const showSectionRow = shouldShowSectionTabs(pathname);
 
     return (
-        <div className="GlobalComponent bg-gradient-to-b from-white to-default-200 flex flex-col w-full justify-center fixed bottom-0 pb-3 pt-3 z-10 items-center">
+        <div className="GlobalComponent bg-gradient-to-b from-white to-default-200 flex flex-col-reverse w-full justify-center fixed bottom-0 pb-3 pt-3 z-10 items-center">
             <div className="w-full flex justify-center px-3">
               <MainNavTabs pathname={pathname} />
             </div>
             {showSectionRow && (
-              <div className="w-full flex flex-wrap gap-3 justify-center items-center px-3 pt-2">
+              <div className="w-full flex flex-wrap gap-3 justify-center items-center px-3 pb-2">
                 <LeftComponent />
                 <SectionTabs pathname={pathname} />
                 <RightComponent />
