@@ -5,7 +5,6 @@ import 'package:romance_hub_flutter/core/models/whisper_model.dart';
 import 'package:romance_hub_flutter/core/services/whisper_service.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
-import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/core/utils/date_utils.dart' as app_date_utils;
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
@@ -173,7 +172,7 @@ class _WhisperListPageState extends State<WhisperListPage> {
       body: _isLoading
           ? const LoadingWidget()
           : _whisperList.isEmpty
-              ? const EmptyWidget(message: '暂无私语', verse: ClassicVerses.ziJin)
+              ? const EmptyWidget(message: '暂无私语')
               : RefreshIndicator(
                   onRefresh: _loadWhispers,
                   child: ListView.builder(

@@ -38,6 +38,7 @@ class _ConfigPageState extends State<ConfigPage> {
   final _describeController = TextEditingController();
   final _avatarController = TextEditingController();
   final _webUrlController = TextEditingController();
+  final _coupleSinceController = TextEditingController();
   File? _pickedAvatarFile;
 
   @override
@@ -79,6 +80,7 @@ class _ConfigPageState extends State<ConfigPage> {
     setState(() {
       _systemConfigs = res.data ?? {};
       _webUrlController.text = _systemConfigs['WEB_URL'] ?? '';
+      _coupleSinceController.text = _systemConfigs['COUPLE_SINCE'] ?? '';
       _systemConfigsLoading = false;
     });
   }
@@ -89,6 +91,7 @@ class _ConfigPageState extends State<ConfigPage> {
     _describeController.dispose();
     _avatarController.dispose();
     _webUrlController.dispose();
+    _coupleSinceController.dispose();
     super.dispose();
   }
 
@@ -684,7 +687,7 @@ class _ConfigPageState extends State<ConfigPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '与良人共用。如网站地址等。',
+              '与良人共用。如网站地址、在一起的日子（首页展示相守时长）等。',
               style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 12),
@@ -697,6 +700,46 @@ class _ConfigPageState extends State<ConfigPage> {
               ),
             ),
             const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: _coupleSinceController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: '在一起的日子',
+                      hintText: '未设置',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.tonal(
+                  onPressed: () async {
+                    final initial = _coupleSinceController.text.trim();
+                    DateTime initialDate = DateTime.now();
+                    if (initial.length == 10) {
+                      final parsed = DateTime.tryParse('$initial 00:00:00');
+                      if (parsed != null) initialDate = parsed;
+                    }
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: initialDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null && mounted) {
+                      final value = '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      _coupleSinceController.text = value;
+                    }
+                  },
+                  child: const Text('选择日期'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             FilledButton(
               onPressed: () async {
                 final value = _webUrlController.text.trim();
@@ -714,7 +757,27 @@ class _ConfigPageState extends State<ConfigPage> {
                   SnackBarUtils.showError(context, res.msg);
                 }
               },
-              child: const Text('保存'),
+              child: const Text('保存网站地址'),
+            ),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: () async {
+                final value = _coupleSinceController.text.trim();
+                final res = await _configService.updateSystemConfig(
+                  configKey: 'COUPLE_SINCE',
+                  configValue: value,
+                  configType: 'other',
+                  description: '在一起的日子',
+                );
+                if (!mounted) return;
+                if (res.isSuccess) {
+                  SnackBarUtils.showSuccess(context, '已保存');
+                  _loadSystemConfigs();
+                } else {
+                  SnackBarUtils.showError(context, res.msg);
+                }
+              },
+              child: const Text('保存在一起的日子'),
             ),
           ],
         ),

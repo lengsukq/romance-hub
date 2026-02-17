@@ -8,6 +8,7 @@ import 'package:romance_hub_flutter/core/services/api_service.dart';
 import 'package:romance_hub_flutter/features/auth/services/auth_service.dart';
 import 'package:romance_hub_flutter/shared/widgets/config_dialog.dart';
 import 'package:romance_hub_flutter/shared/widgets/debug_panel_dialog.dart';
+import 'package:romance_hub_flutter/core/constants/love_verses.dart';
 import 'package:romance_hub_flutter/shared/widgets/year_2026_badge.dart';
 
 /// 登录页面
@@ -166,14 +167,15 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 2026 马年专属标识（与 Web 端一致）
+                  // 2026 马年专属标识 + 按日诗意副标题
                   const Year2026Badge(label: '2026', large: true),
                   const SizedBox(height: 8),
                   Text(
-                    '新岁共赴',
+                    LoveVerses.getShortVerseOfDay(DateTime.now()).text,
                     textAlign: TextAlign.center,
                     style: textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
+                      letterSpacing: 0.3,
                     ),
                   ),
                   const SizedBox(height: 20),

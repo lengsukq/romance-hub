@@ -51,6 +51,7 @@ interface NotificationConfig {
 
 interface SystemConfig {
     WEB_URL?: string;
+    COUPLE_SINCE?: string;
 }
 
 interface UserInfo {
@@ -672,6 +673,22 @@ export default function ConfigPage() {
                                             <Button 
                                                 size="sm" 
                                                 onClick={() => handleUpdateSystemConfig('WEB_URL', systemConfigs.WEB_URL || '')}
+                                            >
+                                                保存
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">在一起的日子（与良人共用，首页展示相守时长）</label>
+                                        <div className="flex gap-2 items-center">
+                                            <Input
+                                                type="date"
+                                                value={systemConfigs.COUPLE_SINCE || ''}
+                                                onChange={(e) => setSystemConfigs(prev => ({ ...prev, COUPLE_SINCE: e.target.value }))}
+                                            />
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => handleUpdateSystemConfig('COUPLE_SINCE', systemConfigs.COUPLE_SINCE || '')}
                                             >
                                                 保存
                                             </Button>

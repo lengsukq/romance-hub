@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:romance_hub_flutter/core/auth/auth_notifier.dart';
 import 'package:romance_hub_flutter/core/config/app_config.dart';
 import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
+import 'package:romance_hub_flutter/core/constants/love_verses.dart';
 import 'package:romance_hub_flutter/core/models/user_model.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/api_service.dart';
@@ -183,7 +184,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: SectionTitle(title: '设置', verse: '与良人共用'),
+              child: SectionTitle(title: '设置', verse: LoveVerses.getShortVerseOfDay(DateTime.now()).text),
             ),
           ),
           SliverToBoxAdapter(

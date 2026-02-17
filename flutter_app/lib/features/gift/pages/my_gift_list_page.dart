@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/gift_model.dart';
 import 'package:romance_hub_flutter/core/services/gift_service.dart';
-import 'package:romance_hub_flutter/core/constants/classic_verses.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
@@ -178,7 +177,7 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
             child: _isLoading
                 ? const LoadingWidget()
                 : _giftList.isEmpty
-                    ? const EmptyWidget(message: '暂无赠礼', verse: ClassicVerses.muGua)
+                    ? const EmptyWidget(message: '暂无赠礼')
                     : RefreshIndicator(
                         onRefresh: _loadGifts,
                         child: ListView.builder(

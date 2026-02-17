@@ -75,10 +75,11 @@ async function handleGetNotifications(userEmail: string): Promise<NextResponse> 
 // 获取系统配置
 async function handleGetSystemConfigs(userEmail: string): Promise<NextResponse> {
     try {
-        // 这里可以返回一些常用的系统配置
         const webUrl = await ConfigService.getSystemConfig('WEB_URL', userEmail);
+        const coupleSince = await ConfigService.getSystemConfig('COUPLE_SINCE', userEmail);
         const configs = {
-            WEB_URL: webUrl
+            WEB_URL: webUrl ?? '',
+            COUPLE_SINCE: coupleSince ?? ''
         };
         return NextResponse.json(BizResult.success(configs, '获取系统配置成功'));
     } catch (error) {

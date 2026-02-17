@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppConfig {
   static const String _keyBaseUrl = 'base_url';
   static const String _keyInsecureSslHost = 'insecure_ssl_host';
+  static const String keyCoupleCounterDisplayMode = 'couple_counter_display_mode';
   static const String _defaultBaseUrl = 'https://r-d.lengsu.top/';
 
   /// 默认后端服务器地址（供配置弹框「使用默认服务器」使用）
@@ -64,5 +65,17 @@ class AppConfig {
   static String normalizeUrl(String url) {
     if (url.isEmpty) return url;
     return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+  }
+
+  /// 相守计时显示模式：'full' 天时秒 / 'seconds' 仅秒
+  static Future<String> getCoupleCounterDisplayMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getString(keyCoupleCounterDisplayMode);
+    return (v == 'full' || v == 'seconds') ? v! : 'full';
+  }
+
+  static Future<bool> setCoupleCounterDisplayMode(String mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    return await prefs.setString(keyCoupleCounterDisplayMode, mode);
   }
 }
