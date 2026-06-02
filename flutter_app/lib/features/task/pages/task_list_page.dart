@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/task_model.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
+import 'package:romance_hub_flutter/core/theme/app_spacing.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
-import 'package:romance_hub_flutter/shared/widgets/task_card.dart';
+import 'package:romance_hub_flutter/shared/widgets/app_page_container.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/task_card.dart';
 import 'package:romance_hub_flutter/shared/widgets/year_2026_badge.dart';
 
-/// 任务列表页面
+/// 心诺列表：Wrap 筛选 chip，Pad 限宽居中。
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
 
@@ -55,12 +57,8 @@ class _TaskListPageState extends State<TaskListPage> {
       _currentPage = 1;
       _taskList.clear();
     }
-
     if (_isLoading) return;
-
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final response = await _taskService.getTaskList(
@@ -81,9 +79,7 @@ class _TaskListPageState extends State<TaskListPage> {
           _isLoading = false;
         });
       } else {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -92,9 +88,7 @@ class _TaskListPageState extends State<TaskListPage> {
       }
     } catch (e) {
       AppLogger.e('加载任务列表失败', e);
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -110,9 +104,7 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   void _onTaskStatusChanged(String? status) {
-    setState(() {
-      _taskStatus = status;
-    });
+    setState(() => _taskStatus = status);
     _loadTasks(refresh: true);
   }
 
@@ -128,7 +120,7 @@ class _TaskListPageState extends State<TaskListPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Year2026Badge(label: '2026', large: false),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppSpacing.md),
             Text(
               '心诺',
               style: theme.textTheme.titleLarge?.copyWith(
@@ -142,7 +134,7 @@ class _TaskListPageState extends State<TaskListPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search_rounded),
-            onPressed: () => _showSearchDialog(),
+            onPressed: _showSearchDialog,
           ),
           IconButton(
             icon: const Icon(Icons.add_rounded),
@@ -150,11 +142,15 @@ class _TaskListPageState extends State<TaskListPage> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
+          preferredSize: const Size.fromHeight(56),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm,
+            ),
+            child: Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
               children: [
                 _buildStatusChip(context, '全部', null),
                 _buildStatusChip(context, '待接受', 'pending'),
@@ -169,47 +165,42 @@ class _TaskListPageState extends State<TaskListPage> {
           ? const EmptyWidget(message: '暂无心诺')
           : RefreshIndicator(
               onRefresh: () => _loadTasks(refresh: true),
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount: _taskList.length + (_hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == _taskList.length) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: CircularProgressIndicator(
-                          color: colorScheme.primary,
+              child: AppPageContainer(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  itemCount: _taskList.length + (_hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _taskList.length) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: CircularProgressIndicator(
+                            color: colorScheme.primary,
+                          ),
                         ),
+                      );
+                    }
+                    return TaskCard(
+                      task: _taskList[index],
+                      onTap: () => context.go(
+                        AppRoutes.taskDetail(_taskList[index].taskId),
                       ),
                     );
-                  }
-                  return TaskCard(
-                    task: _taskList[index],
-                    onTap: () => context.go(
-                      AppRoutes.taskDetail(_taskList[index].taskId),
-                    ),
-                  );
-                },
+                  },
+                ),
               ),
             ),
     );
   }
 
   Widget _buildStatusChip(BuildContext context, String label, String? status) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = _taskStatus == status;
     return FilterChip(
       label: Text(label),
       selected: isSelected,
-      onSelected: (selected) {
-        if (selected) {
-          _onTaskStatusChanged(status);
-        } else {
-          _onTaskStatusChanged(null);
-        }
-      },
+      onSelected: (selected) => _onTaskStatusChanged(selected ? status : null),
       selectedColor: colorScheme.primaryContainer,
       checkmarkColor: colorScheme.primary,
     );
@@ -233,9 +224,7 @@ class _TaskListPageState extends State<TaskListPage> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  _searchWords = controller.text;
-                });
+                setState(() => _searchWords = controller.text);
                 Navigator.pop(context);
                 _loadTasks(refresh: true);
               },

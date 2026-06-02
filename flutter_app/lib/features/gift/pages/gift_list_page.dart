@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:romance_hub_flutter/core/routes/app_routes.dart';
-import 'package:romance_hub_flutter/core/models/gift_model.dart';
-import 'package:romance_hub_flutter/core/services/gift_service.dart';
-import 'package:romance_hub_flutter/core/services/favourite_service.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
+import 'package:romance_hub_flutter/core/models/gift_model.dart';
+import 'package:romance_hub_flutter/core/routes/app_routes.dart';
+import 'package:romance_hub_flutter/core/services/favourite_service.dart';
+import 'package:romance_hub_flutter/core/services/gift_service.dart';
+import 'package:romance_hub_flutter/core/theme/app_spacing.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
-import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/adaptive_grid.dart';
+import 'package:romance_hub_flutter/shared/widgets/app_page_container.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 
-/// 礼物列表页面
+import 'package:romance_hub_flutter/shared/widgets/seal_chip.dart';
+
+/// 赠礼一览：自适应网格展示，手机 2 列，Pad 3-4 列。
 class GiftListPage extends StatefulWidget {
   const GiftListPage({super.key});
 
@@ -31,10 +36,7 @@ class _GiftListPageState extends State<GiftListPage> {
   }
 
   Future<void> _loadGifts() async {
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     try {
       final response = await _giftService.getGiftList();
       if (response.isSuccess && response.data != null) {
@@ -43,9 +45,7 @@ class _GiftListPageState extends State<GiftListPage> {
           _isLoading = false;
         });
       } else {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -54,9 +54,7 @@ class _GiftListPageState extends State<GiftListPage> {
       }
     } catch (e) {
       AppLogger.e('加载礼物列表失败', e);
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -90,9 +88,7 @@ class _GiftListPageState extends State<GiftListPage> {
           collectionType: FavouriteType.gift,
         );
         if (response.isSuccess) {
-          setState(() {
-            _favouriteGiftIds.remove(giftId);
-          });
+          setState(() => _favouriteGiftIds.remove(giftId));
           if (mounted) {
             ScaffoldMessenger.of(
               context,
@@ -105,9 +101,7 @@ class _GiftListPageState extends State<GiftListPage> {
           collectionType: FavouriteType.gift,
         );
         if (response.isSuccess) {
-          setState(() {
-            _favouriteGiftIds.add(giftId);
-          });
+          setState(() => _favouriteGiftIds.add(giftId));
           if (mounted) {
             ScaffoldMessenger.of(
               context,
@@ -153,135 +147,131 @@ class _GiftListPageState extends State<GiftListPage> {
           ? const EmptyWidget(message: '暂无赠礼')
           : RefreshIndicator(
               onRefresh: _loadGifts,
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.75,
-                ),
-                itemCount: _giftList.length,
-                itemBuilder: (context, index) {
-                  final gift = _giftList[index];
-                  final theme = Theme.of(context);
-                  final colorScheme = theme.colorScheme;
-                  return Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: gift.giftImage != null
-                              ? Image.network(
-                                  gift.giftImage!,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color:
-                                          colorScheme.surfaceContainerHighest,
-                                      child: Icon(
-                                        Icons.image_not_supported_rounded,
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: Icon(
-                                    Icons.image_not_supported_rounded,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                gift.giftName,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star_rounded,
-                                        size: 18,
-                                        color: colorScheme.primary,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${gift.score}',
-                                        style: theme.textTheme.bodyMedium
-                                            ?.copyWith(
-                                              color: colorScheme.onSurface,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          _favouriteGiftIds.contains(
-                                                gift.giftId,
-                                              )
-                                              ? Icons.favorite_rounded
-                                              : Icons.favorite_border_rounded,
-                                          size: 20,
-                                          color:
-                                              _favouriteGiftIds.contains(
-                                                gift.giftId,
-                                              )
-                                              ? colorScheme.primary
-                                              : colorScheme.onSurfaceVariant,
-                                        ),
-                                        onPressed: () =>
-                                            _toggleFavourite(gift.giftId),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      ElevatedButton(
-                                        onPressed: () =>
-                                            _exchangeGift(gift.giftId),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                        ),
-                                        child: const Text('兑换'),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+              child: AppPageContainer(
+                child: AdaptiveGrid(
+                  itemCount: _giftList.length,
+                  minItemWidth: 170,
+                  childAspectRatio: 0.72,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  itemBuilder: (context, index) => _GiftCard(
+                    gift: _giftList[index],
+                    isFavourite: _favouriteGiftIds.contains(
+                      _giftList[index].giftId,
                     ),
-                  );
-                },
+                    onExchange: () => _exchangeGift(_giftList[index].giftId),
+                    onToggleFavourite: () =>
+                        _toggleFavourite(_giftList[index].giftId),
+                  ),
+                ),
               ),
             ),
+    );
+  }
+}
+
+class _GiftCard extends StatelessWidget {
+  final GiftModel gift;
+  final bool isFavourite;
+  final VoidCallback onExchange;
+  final VoidCallback onToggleFavourite;
+
+  const _GiftCard({
+    required this.gift,
+    required this.isFavourite,
+    required this.onExchange,
+    required this.onToggleFavourite,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: gift.giftImage != null
+                ? Image.network(
+                    gift.giftImage!,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _imagePlaceholder(colorScheme),
+                  )
+                : _imagePlaceholder(colorScheme),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  gift.giftName,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                SealChip(
+                  label: '${gift.score} 心印',
+                  icon: Icons.star_rounded,
+                  maxWidth: 120,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        isFavourite
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        size: 20,
+                        color: isFavourite
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                      ),
+                      onPressed: onToggleFavourite,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Flexible(
+                      child: ElevatedButton(
+                        onPressed: onExchange,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('兑换'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Icon(
+          Icons.image_not_supported_rounded,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 }

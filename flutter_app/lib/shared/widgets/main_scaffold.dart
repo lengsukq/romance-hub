@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:romance_hub_flutter/core/theme/app_breakpoints.dart';
+import 'package:romance_hub_flutter/core/theme/app_radius.dart';
+import 'package:romance_hub_flutter/core/theme/app_spacing.dart';
 
 /// 主框架 Shell：底部 Tab 固定，切换时无路由动画
 /// 与 [StatefulShellRoute] 配合使用，body 由 [navigationShell] 提供
@@ -11,6 +14,71 @@ class MainShellScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    if (AppBreakpoints.useNavigationRail(context)) {
+      return Scaffold(
+        body: Row(
+          children: [
+            SafeArea(
+              child: Container(
+                margin: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.7,
+                  ),
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                  border: Border.all(
+                    color: colorScheme.outline.withValues(alpha: 0.28),
+                  ),
+                ),
+                child: NavigationRail(
+                  selectedIndex: navigationShell.currentIndex,
+                  onDestinationSelected: (index) =>
+                      navigationShell.goBranch(index, initialLocation: true),
+                  labelType: NavigationRailLabelType.all,
+                  leading: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.lg,
+                    ),
+                    child: Icon(
+                      Icons.favorite_rounded,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home_rounded),
+                      label: Text('首页'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.task_alt_outlined),
+                      selectedIcon: Icon(Icons.task_alt_rounded),
+                      label: Text('心诺'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.card_giftcard_outlined),
+                      selectedIcon: Icon(Icons.card_giftcard_rounded),
+                      label: Text('赠礼'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.chat_bubble_outline),
+                      selectedIcon: Icon(Icons.chat_bubble_rounded),
+                      label: Text('私语'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.person_outline),
+                      selectedIcon: Icon(Icons.person_rounded),
+                      label: Text('吾心'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(child: navigationShell),
+          ],
+        ),
+      );
+    }
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(

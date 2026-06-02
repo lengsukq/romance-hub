@@ -7,6 +7,7 @@ import 'package:romance_hub_flutter/core/utils/validation_utils.dart';
 import 'package:romance_hub_flutter/features/auth/services/auth_service.dart';
 import 'package:romance_hub_flutter/core/services/upload_service.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/shared/widgets/responsive_form_panel.dart';
 
 /// 双账号注册页面（与 Web 端一致）
 class RegisterPage extends StatefulWidget {
@@ -263,8 +264,9 @@ class _RegisterPageState extends State<RegisterPage> {
         scrolledUnderElevation: 0,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: ResponsiveFormPanel(
+          compactMaxWidth: 640,
+          expandedMaxWidth: 1000,
           child: Form(
             key: _formKey,
             child: Column(
