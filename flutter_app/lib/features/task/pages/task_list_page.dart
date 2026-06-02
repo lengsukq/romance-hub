@@ -21,6 +21,12 @@ class TaskListPage extends StatefulWidget {
 class _TaskListPageState extends State<TaskListPage> {
   final TaskService _taskService = TaskService();
   final ScrollController _scrollController = ScrollController();
+  static const _statusFilters = [
+    _TaskStatusFilter('全部', null),
+    _TaskStatusFilter('待接受', 'pending'),
+    _TaskStatusFilter('进行中', 'accepted'),
+    _TaskStatusFilter('已完成', 'completed'),
+  ];
 
   List<TaskModel> _taskList = [];
   bool _isLoading = false;
@@ -104,8 +110,18 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   void _onTaskStatusChanged(String? status) {
+    if (_taskStatus == status) return;
     setState(() => _taskStatus = status);
     _loadTasks(refresh: true);
+  }
+
+  String get _selectedStatusLabel {
+    return _statusFilters
+        .firstWhere(
+          (filter) => filter.status == _taskStatus,
+          orElse: () => _statusFilters.first,
+        )
+        .label;
   }
 
   @override
@@ -148,16 +164,7 @@ class _TaskListPageState extends State<TaskListPage> {
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.sm,
             ),
-            child: Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.xs,
-              children: [
-                _buildStatusChip(context, '全部', null),
-                _buildStatusChip(context, '待接受', 'pending'),
-                _buildStatusChip(context, '进行中', 'accepted'),
-                _buildStatusChip(context, '已完成', 'completed'),
-              ],
-            ),
+            child: _buildStatusSelector(context),
           ),
         ),
       ),
@@ -194,15 +201,101 @@ class _TaskListPageState extends State<TaskListPage> {
     );
   }
 
-  Widget _buildStatusChip(BuildContext context, String label, String? status) {
+  Widget _buildStatusSelector(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: _showStatusFilterSheet,
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+          border: Border.all(
+            color: colorScheme.outline.withValues(alpha: 0.24),
+          ),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.tune_rounded, size: 18, color: colorScheme.primary),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              '筛选',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                _selectedStatusLabel,
+                textAlign: TextAlign.right,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showStatusFilterSheet() {
     final colorScheme = Theme.of(context).colorScheme;
-    final isSelected = _taskStatus == status;
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (selected) => _onTaskStatusChanged(selected ? status : null),
-      selectedColor: colorScheme.primaryContainer,
-      checkmarkColor: colorScheme.primary,
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  0,
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                ),
+                child: Text(
+                  '筛选心诺状态',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              ..._statusFilters.map((filter) {
+                final isSelected = _taskStatus == filter.status;
+                return ListTile(
+                  title: Text(filter.label),
+                  trailing: isSelected
+                      ? Icon(Icons.check_rounded, color: colorScheme.primary)
+                      : null,
+                  selected: isSelected,
+                  selectedColor: colorScheme.primary,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _onTaskStatusChanged(filter.status);
+                  },
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -235,4 +328,11 @@ class _TaskListPageState extends State<TaskListPage> {
       },
     );
   }
+}
+
+class _TaskStatusFilter {
+  final String label;
+  final String? status;
+
+  const _TaskStatusFilter(this.label, this.status);
 }
