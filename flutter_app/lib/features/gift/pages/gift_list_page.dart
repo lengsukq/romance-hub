@@ -7,9 +7,10 @@ import 'package:romance_hub_flutter/core/services/favourite_service.dart';
 import 'package:romance_hub_flutter/core/services/gift_service.dart';
 import 'package:romance_hub_flutter/core/theme/app_spacing.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
-import 'package:romance_hub_flutter/shared/widgets/adaptive_grid.dart';
+import 'package:romance_hub_flutter/shared/widgets/adaptive_masonry_grid.dart';
 import 'package:romance_hub_flutter/shared/widgets/app_page_container.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/list_display_mode_toggle.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 
 import 'package:romance_hub_flutter/shared/widgets/seal_chip.dart';
@@ -28,6 +29,7 @@ class _GiftListPageState extends State<GiftListPage> {
   List<GiftModel> _giftList = [];
   bool _isLoading = false;
   final Set<int> _favouriteGiftIds = {};
+  ListDisplayMode _displayMode = ListDisplayMode.waterfall;
 
   @override
   void initState() {
@@ -130,6 +132,10 @@ class _GiftListPageState extends State<GiftListPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
+          ListDisplayModeToggle(
+            mode: _displayMode,
+            onChanged: (mode) => setState(() => _displayMode = mode),
+          ),
           TextButton.icon(
             onPressed: () => context.go(AppRoutes.myGifts),
             icon: const Icon(Icons.inventory_2_rounded, size: 20),
@@ -148,23 +154,46 @@ class _GiftListPageState extends State<GiftListPage> {
           : RefreshIndicator(
               onRefresh: _loadGifts,
               child: AppPageContainer(
-                child: AdaptiveGrid(
-                  itemCount: _giftList.length,
-                  minItemWidth: 170,
-                  childAspectRatio: 0.72,
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  itemBuilder: (context, index) => _GiftCard(
-                    gift: _giftList[index],
-                    isFavourite: _favouriteGiftIds.contains(
-                      _giftList[index].giftId,
-                    ),
-                    onExchange: () => _exchangeGift(_giftList[index].giftId),
-                    onToggleFavourite: () =>
-                        _toggleFavourite(_giftList[index].giftId),
-                  ),
-                ),
+                child: _displayMode == ListDisplayMode.card
+                    ? _buildGiftCardList()
+                    : _buildGiftWaterfall(),
               ),
             ),
+    );
+  }
+
+  Widget _buildGiftCardList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      itemCount: _giftList.length,
+      itemBuilder: (context, index) {
+        final gift = _giftList[index];
+        return _GiftListCard(
+          gift: gift,
+          isFavourite: _favouriteGiftIds.contains(gift.giftId),
+          onExchange: () => _exchangeGift(gift.giftId),
+          onToggleFavourite: () => _toggleFavourite(gift.giftId),
+        );
+      },
+    );
+  }
+
+  Widget _buildGiftWaterfall() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: AdaptiveMasonryGrid(
+        itemCount: _giftList.length,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        itemBuilder: (context, index) {
+          final gift = _giftList[index];
+          return _GiftCard(
+            gift: gift,
+            isFavourite: _favouriteGiftIds.contains(gift.giftId),
+            onExchange: () => _exchangeGift(gift.giftId),
+            onToggleFavourite: () => _toggleFavourite(gift.giftId),
+          );
+        },
+      ),
     );
   }
 }
@@ -186,21 +215,23 @@ class _GiftCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final imageUrl = gift.giftImage;
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: gift.giftImage != null
+          SizedBox(
+            height: 140,
+            child: imageUrl != null && imageUrl.isNotEmpty
                 ? Image.network(
-                    gift.giftImage!,
+                    imageUrl,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
-                        _imagePlaceholder(colorScheme),
+                        _imageErrorPlaceholder(colorScheme),
                   )
-                : _imagePlaceholder(colorScheme),
+                : _giftNoImagePlaceholder(context),
           ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -263,7 +294,29 @@ class _GiftCard extends StatelessWidget {
     );
   }
 
-  Widget _imagePlaceholder(ColorScheme colorScheme) {
+  Widget _giftNoImagePlaceholder(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: colorScheme.primaryContainer.withValues(alpha: 0.28),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.card_giftcard_rounded, color: colorScheme.primary),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '无配图',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _imageErrorPlaceholder(ColorScheme colorScheme) {
     return Container(
       color: colorScheme.surfaceContainerHighest,
       child: Center(
@@ -271,6 +324,107 @@ class _GiftCard extends StatelessWidget {
           Icons.image_not_supported_rounded,
           color: colorScheme.onSurfaceVariant,
         ),
+      ),
+    );
+  }
+}
+
+class _GiftListCard extends StatelessWidget {
+  final GiftModel gift;
+  final bool isFavourite;
+  final VoidCallback onExchange;
+  final VoidCallback onToggleFavourite;
+
+  const _GiftListCard({
+    required this.gift,
+    required this.isFavourite,
+    required this.onExchange,
+    required this.onToggleFavourite,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final imageUrl = gift.giftImage;
+    return Card(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 6,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: SizedBox(
+                width: 72,
+                height: 72,
+                child: imageUrl != null && imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _smallImageError(colorScheme),
+                      )
+                    : _smallNoImage(context),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    gift.giftName,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  SealChip(
+                    label: '${gift.score} 心印',
+                    icon: Icons.star_rounded,
+                    maxWidth: 120,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                isFavourite
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: isFavourite
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
+              ),
+              onPressed: onToggleFavourite,
+            ),
+            ElevatedButton(onPressed: onExchange, child: const Text('兑换')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _smallNoImage(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: colorScheme.primaryContainer.withValues(alpha: 0.28),
+      child: Icon(Icons.card_giftcard_rounded, color: colorScheme.primary),
+    );
+  }
+
+  Widget _smallImageError(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.surfaceContainerHighest,
+      child: Icon(
+        Icons.image_not_supported_rounded,
+        color: colorScheme.onSurfaceVariant,
       ),
     );
   }

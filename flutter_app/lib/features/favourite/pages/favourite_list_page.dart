@@ -4,7 +4,10 @@ import 'package:romance_hub_flutter/core/models/task_model.dart';
 import 'package:romance_hub_flutter/core/models/gift_model.dart';
 import 'package:romance_hub_flutter/core/models/whisper_model.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
+import 'package:romance_hub_flutter/core/theme/app_spacing.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/shared/widgets/adaptive_masonry_grid.dart';
+import 'package:romance_hub_flutter/shared/widgets/list_display_mode_toggle.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
 
@@ -22,6 +25,7 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
   final FavouriteService _favouriteService = FavouriteService();
   List<FavouriteModel> _favouriteList = [];
   bool _isLoading = false;
+  ListDisplayMode _displayMode = ListDisplayMode.card;
 
   @override
   void initState() {
@@ -110,6 +114,12 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
         title: Text(_getTitle()),
         elevation: 0,
         scrolledUnderElevation: 0,
+        actions: [
+          ListDisplayModeToggle(
+            mode: _displayMode,
+            onChanged: (mode) => setState(() => _displayMode = mode),
+          ),
+        ],
       ),
       body: _isLoading
           ? const LoadingWidget()
@@ -117,45 +127,85 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
           ? const EmptyWidget(message: '暂无藏心')
           : RefreshIndicator(
               onRefresh: _loadFavourites,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                itemCount: _favouriteList.length,
-                itemBuilder: (context, index) {
-                  final favourite = _favouriteList[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      title: Text(
-                        _getItemTitle(favourite),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      subtitle: Text(
-                        _getItemSubtitle(favourite),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.favorite_rounded,
-                          color: colorScheme.primary,
-                        ),
-                        onPressed: () => _removeFavourite(favourite),
-                      ),
-                    ),
-                  );
-                },
+              child: _displayMode == ListDisplayMode.card
+                  ? _buildFavouriteList(theme, colorScheme)
+                  : _buildFavouriteWaterfall(theme, colorScheme),
+            ),
+    );
+  }
+
+  Widget _buildFavouriteList(ThemeData theme, ColorScheme colorScheme) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      itemCount: _favouriteList.length,
+      itemBuilder: (context, index) => _buildFavouriteCard(
+        _favouriteList[index],
+        theme,
+        colorScheme,
+        compact: false,
+      ),
+    );
+  }
+
+  Widget _buildFavouriteWaterfall(ThemeData theme, ColorScheme colorScheme) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: AdaptiveMasonryGrid(
+        itemCount: _favouriteList.length,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        itemBuilder: (context, index) => _buildFavouriteCard(
+          _favouriteList[index],
+          theme,
+          colorScheme,
+          compact: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFavouriteCard(
+    FavouriteModel favourite,
+    ThemeData theme,
+    ColorScheme colorScheme, {
+    required bool compact,
+  }) {
+    return Card(
+      margin: compact ? EdgeInsets.zero : const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? AppSpacing.md : 20,
+          vertical: compact ? AppSpacing.md : 12,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _getItemTitle(favourite),
+              maxLines: compact ? 5 : 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
               ),
             ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              _getItemSubtitle(favourite),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(Icons.favorite_rounded, color: colorScheme.primary),
+                onPressed: () => _removeFavourite(favourite),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

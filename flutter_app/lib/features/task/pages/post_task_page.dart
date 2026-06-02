@@ -65,7 +65,6 @@ class _PostTaskPageState extends State<PostTaskPage> {
     } else if (score == null || score < 0) {
       missing.add('积分（须为不小于0的数字）');
     }
-    if (_selectedImages.isEmpty) missing.add('任务图片');
     return missing;
   }
 
@@ -87,25 +86,29 @@ class _PostTaskPageState extends State<PostTaskPage> {
 
     setState(() {
       _isSubmitting = true;
-      _uploadPhaseHint = '上传中…';
+      _uploadPhaseHint = _selectedImages.isEmpty ? '发布中…' : '上传中…';
     });
 
     try {
       List<String> imageUrls = [];
-      final uploadResponse = await _uploadService.uploadImages(_selectedImages);
-      if (!uploadResponse.isSuccess || uploadResponse.data == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(uploadResponse.msg)));
+      if (_selectedImages.isNotEmpty) {
+        final uploadResponse = await _uploadService.uploadImages(
+          _selectedImages,
+        );
+        if (!uploadResponse.isSuccess || uploadResponse.data == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(uploadResponse.msg)));
+          }
+          setState(() {
+            _isSubmitting = false;
+            _uploadPhaseHint = null;
+          });
+          return;
         }
-        setState(() {
-          _isSubmitting = false;
-          _uploadPhaseHint = null;
-        });
-        return;
+        imageUrls = uploadResponse.data!;
       }
-      imageUrls = uploadResponse.data!;
 
       if (mounted) {
         setState(() => _uploadPhaseHint = '发布中…');
@@ -207,7 +210,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
             ElevatedButton.icon(
               onPressed: _pickImages,
               icon: const Icon(Icons.image_rounded),
-              label: const Text('选择图片'),
+              label: const Text('选择图片（选填）'),
             ),
             if (_selectedImages.isNotEmpty) ...[
               const SizedBox(height: 16),

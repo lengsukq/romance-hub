@@ -6,8 +6,14 @@ import 'package:romance_hub_flutter/shared/widgets/image_viewer.dart';
 class TaskCard extends StatelessWidget {
   final TaskModel task;
   final VoidCallback onTap;
+  final bool compact;
 
-  const TaskCard({super.key, required this.task, required this.onTap});
+  const TaskCard({
+    super.key,
+    required this.task,
+    required this.onTap,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +22,14 @@ class TaskCard extends StatelessWidget {
     const radius = 24.0;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+      margin: compact
+          ? EdgeInsets.zero
+          : const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(radius),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(compact ? 12 : 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -38,6 +46,7 @@ class TaskCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   _buildStatusChip(context, task.taskStatus),
                 ],
               ),
@@ -52,52 +61,11 @@ class TaskCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              if (task.taskImage.isNotEmpty) ...[
+              if (task.taskImage.isNotEmpty)
+                _buildImageStrip(context, compact)
+              else ...[
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 100,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: task.taskImage.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ImageViewer(
-                                    images: task.taskImage,
-                                    initialIndex: index,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Image.network(
-                              task.taskImage[index],
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 100,
-                                  height: 100,
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: Icon(
-                                    Icons.image_not_supported_rounded,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                _buildNoImageChip(context),
               ],
               const SizedBox(height: 10),
               Row(
@@ -135,6 +103,88 @@ class TaskCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildImageStrip(BuildContext context, bool compact) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final imageSize = compact ? 82.0 : 100.0;
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: SizedBox(
+        height: imageSize,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: task.taskImage.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ImageViewer(
+                          images: task.taskImage,
+                          initialIndex: index,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Image.network(
+                    task.taskImage[index],
+                    width: imageSize,
+                    height: imageSize,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: imageSize,
+                        height: imageSize,
+                        color: colorScheme.surfaceContainerHighest,
+                        child: Icon(
+                          Icons.image_not_supported_rounded,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoImageChip(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.image_not_supported_outlined,
+            size: 14,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '无配图',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

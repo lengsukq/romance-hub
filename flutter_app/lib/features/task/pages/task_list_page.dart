@@ -5,8 +5,10 @@ import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/services/task_service.dart';
 import 'package:romance_hub_flutter/core/theme/app_spacing.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/shared/widgets/adaptive_masonry_grid.dart';
 import 'package:romance_hub_flutter/shared/widgets/app_page_container.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
+import 'package:romance_hub_flutter/shared/widgets/list_display_mode_toggle.dart';
 import 'package:romance_hub_flutter/shared/widgets/task_card.dart';
 import 'package:romance_hub_flutter/shared/widgets/year_2026_badge.dart';
 
@@ -35,6 +37,7 @@ class _TaskListPageState extends State<TaskListPage> {
   final int _pageSize = 10;
   String? _taskStatus;
   String _searchWords = '';
+  ListDisplayMode _displayMode = ListDisplayMode.card;
 
   @override
   void initState() {
@@ -148,6 +151,10 @@ class _TaskListPageState extends State<TaskListPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
+          ListDisplayModeToggle(
+            mode: _displayMode,
+            onChanged: (mode) => setState(() => _displayMode = mode),
+          ),
           IconButton(
             icon: const Icon(Icons.search_rounded),
             onPressed: _showSearchDialog,
@@ -173,31 +180,56 @@ class _TaskListPageState extends State<TaskListPage> {
           : RefreshIndicator(
               onRefresh: () => _loadTasks(refresh: true),
               child: AppPageContainer(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  itemCount: _taskList.length + (_hasMore ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _taskList.length) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          child: CircularProgressIndicator(
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                      );
-                    }
-                    return TaskCard(
-                      task: _taskList[index],
-                      onTap: () => context.go(
-                        AppRoutes.taskDetail(_taskList[index].taskId),
-                      ),
-                    );
-                  },
-                ),
+                child: _displayMode == ListDisplayMode.card
+                    ? _buildCardList(colorScheme)
+                    : _buildWaterfallList(colorScheme),
               ),
             ),
+    );
+  }
+
+  Widget _buildCardList(ColorScheme colorScheme) {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      itemCount: _taskList.length + (_hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == _taskList.length) return _buildLoadingMore(colorScheme);
+        return TaskCard(
+          task: _taskList[index],
+          onTap: () =>
+              context.go(AppRoutes.taskDetail(_taskList[index].taskId)),
+        );
+      },
+    );
+  }
+
+  Widget _buildWaterfallList(ColorScheme colorScheme) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: AdaptiveMasonryGrid(
+        itemCount: _taskList.length + (_hasMore ? 1 : 0),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        itemBuilder: (context, index) {
+          if (index == _taskList.length) return _buildLoadingMore(colorScheme);
+          return TaskCard(
+            task: _taskList[index],
+            compact: true,
+            onTap: () =>
+                context.go(AppRoutes.taskDetail(_taskList[index].taskId)),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingMore(ColorScheme colorScheme) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: CircularProgressIndicator(color: colorScheme.primary),
+      ),
     );
   }
 

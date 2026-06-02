@@ -3,7 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:romance_hub_flutter/core/routes/app_routes.dart';
 import 'package:romance_hub_flutter/core/models/gift_model.dart';
 import 'package:romance_hub_flutter/core/services/gift_service.dart';
+import 'package:romance_hub_flutter/core/theme/app_spacing.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
+import 'package:romance_hub_flutter/shared/widgets/adaptive_masonry_grid.dart';
+import 'package:romance_hub_flutter/shared/widgets/list_display_mode_toggle.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
 
@@ -25,6 +28,7 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
   bool _isLoading = false;
   String _currentType = '已上架';
   int _actionLoadingGiftId = -1;
+  ListDisplayMode _displayMode = ListDisplayMode.card;
 
   @override
   void initState() {
@@ -142,6 +146,10 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
+          ListDisplayModeToggle(
+            mode: _displayMode,
+            onChanged: (mode) => setState(() => _displayMode = mode),
+          ),
           IconButton(
             icon: const Icon(Icons.add_rounded),
             onPressed: () => context.go(AppRoutes.addGift),
@@ -182,113 +190,45 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
                 ? const EmptyWidget(message: '暂无赠礼')
                 : RefreshIndicator(
                     onRefresh: _loadGifts,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      itemCount: _giftList.length,
-                      itemBuilder: (context, index) {
-                        final gift = _giftList[index];
-                        final isActionLoading =
-                            _actionLoadingGiftId == gift.giftId;
-                        final theme = Theme.of(context);
-                        final colorScheme = theme.colorScheme;
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            leading: gift.giftImage != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Image.network(
-                                      gift.giftImage!,
-                                      width: 56,
-                                      height: 56,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Container(
-                                              width: 56,
-                                              height: 56,
-                                              color: colorScheme
-                                                  .surfaceContainerHighest,
-                                              child: Icon(
-                                                Icons
-                                                    .image_not_supported_rounded,
-                                                color: colorScheme
-                                                    .onSurfaceVariant,
-                                              ),
-                                            );
-                                          },
-                                    ),
-                                  )
-                                : Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Icon(
-                                      Icons.image_not_supported_rounded,
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                            title: Text(
-                              gift.giftName,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.star_rounded,
-                                      size: 14,
-                                      color: colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${gift.score} 积分',
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            color: colorScheme.onSurfaceVariant,
-                                          ),
-                                    ),
-                                    if (gift.remained != null) ...[
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        '剩余 ${gift.remained}',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color:
-                                                  colorScheme.onSurfaceVariant,
-                                            ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                            trailing: _buildActionButton(gift, isActionLoading),
-                          ),
-                        );
-                      },
-                    ),
+                    child: _displayMode == ListDisplayMode.card
+                        ? _buildGiftList()
+                        : _buildGiftWaterfall(),
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGiftList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      itemCount: _giftList.length,
+      itemBuilder: (context, index) {
+        final gift = _giftList[index];
+        final isActionLoading = _actionLoadingGiftId == gift.giftId;
+        return _MyGiftTile(
+          gift: gift,
+          action: _buildActionButton(gift, isActionLoading),
+        );
+      },
+    );
+  }
+
+  Widget _buildGiftWaterfall() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: AdaptiveMasonryGrid(
+        itemCount: _giftList.length,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        itemBuilder: (context, index) {
+          final gift = _giftList[index];
+          final isActionLoading = _actionLoadingGiftId == gift.giftId;
+          return _MyGiftWaterfallCard(
+            gift: gift,
+            action: _buildActionButton(gift, isActionLoading),
+          );
+        },
       ),
     );
   }
@@ -327,5 +267,166 @@ class _MyGiftListPageState extends State<MyGiftListPage> {
       );
     }
     return const SizedBox.shrink();
+  }
+}
+
+class _MyGiftTile extends StatelessWidget {
+  final GiftModel gift;
+  final Widget action;
+
+  const _MyGiftTile({required this.gift, required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 12,
+        ),
+        leading: _GiftThumb(imageUrl: gift.giftImage, size: 56),
+        title: Text(
+          gift.giftName,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface,
+          ),
+        ),
+        subtitle: _GiftMeta(gift: gift),
+        trailing: action,
+      ),
+    );
+  }
+}
+
+class _MyGiftWaterfallCard extends StatelessWidget {
+  final GiftModel gift;
+  final Widget action;
+
+  const _MyGiftWaterfallCard({required this.gift, required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _GiftThumb(
+            imageUrl: gift.giftImage,
+            size: double.infinity,
+            height: 118,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  gift.giftName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _GiftMeta(gift: gift),
+                const SizedBox(height: AppSpacing.sm),
+                action,
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GiftMeta extends StatelessWidget {
+  final GiftModel gift;
+
+  const _GiftMeta({required this.gift});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Wrap(
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.xs,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.star_rounded, size: 14, color: colorScheme.primary),
+            const SizedBox(width: 4),
+            Text(
+              '${gift.score} 积分',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        if (gift.remained != null)
+          Text(
+            '剩余 ${gift.remained}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _GiftThumb extends StatelessWidget {
+  final String? imageUrl;
+  final double size;
+  final double? height;
+
+  const _GiftThumb({required this.imageUrl, required this.size, this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
+    final child = hasImage
+        ? Image.network(
+            imageUrl!,
+            width: size,
+            height: height ?? size,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                _placeholder(context, isError: true),
+          )
+        : _placeholder(context, isError: false);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox(width: size, height: height ?? size, child: child),
+    );
+  }
+
+  Widget _placeholder(BuildContext context, {required bool isError}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: isError
+          ? colorScheme.surfaceContainerHighest
+          : colorScheme.primaryContainer.withValues(alpha: 0.28),
+      child: Center(
+        child: Icon(
+          isError
+              ? Icons.image_not_supported_rounded
+              : Icons.card_giftcard_rounded,
+          color: isError ? colorScheme.onSurfaceVariant : colorScheme.primary,
+        ),
+      ),
+    );
   }
 }

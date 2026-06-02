@@ -283,52 +283,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               ),
               const SizedBox(height: 16),
             ],
-            if (_task!.taskImage.isNotEmpty) ...[
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _task!.taskImage.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => ImageViewer(
-                                images: _task!.taskImage,
-                                initialIndex: index,
-                              ),
-                            ),
-                          );
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            _task!.taskImage[index],
-                            width: 200,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 200,
-                                height: 200,
-                                color: colorScheme.surfaceContainerHighest,
-                                child: Icon(
-                                  Icons.image_not_supported_rounded,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            _task!.taskImage.isNotEmpty
+                ? _buildImageSection(context)
+                : _buildNoImageHint(context),
+            const SizedBox(height: 16),
             _buildInfoRow(context, '发布者', _task!.publisherName),
             _buildInfoRow(context, '状态', _getStatusText(_task!.taskStatus)),
             if (_showAccept || _showComplete) ...[
@@ -371,6 +329,78 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImageSection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _task!.taskImage.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ImageViewer(
+                      images: _task!.taskImage,
+                      initialIndex: index,
+                    ),
+                  ),
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  _task!.taskImage[index],
+                  width: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 200,
+                      height: 200,
+                      color: colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.image_not_supported_rounded,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildNoImageHint(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Text(
+            '此心诺未附图片',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }
