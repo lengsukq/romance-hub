@@ -35,15 +35,14 @@ class TaskService {
         AppLogger.e('获取任务列表失败', '响应格式异常: 非 JSON 对象');
         return ApiResponse(code: 500, msg: '响应格式异常，请检查云阁地址');
       }
-      final parsed = ApiResponse<TaskListResponse>.fromJson(
-        responseData,
-        (data) {
-          if (data == null || data is! Map<String, dynamic>) {
-            return TaskListResponse(record: [], totalPages: 0);
-          }
-          return TaskListResponse.fromJson(data);
-        },
-      );
+      final parsed = ApiResponse<TaskListResponse>.fromJson(responseData, (
+        data,
+      ) {
+        if (data == null || data is! Map<String, dynamic>) {
+          return TaskListResponse(record: [], totalPages: 0);
+        }
+        return TaskListResponse.fromJson(data);
+      });
       if (!parsed.isSuccess && parsed.msg.isNotEmpty) {
         AppLogger.d('获取任务列表: ${parsed.msg}');
       }
@@ -55,10 +54,7 @@ class TaskService {
     } catch (e, stack) {
       AppLogger.e('获取任务列表失败', e);
       AppLogger.d(stack.toString());
-      return ApiResponse(
-        code: 500,
-        msg: '获取任务列表失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取任务列表失败: ${e.toString()}');
     }
   }
 
@@ -102,10 +98,7 @@ class TaskService {
       );
     } catch (e) {
       AppLogger.e('获取任务详情失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取任务详情失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取任务详情失败: ${e.toString()}');
     }
   }
 
@@ -115,29 +108,28 @@ class TaskService {
     required String taskDesc,
     required List<String> taskImage,
     required int taskScore,
+    String? receiverEmail,
   }) async {
     try {
+      final data = <String, dynamic>{
+        'taskName': taskName,
+        'taskDesc': taskDesc,
+        'taskImage': taskImage,
+        'taskScore': taskScore,
+      };
+      if (receiverEmail != null && receiverEmail.isNotEmpty) {
+        data['receiverEmail'] = receiverEmail;
+      }
       final response = await _apiService.post(
         ApiEndpoints.task,
-        data: {
-          'action': 'create',
-          'data': {
-            'taskName': taskName,
-            'taskDesc': taskDesc,
-            'taskImage': taskImage,
-            'taskScore': taskScore,
-          },
-        },
+        data: {'action': 'create', 'data': data},
       );
 
       final responseData = response.data as Map<String, dynamic>;
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('发布任务失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '发布任务失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '发布任务失败: ${e.toString()}');
     }
   }
 
@@ -151,10 +143,7 @@ class TaskService {
         ApiEndpoints.task,
         data: {
           'action': 'update',
-          'data': {
-            'taskId': taskId,
-            'taskStatus': taskStatus,
-          },
+          'data': {'taskId': taskId, 'taskStatus': taskStatus},
         },
       );
 
@@ -162,10 +151,7 @@ class TaskService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('更新任务状态失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '更新任务状态失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '更新任务状态失败: ${e.toString()}');
     }
   }
 
@@ -184,10 +170,7 @@ class TaskService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('删除任务失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '删除任务失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '删除任务失败: ${e.toString()}');
     }
   }
 }

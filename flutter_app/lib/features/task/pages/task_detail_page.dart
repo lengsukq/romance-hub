@@ -7,7 +7,8 @@ import 'package:romance_hub_flutter/core/services/favourite_service.dart';
 import 'package:romance_hub_flutter/core/services/user_service.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
 import 'package:romance_hub_flutter/core/utils/logger.dart';
-import 'package:romance_hub_flutter/core/utils/date_utils.dart' as app_date_utils;
+import 'package:romance_hub_flutter/core/utils/date_utils.dart'
+    as app_date_utils;
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/image_viewer.dart';
 import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
@@ -16,10 +17,7 @@ import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
 class TaskDetailPage extends StatefulWidget {
   final int taskId;
 
-  const TaskDetailPage({
-    super.key,
-    required this.taskId,
-  });
+  const TaskDetailPage({super.key, required this.taskId});
 
   @override
   State<TaskDetailPage> createState() => _TaskDetailPageState();
@@ -64,9 +62,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           _isLoading = false;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
@@ -94,9 +92,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             _isFavourite = false;
           });
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('已取消收藏')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('已取消收藏')));
           }
         }
       } else {
@@ -109,15 +107,15 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             _isFavourite = true;
           });
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('已添加收藏')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('已添加收藏')));
           }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(response.msg)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(response.msg)));
           }
         }
       }
@@ -140,16 +138,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         final response = await _taskService.deleteTask(widget.taskId);
         if (response.isSuccess) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('删除成功')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('删除成功')));
             context.go(AppRoutes.tasks);
           }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(response.msg)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(response.msg)));
           }
         }
       } catch (e) {
@@ -161,14 +159,21 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   Future<void> _acceptTask() async {
     if (_task == null || _stateLoading) return;
     setState(() => _stateLoading = true);
-    final res = await _taskService.updateTaskState(taskId: _task!.taskId, taskStatus: 'accepted');
+    final res = await _taskService.updateTaskState(
+      taskId: _task!.taskId,
+      taskStatus: 'accepted',
+    );
     if (mounted) {
       setState(() => _stateLoading = false);
       if (res.isSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已接受')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('已接受')));
         _loadTaskDetail();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res.msg)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(res.msg)));
       }
     }
   }
@@ -176,14 +181,21 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   Future<void> _completeTask() async {
     if (_task == null || _stateLoading) return;
     setState(() => _stateLoading = true);
-    final res = await _taskService.updateTaskState(taskId: _task!.taskId, taskStatus: 'completed');
+    final res = await _taskService.updateTaskState(
+      taskId: _task!.taskId,
+      taskStatus: 'completed',
+    );
     if (mounted) {
       setState(() => _stateLoading = false);
       if (res.isSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已完成')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('已完成')));
         _loadTaskDetail();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res.msg)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(res.msg)));
       }
     }
   }
@@ -214,7 +226,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         body: Center(
           child: Text(
             '心诺不存在',
-            style: theme.textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       );
@@ -228,12 +242,21 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            icon: Icon(_isFavourite ? Icons.favorite_rounded : Icons.favorite_border_rounded),
-            color: _isFavourite ? colorScheme.primary : colorScheme.onSurfaceVariant,
+            icon: Icon(
+              _isFavourite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+            ),
+            color: _isFavourite
+                ? colorScheme.primary
+                : colorScheme.onSurfaceVariant,
             onPressed: _toggleFavourite,
           ),
           IconButton(
-            icon: Icon(Icons.delete_outline_rounded, color: colorScheme.onSurfaceVariant),
+            icon: Icon(
+              Icons.delete_outline_rounded,
+              color: colorScheme.onSurfaceVariant,
+            ),
             onPressed: _deleteTask,
           ),
         ],
@@ -254,7 +277,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             if (_task!.taskDesc != null && _task!.taskDesc!.isNotEmpty) ...[
               Text(
                 _task!.taskDesc!,
-                style: theme.textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 16),
             ],
@@ -289,7 +314,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                 width: 200,
                                 height: 200,
                                 color: colorScheme.surfaceContainerHighest,
-                                child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
+                                child: Icon(
+                                  Icons.image_not_supported_rounded,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               );
                             },
                           ),
@@ -326,9 +354,21 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               ),
             ],
             _buildInfoRow(context, '积分', '${_task!.taskScore}'),
-            _buildInfoRow(context, '创建时间', app_date_utils.DateUtils.formatDateTimeDisplay(_task!.creationTime)),
+            _buildInfoRow(
+              context,
+              '创建时间',
+              app_date_utils.DateUtils.formatDateTimeDisplay(
+                _task!.creationTime,
+              ),
+            ),
             if (_task!.completionTime != null)
-              _buildInfoRow(context, '完成时间', app_date_utils.DateUtils.formatDateTimeDisplay(_task!.completionTime)),
+              _buildInfoRow(
+                context,
+                '完成时间',
+                app_date_utils.DateUtils.formatDateTimeDisplay(
+                  _task!.completionTime,
+                ),
+              ),
           ],
         ),
       ),
@@ -356,7 +396,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           Expanded(
             child: Text(
               value,
-              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
         ],

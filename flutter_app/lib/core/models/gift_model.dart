@@ -13,6 +13,7 @@ class GiftModel {
   final String? exchangeStatus;
   final String? exchangeTime;
   final String? recipientId;
+
   /// 剩余数量（我的礼物列表用）
   final int? remained;
 
@@ -32,6 +33,27 @@ class GiftModel {
     this.remained,
   });
 
+  static int _asInt(dynamic value, [int fallback = 0]) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
+  static bool _asBool(dynamic value, [bool fallback = false]) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final text = value?.toString().toLowerCase();
+    if (text == 'true' || text == '1') return true;
+    if (text == 'false' || text == '0') return false;
+    return fallback;
+  }
+
+  static String? _asNullableString(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString();
+    return text.isEmpty ? null : text;
+  }
+
   factory GiftModel.fromJson(Map<String, dynamic> json) {
     final creationTime = json['creationTime'];
     final creationTimeStr = creationTime == null
@@ -39,22 +61,31 @@ class GiftModel {
         : (creationTime is String ? creationTime : creationTime.toString());
     final publisher = json['publisher'];
     final publisherName = publisher is Map<String, dynamic>
-        ? (publisher['username'] as String? ?? '')
-        : (json['publisherName'] as String? ?? '');
+        ? (_asNullableString(publisher['username']) ?? '')
+        : (_asNullableString(json['publisherName']) ?? '');
     return GiftModel(
-      giftId: json['giftId'] as int,
-      giftName: json['giftName'] as String,
-      giftDesc: json['giftDesc'] as String? ?? json['giftDetail'] as String?,
-      giftImage: json['giftImage'] as String? ?? json['giftImg'] as String?,
-      score: (json['score'] ?? json['needScore']) as int,
-      publisherId: (json['publisherId'] ?? json['publisherEmail']) as String,
+      giftId: _asInt(json['giftId']),
+      giftName: _asNullableString(json['giftName']) ?? '',
+      giftDesc:
+          _asNullableString(json['giftDesc']) ??
+          _asNullableString(json['giftDetail']),
+      giftImage:
+          _asNullableString(json['giftImage']) ??
+          _asNullableString(json['giftImg']),
+      score: _asInt(json['score'] ?? json['needScore']),
+      publisherId:
+          _asNullableString(json['publisherId']) ??
+          _asNullableString(json['publisherEmail']) ??
+          '',
       publisherName: publisherName,
-      isShow: json['isShow'] as bool? ?? true,
+      isShow: _asBool(json['isShow'], true),
       creationTime: creationTimeStr,
-      exchangeStatus: json['exchangeStatus'] as String?,
-      exchangeTime: json['exchangeTime'] as String?,
-      recipientId: json['recipientId'] as String?,
-      remained: json['remained'] as int?,
+      exchangeStatus: _asNullableString(json['exchangeStatus']),
+      exchangeTime: _asNullableString(json['exchangeTime']),
+      recipientId:
+          _asNullableString(json['recipientId']) ??
+          _asNullableString(json['receiverEmail']),
+      remained: json.containsKey('remained') ? _asInt(json['remained']) : null,
     );
   }
 

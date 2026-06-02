@@ -49,7 +49,9 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _coupleConfigFetched = true;
       _coupleSince = res.data?['COUPLE_SINCE'];
-      if (_coupleSince != null && _coupleSince!.trim().isEmpty) _coupleSince = null;
+      if (_coupleSince != null && _coupleSince!.trim().isEmpty) {
+        _coupleSince = null;
+      }
       _counterMode = mode;
     });
     if (_coupleSince != null) {
@@ -205,7 +207,8 @@ class _HomePageState extends State<HomePage> {
                         title: '私语',
                         subtitle: '我的 / TA的',
                         icon: Icons.chat_bubble_rounded,
-                        onTap: () => context.go(AppRoutes.whisperList(type: 'my')),
+                        onTap: () =>
+                            context.go(AppRoutes.whisperList(type: 'my')),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -214,7 +217,8 @@ class _HomePageState extends State<HomePage> {
                         title: '藏心',
                         subtitle: '心诺·赠礼·私语',
                         icon: Icons.favorite_rounded,
-                        onTap: () => context.go(AppRoutes.favouriteList(type: 'task')),
+                        onTap: () =>
+                            context.go(AppRoutes.favouriteList(type: 'task')),
                       ),
                     ),
                   ],
@@ -361,9 +365,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,7 +406,9 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     verse.source,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.9,
+                      ),
                       fontStyle: FontStyle.normal,
                     ),
                   ),
@@ -464,9 +468,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: colorScheme.primaryContainer.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,10 +508,22 @@ class _HomePageState extends State<HomePage> {
             children: [
               TextButton.icon(
                 onPressed: () => _copySweetTalk(context),
-                icon: Icon(Icons.copy_rounded, size: 18, color: colorScheme.primary),
-                label: Text('复制', style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                icon: Icon(
+                  Icons.copy_rounded,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+                label: Text(
+                  '复制',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colorScheme.primary,
+                  ),
+                ),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -517,10 +531,22 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 8),
               TextButton.icon(
                 onPressed: _refreshSweetTalk,
-                icon: Icon(Icons.refresh_rounded, size: 18, color: colorScheme.primary),
-                label: Text('更新', style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+                label: Text(
+                  '更新',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colorScheme.primary,
+                  ),
+                ),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

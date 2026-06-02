@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 /// 个人信息页区块标题（古风文案，可选诗经副句，符合 UI 准则）
 class SectionTitle extends StatelessWidget {
   final String title;
+
   /// 可选副句，如诗经摘句，显示在标题下方、弱色小字
   final String? verse;
 

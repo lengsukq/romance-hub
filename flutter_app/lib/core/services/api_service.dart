@@ -37,7 +37,12 @@ class ApiService {
   static bool _isLocalOrPrivateHost(String host) {
     if (host.isEmpty) return false;
     if (host == 'localhost' || host == '127.0.0.1') return true;
-    if (host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')) return true;
+    if (host.startsWith('192.168.') || host.startsWith('10.')) return true;
+    if (host.startsWith('172.')) {
+      final parts = host.split('.');
+      final secondOctet = parts.length > 1 ? int.tryParse(parts[1]) : null;
+      return secondOctet != null && secondOctet >= 16 && secondOctet <= 31;
+    }
     return false;
   }
 
@@ -46,60 +51,72 @@ class ApiService {
     _dio.options = BaseOptions(
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
     );
 
     // 本地/内网或已勾选“信任此云阁证书”时放宽 HTTPS 校验
     final adapter = IOHttpClientAdapter();
-    adapter.onHttpClientCreate = (client) {
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-        if (_isLocalOrPrivateHost(host)) return true;
-        if (host == AppConfig.defaultBaseUrlHost) return true; // 默认云阁：浏览器可访问时 App 也放宽校验
-        if (_insecureSslHost != null && host == _insecureSslHost) return true;
-        return false;
-      };
+    adapter.createHttpClient = () {
+      final client = HttpClient();
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) {
+            if (_isLocalOrPrivateHost(host)) return true;
+            if (host == AppConfig.defaultBaseUrlHost) {
+              return true;
+            }
+            if (_insecureSslHost != null && host == _insecureSslHost) {
+              return true;
+            }
+            return false;
+          };
       return client;
     };
     _dio.httpClientAdapter = adapter;
 
     // 添加请求拦截器
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        if (!_insecureSslHostLoaded) {
-          _insecureSslHostLoaded = true;
-          _insecureSslHost = await AppConfig.getInsecureSslHost();
-        }
-        // 动态获取 baseUrl
-        final baseUrl = await AppConfig.getBaseUrl();
-        options.baseUrl = baseUrl;
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          if (!_insecureSslHostLoaded) {
+            _insecureSslHostLoaded = true;
+            _insecureSslHost = await AppConfig.getInsecureSslHost();
+          }
+          // 动态获取 baseUrl
+          final baseUrl = await AppConfig.getBaseUrl();
+          options.baseUrl = baseUrl;
 
-        // 添加 cookie（如果存在）
-        final cookie = await _getCookie();
-        if (cookie != null) {
-          options.headers['Cookie'] = cookie;
-        }
+          // 添加 cookie（如果存在）
+          final cookie = await _getCookie();
+          if (cookie != null) {
+            options.headers['Cookie'] = cookie;
+          }
 
-        final fullUrl = (baseUrl.endsWith('/') ? baseUrl : '$baseUrl/') + (options.path.startsWith('/') ? options.path.substring(1) : options.path);
-        AppLogger.d('请求: ${options.method} $fullUrl');
-        return handler.next(options);
-      },
-      onResponse: (response, handler) {
-        AppLogger.d('响应: ${response.statusCode} ${response.requestOptions.path}');
-        return handler.next(response);
-      },
-      onError: (error, handler) async {
-        if (error.response?.statusCode == 401) {
-          await ApiService().clearCookie();
-          _on401?.call();
-        }
-        final uri = error.requestOptions.uri.toString();
-        AppLogger.e('请求失败: ${error.type} ${error.message}', error);
-        AppLogger.d('失败 URL: $uri');
-        return handler.next(error);
-      },
-    ));
+          final fullUrl =
+              (baseUrl.endsWith('/') ? baseUrl : '$baseUrl/') +
+              (options.path.startsWith('/')
+                  ? options.path.substring(1)
+                  : options.path);
+          AppLogger.d('请求: ${options.method} $fullUrl');
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          AppLogger.d(
+            '响应: ${response.statusCode} ${response.requestOptions.path}',
+          );
+          return handler.next(response);
+        },
+        onError: (error, handler) async {
+          if (error.response?.statusCode == 401) {
+            await ApiService().clearCookie();
+            _on401?.call();
+          }
+          final uri = error.requestOptions.uri.toString();
+          AppLogger.e('请求失败: ${error.type} ${error.message}', error);
+          AppLogger.d('失败 URL: $uri');
+          return handler.next(error);
+        },
+      ),
+    );
   }
 
   /// 更新 baseUrl
@@ -139,22 +156,36 @@ class ApiService {
   }
 
   /// GET 请求
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await _dio.get(path, queryParameters: queryParameters);
   }
 
   /// POST 请求
-  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await _dio.post(path, data: data, queryParameters: queryParameters);
   }
 
   /// PUT 请求
-  Future<Response> put(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> put(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await _dio.put(path, data: data, queryParameters: queryParameters);
   }
 
   /// DELETE 请求
-  Future<Response> delete(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<Response> delete(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     return await _dio.delete(path, queryParameters: queryParameters);
   }
 }

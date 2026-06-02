@@ -6,10 +6,7 @@ import 'package:go_router/go_router.dart';
 class MainShellScaffold extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const MainShellScaffold({
-    super.key,
-    required this.navigationShell,
-  });
+  const MainShellScaffold({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context) {
@@ -33,37 +30,35 @@ class MainShellScaffold extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: BottomNavigationBar(
               currentIndex: navigationShell.currentIndex,
-              onTap: (index) => navigationShell.goBranch(
-                index,
-                initialLocation: true,
-              ),
+              onTap: (index) =>
+                  navigationShell.goBranch(index, initialLocation: true),
               type: BottomNavigationBarType.fixed,
               backgroundColor: Colors.transparent,
               elevation: 0,
               selectedItemColor: colorScheme.primary,
               unselectedItemColor: colorScheme.onSurfaceVariant,
-              items: [
-                const BottomNavigationBarItem(
+              items: const [
+                BottomNavigationBarItem(
                   icon: Icon(Icons.home_outlined),
                   activeIcon: Icon(Icons.home_rounded),
                   label: '首页',
                 ),
-                const BottomNavigationBarItem(
+                BottomNavigationBarItem(
                   icon: Icon(Icons.task_alt_outlined),
                   activeIcon: Icon(Icons.task_alt_rounded),
                   label: '心诺',
                 ),
-                const BottomNavigationBarItem(
+                BottomNavigationBarItem(
                   icon: Icon(Icons.card_giftcard_outlined),
                   activeIcon: Icon(Icons.card_giftcard_rounded),
                   label: '赠礼',
                 ),
-                const BottomNavigationBarItem(
+                BottomNavigationBarItem(
                   icon: Icon(Icons.chat_bubble_outline),
                   activeIcon: Icon(Icons.chat_bubble_rounded),
                   label: '私语',
                 ),
-                const BottomNavigationBarItem(
+                BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person_rounded),
                   label: '吾心',

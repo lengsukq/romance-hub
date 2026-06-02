@@ -80,7 +80,10 @@ class _ConfigDialogState extends State<ConfigDialog> {
               decoration: InputDecoration(
                 labelText: '云阁地址',
                 hintText: 'https://r-d.lengsu.top/',
-                prefixIcon: Icon(Icons.link_rounded, color: colorScheme.onSurfaceVariant),
+                prefixIcon: Icon(
+                  Icons.link_rounded,
+                  color: colorScheme.onSurfaceVariant,
+                ),
                 errorText: _isValid ? null : '请输入有效的 URL 地址',
               ),
               keyboardType: TextInputType.url,
@@ -100,7 +103,11 @@ class _ConfigDialogState extends State<ConfigDialog> {
                 _urlController.text = AppConfig.defaultBaseUrl;
                 _validateUrl();
               },
-              icon: Icon(Icons.restore_rounded, size: 18, color: colorScheme.primary),
+              icon: Icon(
+                Icons.restore_rounded,
+                size: 18,
+                color: colorScheme.primary,
+              ),
               label: const Text('复为默认云阁'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colorScheme.primary,
@@ -121,7 +128,11 @@ class _ConfigDialogState extends State<ConfigDialog> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline_rounded, size: 18, color: colorScheme.primary),
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '提示',
@@ -150,10 +161,7 @@ class _ConfigDialogState extends State<ConfigDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('取消'),
         ),
-        ElevatedButton(
-          onPressed: _handleSave,
-          child: const Text('保存'),
-        ),
+        ElevatedButton(onPressed: _handleSave, child: const Text('保存')),
       ],
     );
   }

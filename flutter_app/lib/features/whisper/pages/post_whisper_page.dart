@@ -38,24 +38,24 @@ class _PostWhisperPageState extends State<PostWhisperPage> {
 
       if (response.isSuccess) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('发布成功')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('发布成功')));
           context.go(AppRoutes.whisperList(type: 'my'));
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
       AppLogger.e('发布留言失败', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('发布失败，请重试')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('发布失败，请重试')));
       }
     } finally {
       if (mounted) {
@@ -105,7 +105,9 @@ class _PostWhisperPageState extends State<PostWhisperPage> {
                       width: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.onPrimary,
+                        ),
                       ),
                     )
                   : const Text('发布'),

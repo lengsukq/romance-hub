@@ -29,17 +29,32 @@ class ImageBedModel {
   factory ImageBedModel.fromJson(Map<String, dynamic> json) {
     return ImageBedModel(
       id: _int(json, 'id'),
-      bedName: (json['bedName'] as String?) ?? '',
-      bedType: (json['bedType'] as String?) ?? '',
-      apiUrl: (json['apiUrl'] as String?) ?? '',
-      apiKey: json['apiKey'] as String?,
-      authHeader: json['authHeader'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-      isDefault: json['isDefault'] as bool? ?? false,
+      bedName: json['bedName']?.toString() ?? '',
+      bedType: json['bedType']?.toString() ?? '',
+      apiUrl: json['apiUrl']?.toString() ?? '',
+      apiKey: _nullableString(json['apiKey']),
+      authHeader: _nullableString(json['authHeader']),
+      isActive: _bool(json['isActive'], true),
+      isDefault: _bool(json['isDefault']),
       priority: _int(json, 'priority'),
-      description: json['description'] as String?,
-      userEmail: (json['userEmail'] as String?) ?? '',
+      description: _nullableString(json['description']),
+      userEmail: json['userEmail']?.toString() ?? '',
     );
+  }
+
+  static String? _nullableString(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString();
+    return text.isEmpty ? null : text;
+  }
+
+  static bool _bool(dynamic value, [bool fallback = false]) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final text = value?.toString().toLowerCase();
+    if (text == 'true' || text == '1') return true;
+    if (text == 'false' || text == '0') return false;
+    return fallback;
   }
 
   static int _int(Map<String, dynamic> json, String key) {

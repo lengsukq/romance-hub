@@ -26,23 +26,52 @@ class TaskModel {
     this.recipientId,
   });
 
+  static int _asInt(dynamic value, [int fallback = 0]) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
+  static String? _asNullableString(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString();
+    return text.isEmpty ? null : text;
+  }
+
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     final taskImage = json['taskImage'];
     final recordList = taskImage is List
-        ? List<String>.from(taskImage.map((e) => e?.toString() ?? ''))
-        : (taskImage != null ? [taskImage.toString()] : <String>[]);
+        ? taskImage
+              .map((e) => e?.toString() ?? '')
+              .where((e) => e.isNotEmpty)
+              .toList()
+        : (taskImage != null && taskImage.toString().isNotEmpty
+              ? taskImage
+                    .toString()
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList()
+              : <String>[]);
     return TaskModel(
-      taskId: json['taskId'] as int? ?? 0,
-      taskName: json['taskName'] as String? ?? '',
-      taskDesc: json['taskDesc'] as String?,
+      taskId: _asInt(json['taskId']),
+      taskName: _asNullableString(json['taskName']) ?? '',
+      taskDesc: _asNullableString(json['taskDesc']),
       taskImage: recordList,
-      taskScore: json['taskScore'] as int? ?? 0,
-      publisherName: json['publisherName'] as String? ?? json['publisherEmail'] as String? ?? '',
-      taskStatus: json['taskStatus'] as String? ?? '未开始',
-      creationTime: json['creationTime'] != null ? json['creationTime'].toString() : '',
-      completionTime: json['completionTime'] != null ? json['completionTime'].toString() : null,
-      publisherId: json['publisherId'] as String? ?? json['publisherEmail'] as String?,
-      recipientId: json['recipientId'] as String? ?? json['receiverEmail'] as String?,
+      taskScore: _asInt(json['taskScore']),
+      publisherName:
+          _asNullableString(json['publisherName']) ??
+          _asNullableString(json['publisherEmail']) ??
+          '',
+      taskStatus: _asNullableString(json['taskStatus']) ?? 'pending',
+      creationTime: json['creationTime']?.toString() ?? '',
+      completionTime: json['completionTime']?.toString(),
+      publisherId:
+          _asNullableString(json['publisherId']) ??
+          _asNullableString(json['publisherEmail']),
+      recipientId:
+          _asNullableString(json['recipientId']) ??
+          _asNullableString(json['receiverEmail']),
     );
   }
 
@@ -66,23 +95,35 @@ class TaskModel {
 /// 任务列表响应
 class TaskListResponse {
   final List<TaskModel> record;
+  final int total;
+  final int pageSize;
   final int totalPages;
+  final int current;
 
   TaskListResponse({
     required this.record,
+    this.total = 0,
+    this.pageSize = 0,
     required this.totalPages,
+    this.current = 1,
   });
 
   factory TaskListResponse.fromJson(Map<String, dynamic> json) {
     final recordRaw = json['record'];
     final record = recordRaw is List
         ? (recordRaw)
-            .map((item) => TaskModel.fromJson(item as Map<String, dynamic>))
-            .toList()
+              .whereType<Map>()
+              .map(
+                (item) => TaskModel.fromJson(Map<String, dynamic>.from(item)),
+              )
+              .toList()
         : <TaskModel>[];
     return TaskListResponse(
       record: record,
-      totalPages: json['totalPages'] as int? ?? 0,
+      total: TaskModel._asInt(json['total'], record.length),
+      pageSize: TaskModel._asInt(json['pageSize'], record.length),
+      totalPages: TaskModel._asInt(json['totalPages']),
+      current: TaskModel._asInt(json['current'], 1),
     );
   }
 }

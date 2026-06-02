@@ -30,10 +30,7 @@ class FavouriteService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('添加收藏失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '添加收藏失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '添加收藏失败: ${e.toString()}');
     }
   }
 
@@ -58,15 +55,14 @@ class FavouriteService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('移除收藏失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '移除收藏失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '移除收藏失败: ${e.toString()}');
     }
   }
 
   /// 获取收藏列表
-  Future<ApiResponse<List<FavouriteModel>>> getFavouriteList(FavouriteType type) async {
+  Future<ApiResponse<List<FavouriteModel>>> getFavouriteList(
+    FavouriteType type,
+  ) async {
     try {
       final response = await _apiService.post(
         ApiEndpoints.favourite,
@@ -81,23 +77,20 @@ class FavouriteService {
         AppLogger.e('获取收藏列表失败', '响应格式异常: 非 JSON 对象');
         return ApiResponse(code: 500, msg: '响应格式异常，请检查云阁地址');
       }
-      return ApiResponse<List<FavouriteModel>>.fromJson(
-        responseData,
-        (data) {
-          if (data == null || data is! List) return <FavouriteModel>[];
-          final list = <FavouriteModel>[];
-          for (final e in data) {
-            if (e is Map<String, dynamic>) {
-              try {
-                list.add(FavouriteModel.fromJson(e));
-              } catch (err) {
-                AppLogger.d('收藏项解析跳过: $err');
-              }
+      return ApiResponse<List<FavouriteModel>>.fromJson(responseData, (data) {
+        if (data == null || data is! List) return <FavouriteModel>[];
+        final list = <FavouriteModel>[];
+        for (final e in data) {
+          if (e is Map<String, dynamic>) {
+            try {
+              list.add(FavouriteModel.fromJson(e));
+            } catch (err) {
+              AppLogger.d('收藏项解析跳过: $err');
             }
           }
-          return list;
-        },
-      );
+        }
+        return list;
+      });
     } on DioException catch (e) {
       final msg = _dioErrorMessage(e);
       AppLogger.e('获取收藏列表失败', e);
@@ -105,10 +98,7 @@ class FavouriteService {
     } catch (e, stack) {
       AppLogger.e('获取收藏列表失败', e);
       AppLogger.d(stack.toString());
-      return ApiResponse(
-        code: 500,
-        msg: '获取收藏列表失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取收藏列表失败: ${e.toString()}');
     }
   }
 

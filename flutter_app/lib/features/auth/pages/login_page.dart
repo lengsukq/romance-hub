@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _baseUrlController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
@@ -52,7 +52,8 @@ class _LoginPageState extends State<LoginPage> {
   /// 连点爱心 5 次打开调试面板
   void _onHeartTap() {
     final now = DateTime.now();
-    if (_heartTapTime != null && now.difference(_heartTapTime!) > _debugTapWindow) {
+    if (_heartTapTime != null &&
+        now.difference(_heartTapTime!) > _debugTapWindow) {
       _heartTapCount = 0;
     }
     _heartTapTime = now;
@@ -83,15 +84,15 @@ class _LoginPageState extends State<LoginPage> {
         onSave: (url) async {
           await AppConfig.setBaseUrl(url);
           await ApiService().updateBaseUrl(url);
+          if (!mounted) return;
           setState(() {
             _baseUrlController.text = url;
           });
-          if (mounted) {
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('云阁已更新')),
-            );
-          }
+          if (!context.mounted) return;
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('云阁已更新')));
         },
       ),
     );
@@ -108,6 +109,8 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = null;
     });
 
+    final authNotifier = context.read<AuthNotifier>();
+    final router = GoRouter.of(context);
     try {
       final authService = AuthService();
       final response = await authService.login(
@@ -118,9 +121,9 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         if (response.isSuccess && response.data != null) {
           // 登录成功，更新登录态；确认 cookie 可读后再跳转，避免首次进私语等请求未带上 cookie
-          context.read<AuthNotifier>().setLoggedIn(true);
+          authNotifier.setLoggedIn(true);
           await ApiService().hasCookie();
-          if (mounted) context.go(AppRoutes.home);
+          if (mounted) router.go(AppRoutes.home);
         } else {
           setState(() {
             _errorMessage = response.msg;
@@ -192,24 +195,31 @@ class _LoginPageState extends State<LoginPage> {
                   Text(
                     '锦书',
                     textAlign: TextAlign.center,
-                    style: textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
-                      letterSpacing: 1.2,
-                    ) ?? TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
-                      letterSpacing: 1.2,
-                    ),
+                    style:
+                        textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.primary,
+                          letterSpacing: 1.2,
+                        ) ??
+                        TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.primary,
+                          letterSpacing: 1.2,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '两心相知，一事一诺',
                     textAlign: TextAlign.center,
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ) ?? TextStyle(fontSize: 15, color: colorScheme.onSurfaceVariant),
+                    style:
+                        textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ) ??
+                        TextStyle(
+                          fontSize: 15,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                   ),
                   const SizedBox(height: 28),
 
@@ -222,7 +232,11 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.cloud_rounded, size: 22, color: colorScheme.primary),
+                              Icon(
+                                Icons.cloud_rounded,
+                                size: 22,
+                                color: colorScheme.primary,
+                              ),
                               const SizedBox(width: 12),
                               Text(
                                 '云阁配置',
@@ -234,10 +248,16 @@ class _LoginPageState extends State<LoginPage> {
                               const Spacer(),
                               TextButton.icon(
                                 onPressed: _showConfigDialog,
-                                icon: Icon(Icons.edit_rounded, size: 18, color: colorScheme.primary),
+                                icon: Icon(
+                                  Icons.edit_rounded,
+                                  size: 18,
+                                  color: colorScheme.primary,
+                                ),
                                 label: const Text('配置'),
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   foregroundColor: colorScheme.primary,
                                 ),
                               ),
@@ -249,7 +269,10 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: InputDecoration(
                               labelText: '云阁地址',
                               hintText: 'https://r-d.lengsu.top/',
-                              prefixIcon: Icon(Icons.link_rounded, color: colorScheme.onSurfaceVariant),
+                              prefixIcon: Icon(
+                                Icons.link_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                               isDense: true,
                             ),
                             keyboardType: TextInputType.url,
@@ -257,7 +280,9 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _baseUrlController.text.isEmpty ? '未配置云阁' : '当前：${_baseUrlController.text}',
+                            _baseUrlController.text.isEmpty
+                                ? '未配置云阁'
+                                : '当前：${_baseUrlController.text}',
                             style: textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -290,7 +315,10 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: InputDecoration(
                               labelText: '昵称或邮箱',
                               hintText: '请输入昵称或邮箱',
-                              prefixIcon: Icon(Icons.person_rounded, color: colorScheme.onSurfaceVariant),
+                              prefixIcon: Icon(
+                                Icons.person_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
@@ -305,10 +333,15 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: InputDecoration(
                               labelText: '密码',
                               hintText: '请输入密码',
-                              prefixIcon: Icon(Icons.lock_rounded, color: colorScheme.onSurfaceVariant),
+                              prefixIcon: Icon(
+                                Icons.lock_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                  _obscurePassword
+                                      ? Icons.visibility_rounded
+                                      : Icons.visibility_off_rounded,
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                                 onPressed: () {
@@ -329,20 +362,35 @@ class _LoginPageState extends State<LoginPage> {
                           if (_errorMessage != null) ...[
                             const SizedBox(height: 16),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
-                                color: colorScheme.errorContainer.withValues(alpha: 0.5),
+                                color: colorScheme.errorContainer.withValues(
+                                  alpha: 0.5,
+                                ),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: colorScheme.error.withValues(alpha: 0.5)),
+                                border: Border.all(
+                                  color: colorScheme.error.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 20),
+                                  Icon(
+                                    Icons.error_outline_rounded,
+                                    color: colorScheme.error,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       _errorMessage!,
-                                      style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
+                                      style: textTheme.bodyMedium?.copyWith(
+                                        color: colorScheme.error,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -358,7 +406,9 @@ class _LoginPageState extends State<LoginPage> {
                                     width: 22,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        colorScheme.onPrimary,
+                                      ),
                                     ),
                                   )
                                 : const Text('登入'),

@@ -23,7 +23,7 @@ class _PostTaskPageState extends State<PostTaskPage> {
   final TaskService _taskService = TaskService();
   final UploadService _uploadService = UploadService();
   final ImagePicker _imagePicker = ImagePicker();
-  
+
   List<File> _selectedImages = [];
   bool _isSubmitting = false;
   String? _uploadPhaseHint;
@@ -47,9 +47,9 @@ class _PostTaskPageState extends State<PostTaskPage> {
     } catch (e) {
       AppLogger.e('选择图片失败', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('选择图片失败')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('选择图片失败')));
       }
     }
   }
@@ -95,9 +95,9 @@ class _PostTaskPageState extends State<PostTaskPage> {
       final uploadResponse = await _uploadService.uploadImages(_selectedImages);
       if (!uploadResponse.isSuccess || uploadResponse.data == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(uploadResponse.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(uploadResponse.msg)));
         }
         setState(() {
           _isSubmitting = false;
@@ -121,24 +121,24 @@ class _PostTaskPageState extends State<PostTaskPage> {
 
       if (response.isSuccess) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('发布成功')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('发布成功')));
           context.go(AppRoutes.tasks);
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
       AppLogger.e('发布任务失败', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('发布失败，请重试')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('发布失败，请重试')));
       }
     } finally {
       if (mounted) {
@@ -236,7 +236,8 @@ class _PostTaskPageState extends State<PostTaskPage> {
                             child: IconButton(
                               icon: const Icon(Icons.close_rounded, size: 20),
                               style: IconButton.styleFrom(
-                                backgroundColor: colorScheme.onSurface.withValues(alpha: 0.6),
+                                backgroundColor: colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
                                 foregroundColor: colorScheme.surface,
                               ),
                               onPressed: () {
@@ -259,7 +260,9 @@ class _PostTaskPageState extends State<PostTaskPage> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   _uploadPhaseHint!,
-                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.primary),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.primary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -272,7 +275,9 @@ class _PostTaskPageState extends State<PostTaskPage> {
                       width: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.onPrimary,
+                        ),
                       ),
                     )
                   : const Text('发布'),

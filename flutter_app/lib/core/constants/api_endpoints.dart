@@ -27,4 +27,7 @@ class ApiEndpoints {
 
   /// 配置：图床 / 通知 / 系统
   static String get config => '$_base/config';
+
+  /// 今日一言：与 Web 首页共用后端代理，避免 App 直接依赖外部 API
+  static String get sweetTalk => '$_base/sweet-talk';
 }

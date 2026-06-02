@@ -42,6 +42,7 @@ dependencies:
 
   # 打开系统浏览器/外部链接
   url_launcher: ^6.2.5
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

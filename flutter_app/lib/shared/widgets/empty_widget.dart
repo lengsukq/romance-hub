@@ -5,15 +5,11 @@ import 'package:romance_hub_flutter/core/constants/love_verses.dart';
 class EmptyWidget extends StatelessWidget {
   final String? message;
   final IconData? icon;
+
   /// 可选副句；为 null 时使用当日古诗词（LoveVerses.getVerseOfDay）
   final String? verse;
 
-  const EmptyWidget({
-    super.key,
-    this.message,
-    this.icon,
-    this.verse,
-  });
+  const EmptyWidget({super.key, this.message, this.icon, this.verse});
 
   @override
   Widget build(BuildContext context) {

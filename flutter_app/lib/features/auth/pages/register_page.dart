@@ -92,7 +92,9 @@ class _RegisterPageState extends State<RegisterPage> {
     if (isLover && _isUploadingLoverAvatar) return;
     if (!isLover && _isUploadingAvatar) return;
     try {
-      final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
       if (image == null || !mounted) return;
       final file = File(image.path);
       if (isLover) {
@@ -110,7 +112,9 @@ class _RegisterPageState extends State<RegisterPage> {
       }
       final uploadRes = await _uploadService.uploadImage(file);
       if (!mounted) return;
-      if (uploadRes.isSuccess && uploadRes.data != null && uploadRes.data!.isNotEmpty) {
+      if (uploadRes.isSuccess &&
+          uploadRes.data != null &&
+          uploadRes.data!.isNotEmpty) {
         setState(() {
           if (isLover) {
             _loverAvatarUploadUrl = uploadRes.data;
@@ -120,9 +124,9 @@ class _RegisterPageState extends State<RegisterPage> {
             _isUploadingAvatar = false;
           }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('头像上传成功')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('头像上传成功')));
       } else {
         setState(() {
           if (isLover) {
@@ -136,7 +140,9 @@ class _RegisterPageState extends State<RegisterPage> {
           }
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(uploadRes.msg.isNotEmpty ? uploadRes.msg : '头像上传失败')),
+          SnackBar(
+            content: Text(uploadRes.msg.isNotEmpty ? uploadRes.msg : '头像上传失败'),
+          ),
         );
       }
     } catch (e) {
@@ -153,9 +159,9 @@ class _RegisterPageState extends State<RegisterPage> {
             _isUploadingAvatar = false;
           }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('选择或上传头像失败')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('选择或上传头像失败')));
       }
     }
   }
@@ -212,9 +218,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (mounted) {
         if (response.isSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
           context.go(AppRoutes.login);
         } else {
           setState(() {
@@ -282,11 +288,18 @@ class _RegisterPageState extends State<RegisterPage> {
                       children: [
                         _sectionTitle(context, '君之契', colorScheme.primary),
                         const SizedBox(height: 12),
-                        _avatarPicker(context, file: _avatarFile, onTap: () => _pickAvatar(false), isUploading: _isUploadingAvatar),
+                        _avatarPicker(
+                          context,
+                          file: _avatarFile,
+                          onTap: () => _pickAvatar(false),
+                          isUploading: _isUploadingAvatar,
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           '选填，不选则用默认头像',
-                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
@@ -295,7 +308,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '昵称',
                             hintText: '请输入昵称',
-                            prefixIcon: Icon(Icons.person_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.person_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) return '请输入昵称';
@@ -308,12 +324,17 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '邮箱',
                             hintText: '请输入邮箱',
-                            prefixIcon: Icon(Icons.email_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.email_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) return '请输入邮箱';
-                            if (!ValidationUtils.isValidEmail(v.trim())) return '请输入正确的邮箱';
+                            if (!ValidationUtils.isValidEmail(v.trim())) {
+                              return '请输入正确的邮箱';
+                            }
                             return null;
                           },
                         ),
@@ -323,7 +344,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '一言',
                             hintText: '请输入一言',
-                            prefixIcon: Icon(Icons.chat_bubble_outline_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) return '请输入一言';
@@ -345,11 +369,18 @@ class _RegisterPageState extends State<RegisterPage> {
                       children: [
                         _sectionTitle(context, '良人契', colorScheme.primary),
                         const SizedBox(height: 12),
-                        _avatarPicker(context, file: _loverAvatarFile, onTap: () => _pickAvatar(true), isUploading: _isUploadingLoverAvatar),
+                        _avatarPicker(
+                          context,
+                          file: _loverAvatarFile,
+                          onTap: () => _pickAvatar(true),
+                          isUploading: _isUploadingLoverAvatar,
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           '选填，不选则用默认头像',
-                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
@@ -358,12 +389,17 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '良人邮箱',
                             hintText: '请输入良人邮箱',
-                            prefixIcon: Icon(Icons.email_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.email_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) return '请输入良人邮箱';
-                            if (!ValidationUtils.isValidEmail(v.trim())) return '请输入正确的邮箱';
+                            if (!ValidationUtils.isValidEmail(v.trim())) {
+                              return '请输入正确的邮箱';
+                            }
                             return null;
                           },
                         ),
@@ -373,7 +409,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '良人昵称',
                             hintText: '请输入良人昵称',
-                            prefixIcon: Icon(Icons.person_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.person_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) return '请输入良人昵称';
@@ -386,7 +425,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '良人一言',
                             hintText: '请输入良人一言',
-                            prefixIcon: Icon(Icons.chat_bubble_outline_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) return '请输入良人一言';
@@ -410,7 +452,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(height: 6),
                         Text(
                           '两账号共用同一登入密码',
-                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -418,19 +462,28 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '密码',
                             hintText: '请输入密码',
-                            prefixIcon: Icon(Icons.lock_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.lock_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                _obscurePassword
+                                    ? Icons.visibility_rounded
+                                    : Icons.visibility_off_rounded,
                                 color: colorScheme.onSurfaceVariant,
                               ),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
                             ),
                           ),
                           obscureText: _obscurePassword,
                           validator: (v) {
                             if (v == null || v.isEmpty) return '请输入密码';
-                            if (!ValidationUtils.isValidPassword(v)) return '密码至少 6 位';
+                            if (!ValidationUtils.isValidPassword(v)) {
+                              return '密码至少 6 位';
+                            }
                             return null;
                           },
                         ),
@@ -440,13 +493,20 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             labelText: '确认密码',
                             hintText: '请再次输入一致密码',
-                            prefixIcon: Icon(Icons.lock_outline_rounded, color: colorScheme.onSurfaceVariant),
+                            prefixIcon: Icon(
+                              Icons.lock_outline_rounded,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword2 ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                _obscurePassword2
+                                    ? Icons.visibility_rounded
+                                    : Icons.visibility_off_rounded,
                                 color: colorScheme.onSurfaceVariant,
                               ),
-                              onPressed: () => setState(() => _obscurePassword2 = !_obscurePassword2),
+                              onPressed: () => setState(
+                                () => _obscurePassword2 = !_obscurePassword2,
+                              ),
                             ),
                           ),
                           obscureText: _obscurePassword2,
@@ -464,20 +524,31 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 if (_errorMessage != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.errorContainer.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colorScheme.error.withValues(alpha: 0.5)),
+                      border: Border.all(
+                        color: colorScheme.error.withValues(alpha: 0.5),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline_rounded, color: colorScheme.error, size: 20),
+                        Icon(
+                          Icons.error_outline_rounded,
+                          color: colorScheme.error,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             _errorMessage!,
-                            style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.error,
+                            ),
                           ),
                         ),
                       ],
@@ -487,14 +558,24 @@ class _RegisterPageState extends State<RegisterPage> {
                 ],
 
                 ElevatedButton(
-                  onPressed: (_isLoading || _isUploadingAvatar || _isUploadingLoverAvatar) ? null : _handleRegister,
-                  child: (_isLoading || _isUploadingAvatar || _isUploadingLoverAvatar)
+                  onPressed:
+                      (_isLoading ||
+                          _isUploadingAvatar ||
+                          _isUploadingLoverAvatar)
+                      ? null
+                      : _handleRegister,
+                  child:
+                      (_isLoading ||
+                          _isUploadingAvatar ||
+                          _isUploadingLoverAvatar)
                       ? SizedBox(
                           height: 22,
                           width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              colorScheme.onPrimary,
+                            ),
                           ),
                         )
                       : const Text('同立契'),
@@ -531,7 +612,12 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _avatarPicker(BuildContext context, {required File? file, required VoidCallback onTap, required bool isUploading}) {
+  Widget _avatarPicker(
+    BuildContext context, {
+    required File? file,
+    required VoidCallback onTap,
+    required bool isUploading,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: isUploading ? null : onTap,
@@ -541,10 +627,16 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             CircleAvatar(
               radius: 40,
-              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.5,
+              ),
               backgroundImage: file != null ? FileImage(file) : null,
               child: file == null
-                  ? Icon(Icons.add_a_photo_rounded, size: 36, color: colorScheme.onSurfaceVariant)
+                  ? Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 36,
+                      color: colorScheme.onSurfaceVariant,
+                    )
                   : null,
             ),
             if (isUploading)
@@ -561,10 +653,19 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(
                       width: 28,
                       height: 28,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.primary,
+                      ),
                     ),
                     const SizedBox(height: 4),
-                    Text('上传中…', style: TextStyle(fontSize: 10, color: colorScheme.onSurface)),
+                    Text(
+                      '上传中…',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
               ),

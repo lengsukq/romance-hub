@@ -11,10 +11,7 @@ import 'package:romance_hub_flutter/core/utils/snackbar_utils.dart';
 class EditUserInfoDialog extends StatefulWidget {
   final UserModel initialUser;
 
-  const EditUserInfoDialog({
-    super.key,
-    required this.initialUser,
-  });
+  const EditUserInfoDialog({super.key, required this.initialUser});
 
   /// 显示弹框，保存成功时返回 true
   static Future<bool?> show(BuildContext context, UserModel initialUser) {
@@ -60,7 +57,9 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
 
   Future<void> _pickAndUploadAvatar() async {
     try {
-      final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
       if (image == null || !mounted) return;
 
       setState(() {
@@ -70,8 +69,12 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
 
       final uploadRes = await _uploadService.uploadImage(File(image.path));
       if (!mounted) return;
-      AppLogger.i('[吾之信息-头像上传] isSuccess=${uploadRes.isSuccess}, code=${uploadRes.code}, msg=${uploadRes.msg}, url=${uploadRes.data ?? "(空)"}');
-      if (uploadRes.isSuccess && uploadRes.data != null && uploadRes.data!.isNotEmpty) {
+      AppLogger.i(
+        '[吾之信息-头像上传] isSuccess=${uploadRes.isSuccess}, code=${uploadRes.code}, msg=${uploadRes.msg}, url=${uploadRes.data ?? "(空)"}',
+      );
+      if (uploadRes.isSuccess &&
+          uploadRes.data != null &&
+          uploadRes.data!.isNotEmpty) {
         setState(() {
           _avatarController.text = uploadRes.data!;
           _isUploadingAvatar = false;
@@ -79,7 +82,10 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
         SnackBarUtils.showSuccess(context, '头像上传成功，请点击保存');
       } else {
         setState(() => _isUploadingAvatar = false);
-        SnackBarUtils.showError(context, uploadRes.msg.isNotEmpty ? uploadRes.msg : '头像上传失败，未拿到图片地址');
+        SnackBarUtils.showError(
+          context,
+          uploadRes.msg.isNotEmpty ? uploadRes.msg : '头像上传失败，未拿到图片地址',
+        );
       }
     } catch (e) {
       AppLogger.e('选择或上传头像失败', e);
@@ -94,11 +100,19 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
     if (!mounted) return;
     setState(() => _isSaving = true);
 
-    final username = _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim();
-    final describeBySelf = _describeController.text.trim().isEmpty ? null : _describeController.text.trim();
-    final avatar = _avatarController.text.trim().isEmpty ? null : _avatarController.text.trim();
+    final username = _usernameController.text.trim().isEmpty
+        ? null
+        : _usernameController.text.trim();
+    final describeBySelf = _describeController.text.trim().isEmpty
+        ? null
+        : _describeController.text.trim();
+    final avatar = _avatarController.text.trim().isEmpty
+        ? null
+        : _avatarController.text.trim();
 
-    AppLogger.i('[吾之信息-上传] username=$username, describeBySelf=$describeBySelf, avatar=${avatar != null ? avatar : "(空)"}');
+    AppLogger.i(
+      '[吾之信息-上传] username=$username, describeBySelf=$describeBySelf, avatar=${avatar ?? "(空)"}',
+    );
 
     try {
       final response = await _userService.updateUserInfo(
@@ -107,7 +121,9 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
         avatar: avatar,
       );
 
-      AppLogger.i('[吾之信息-上传响应] isSuccess=${response.isSuccess}, code=${response.code}, msg=${response.msg}');
+      AppLogger.i(
+        '[吾之信息-上传响应] isSuccess=${response.isSuccess}, code=${response.code}, msg=${response.msg}',
+      );
 
       if (!mounted) return;
       if (response.isSuccess) {
@@ -141,7 +157,9 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
     const radius = 24.0;
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius),
+      ),
       title: const Text('编辑吾之信息'),
       content: SingleChildScrollView(
         child: SizedBox(
@@ -157,22 +175,33 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
                       onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
                       child: CircleAvatar(
                         radius: 48,
-                        backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                        backgroundColor: colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5),
                         backgroundImage: _avatarImageProvider,
-                        child: _pickedAvatarFile == null && _avatarController.text.isEmpty
+                        child:
+                            _pickedAvatarFile == null &&
+                                _avatarController.text.isEmpty
                             ? (_isUploadingAvatar
-                                ? Padding(
-                                    padding: const EdgeInsets.all(24),
-                                    child: CircularProgressIndicator(color: colorScheme.primary),
-                                  )
-                                : Icon(Icons.add_a_photo_rounded, size: 40, color: colorScheme.onSurfaceVariant))
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(24),
+                                      child: CircularProgressIndicator(
+                                        color: colorScheme.primary,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.add_a_photo_rounded,
+                                      size: 40,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ))
                             : null,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _isUploadingAvatar ? '上传中…' : '仅支持从相册上传',
-                      style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -182,7 +211,9 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
                 controller: _usernameController,
                 decoration: InputDecoration(
                   labelText: '用户名',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -190,7 +221,9 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
                 controller: _describeController,
                 decoration: InputDecoration(
                   labelText: '一言',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   alignLabelWithHint: true,
                 ),
                 maxLines: 3,
@@ -210,7 +243,10 @@ class _EditUserInfoDialogState extends State<EditUserInfoDialog> {
               ? SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.onPrimary),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colorScheme.onPrimary,
+                  ),
                 )
               : const Text('保存'),
         ),

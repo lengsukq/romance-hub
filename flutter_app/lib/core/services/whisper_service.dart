@@ -9,7 +9,9 @@ class WhisperService {
   final ApiService _apiService = ApiService();
 
   /// 获取我的留言列表
-  Future<ApiResponse<List<WhisperModel>>> getMyWhisperList({String? searchWords}) async {
+  Future<ApiResponse<List<WhisperModel>>> getMyWhisperList({
+    String? searchWords,
+  }) async {
     try {
       final response = await _apiService.post(
         ApiEndpoints.whisper,
@@ -20,26 +22,22 @@ class WhisperService {
       );
 
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<List<WhisperModel>>.fromJson(
-        responseData,
-        (data) {
-          if (data is! List) return <WhisperModel>[];
-          return data
-              .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
-              .toList();
-        },
-      );
+      return ApiResponse<List<WhisperModel>>.fromJson(responseData, (data) {
+        if (data is! List) return <WhisperModel>[];
+        return data
+            .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      });
     } catch (e) {
       AppLogger.e('获取我的留言列表失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取我的留言列表失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取我的留言列表失败: ${e.toString()}');
     }
   }
 
   /// 获取TA的留言列表
-  Future<ApiResponse<List<WhisperModel>>> getTAWhisperList({String? searchWords}) async {
+  Future<ApiResponse<List<WhisperModel>>> getTAWhisperList({
+    String? searchWords,
+  }) async {
     try {
       final response = await _apiService.post(
         ApiEndpoints.whisper,
@@ -50,21 +48,15 @@ class WhisperService {
       );
 
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<List<WhisperModel>>.fromJson(
-        responseData,
-        (data) {
-          if (data is! List) return <WhisperModel>[];
-          return data
-              .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
-              .toList();
-        },
-      );
+      return ApiResponse<List<WhisperModel>>.fromJson(responseData, (data) {
+        if (data is! List) return <WhisperModel>[];
+        return data
+            .map((item) => WhisperModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      });
     } catch (e) {
       AppLogger.e('获取TA的留言列表失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取TA的留言列表失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取TA的留言列表失败: ${e.toString()}');
     }
   }
 
@@ -78,10 +70,7 @@ class WhisperService {
         ApiEndpoints.whisper,
         data: {
           'action': 'create',
-          'data': {
-            'content': content,
-            'toUser': toUser,
-          },
+          'data': {'content': content, 'toUser': toUser},
         },
       );
 
@@ -89,10 +78,7 @@ class WhisperService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('创建留言失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '创建留言失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '创建留言失败: ${e.toString()}');
     }
   }
 
@@ -111,10 +97,7 @@ class WhisperService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('删除留言失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '删除留言失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '删除留言失败: ${e.toString()}');
     }
   }
 }

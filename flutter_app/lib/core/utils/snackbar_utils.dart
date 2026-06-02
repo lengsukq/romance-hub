@@ -15,7 +15,9 @@ class SnackBarUtils {
             Expanded(
               child: Text(
                 message,
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimary),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onPrimary,
+                ),
               ),
             ),
           ],
@@ -39,7 +41,9 @@ class SnackBarUtils {
             Expanded(
               child: Text(
                 message,
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onError),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onError,
+                ),
               ),
             ),
           ],
@@ -63,7 +67,9 @@ class SnackBarUtils {
             Expanded(
               child: Text(
                 message,
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           ],
@@ -87,7 +93,9 @@ class SnackBarUtils {
             Expanded(
               child: Text(
                 message,
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimary),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onPrimary,
+                ),
               ),
             ),
           ],

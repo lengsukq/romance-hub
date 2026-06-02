@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppConfig {
   static const String _keyBaseUrl = 'base_url';
   static const String _keyInsecureSslHost = 'insecure_ssl_host';
-  static const String keyCoupleCounterDisplayMode = 'couple_counter_display_mode';
+  static const String keyCoupleCounterDisplayMode =
+      'couple_counter_display_mode';
   static const String _defaultBaseUrl = 'https://r-d.lengsu.top/';
 
   /// 默认后端服务器地址（供配置弹框「使用默认服务器」使用）
@@ -61,7 +62,7 @@ class AppConfig {
     }
   }
 
-  /// 规范化 URL（确保以 / 结尾）
+  /// 规范化 URL（去除末尾 /，由 Dio path 统一拼接）
   static String normalizeUrl(String url) {
     if (url.isEmpty) return url;
     return url.endsWith('/') ? url.substring(0, url.length - 1) : url;

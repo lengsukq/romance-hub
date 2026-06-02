@@ -19,26 +19,20 @@ class UploadService {
       final response = await _apiService.dio.post(
         ApiEndpoints.common,
         data: formData,
-        options: Options(
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
 
       final responseData = response.data as Map<String, dynamic>;
       final apiResponse = ApiResponse<String>.fromJson(
         responseData,
-        (data) => (data as Map<String, dynamic>)['url'] as String? ?? data.toString(),
+        (data) =>
+            (data as Map<String, dynamic>)['url'] as String? ?? data.toString(),
       );
 
       return apiResponse;
     } catch (e) {
       AppLogger.e('上传图片失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '上传图片失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '上传图片失败: ${e.toString()}');
     }
   }
 

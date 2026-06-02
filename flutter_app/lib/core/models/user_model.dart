@@ -23,14 +23,20 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       userId: _int(json, 'userId'),
-      userEmail: (json['userEmail'] as String?) ?? '',
-      username: (json['username'] as String?) ?? '',
-      avatar: json['avatar'] as String?,
-      describeBySelf: json['describeBySelf'] as String?,
-      lover: (json['lover'] as String?) ?? '',
+      userEmail: json['userEmail']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
+      avatar: _nullableString(json['avatar']),
+      describeBySelf: _nullableString(json['describeBySelf']),
+      lover: json['lover']?.toString() ?? '',
       score: _int(json, 'score'),
-      registrationTime: json['registrationTime'] as String?,
+      registrationTime: _nullableString(json['registrationTime']),
     );
+  }
+
+  static String? _nullableString(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString();
+    return text.isEmpty ? null : text;
   }
 
   static int _int(Map<String, dynamic> json, String key) {
@@ -38,7 +44,7 @@ class UserModel {
     if (v == null) return 0;
     if (v is int) return v;
     if (v is num) return v.toInt();
-    return 0;
+    return int.tryParse(v.toString()) ?? 0;
   }
 
   Map<String, dynamic> toJson() {

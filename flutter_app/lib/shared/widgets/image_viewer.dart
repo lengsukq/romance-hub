@@ -5,11 +5,7 @@ class ImageViewer extends StatelessWidget {
   final List<String> images;
   final int initialIndex;
 
-  const ImageViewer({
-    super.key,
-    required this.images,
-    this.initialIndex = 0,
-  });
+  const ImageViewer({super.key, required this.images, this.initialIndex = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +41,7 @@ class ImageViewer extends StatelessWidget {
                     child: CircularProgressIndicator(
                       value: loadingProgress.expectedTotalBytes != null
                           ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
+                                loadingProgress.expectedTotalBytes!
                           : null,
                     ),
                   );

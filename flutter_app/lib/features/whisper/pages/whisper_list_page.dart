@@ -5,7 +5,8 @@ import 'package:romance_hub_flutter/core/models/whisper_model.dart';
 import 'package:romance_hub_flutter/core/services/whisper_service.dart';
 import 'package:romance_hub_flutter/core/services/favourite_service.dart';
 import 'package:romance_hub_flutter/core/models/favourite_model.dart';
-import 'package:romance_hub_flutter/core/utils/date_utils.dart' as app_date_utils;
+import 'package:romance_hub_flutter/core/utils/date_utils.dart'
+    as app_date_utils;
 import 'package:romance_hub_flutter/core/utils/logger.dart';
 import 'package:romance_hub_flutter/shared/widgets/loading_widget.dart';
 import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
@@ -15,10 +16,7 @@ import 'package:romance_hub_flutter/shared/widgets/confirm_dialog.dart';
 class WhisperListPage extends StatefulWidget {
   final String type; // 'my' or 'ta'
 
-  const WhisperListPage({
-    super.key,
-    required this.type,
-  });
+  const WhisperListPage({super.key, required this.type});
 
   @override
   State<WhisperListPage> createState() => _WhisperListPageState();
@@ -46,7 +44,7 @@ class _WhisperListPageState extends State<WhisperListPage> {
       final response = widget.type == 'my'
           ? await _whisperService.getMyWhisperList()
           : await _whisperService.getTAWhisperList();
-      
+
       if (response.isSuccess && response.data != null) {
         setState(() {
           _whisperList = response.data!;
@@ -61,9 +59,9 @@ class _WhisperListPageState extends State<WhisperListPage> {
           _isLoading = false;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
@@ -90,20 +88,20 @@ class _WhisperListPageState extends State<WhisperListPage> {
         setState(() {
           _whisperList.removeWhere((w) => w.whisperId == whisper.whisperId);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已删除')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('已删除')));
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.msg)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(response.msg)));
       }
     } catch (e) {
       AppLogger.e('删除留言失败', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('删除失败')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('删除失败')));
       }
     }
   }
@@ -120,9 +118,9 @@ class _WhisperListPageState extends State<WhisperListPage> {
             _favouriteWhisperIds.remove(whisperId);
           });
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('已取消收藏')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('已取消收藏')));
           }
         }
       } else {
@@ -135,15 +133,15 @@ class _WhisperListPageState extends State<WhisperListPage> {
             _favouriteWhisperIds.add(whisperId);
           });
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('已添加收藏')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('已添加收藏')));
           }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(response.msg)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(response.msg)));
           }
         }
       }
@@ -172,82 +170,106 @@ class _WhisperListPageState extends State<WhisperListPage> {
       body: _isLoading
           ? const LoadingWidget()
           : _whisperList.isEmpty
-              ? const EmptyWidget(message: '暂无私语')
-              : RefreshIndicator(
-                  onRefresh: _loadWhispers,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    itemCount: _whisperList.length,
-                    itemBuilder: (context, index) {
-                      final whisper = _whisperList[index];
-                      final isFavourite = _favouriteWhisperIds.contains(whisper.whisperId);
-                      final isTAList = widget.type == 'ta';
-                      final fromMe = whisper.fromMe ?? false;
-                      final showAsMine = isTAList && fromMe;
-                      final showDelete = widget.type == 'my' || showAsMine;
+          ? const EmptyWidget(message: '暂无私语')
+          : RefreshIndicator(
+              onRefresh: _loadWhispers,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                itemCount: _whisperList.length,
+                itemBuilder: (context, index) {
+                  final whisper = _whisperList[index];
+                  final isFavourite = _favouriteWhisperIds.contains(
+                    whisper.whisperId,
+                  );
+                  final isTAList = widget.type == 'ta';
+                  final fromMe = whisper.fromMe ?? false;
+                  final showAsMine = isTAList && fromMe;
+                  final showDelete = widget.type == 'my' || showAsMine;
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        color: isTAList
-                            ? (showAsMine ? colorScheme.primaryContainer : colorScheme.surfaceContainerHighest)
-                            : null,
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          title: Text(
-                            whisper.content,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: isTAList && showAsMine ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    color: isTAList
+                        ? (showAsMine
+                              ? colorScheme.primaryContainer
+                              : colorScheme.surfaceContainerHighest)
+                        : null,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      title: Text(
+                        whisper.content,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isTAList && showAsMine
+                              ? colorScheme.onPrimaryContainer
+                              : colorScheme.onSurface,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 6),
+                          Text(
+                            isTAList
+                                ? (showAsMine ? '我' : 'TA')
+                                : '来自：${whisper.fromUserName}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: isTAList && showAsMine
+                                  ? colorScheme.onPrimaryContainer
+                                  : colorScheme.onSurfaceVariant,
+                              fontWeight: isTAList ? FontWeight.w600 : null,
                             ),
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 6),
-                              Text(
-                                isTAList
-                                    ? (showAsMine ? '我' : 'TA')
-                                    : '来自：${whisper.fromUserName}',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isTAList && showAsMine
-                                      ? colorScheme.onPrimaryContainer
-                                      : colorScheme.onSurfaceVariant,
-                                  fontWeight: isTAList ? FontWeight.w600 : null,
-                                ),
-                              ),
-                              Text(
-                                app_date_utils.DateUtils.formatDateTimeDisplay(whisper.creationTime),
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isTAList && showAsMine
-                                      ? colorScheme.onPrimaryContainer.withValues(alpha: 0.8)
-                                      : colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            app_date_utils.DateUtils.formatDateTimeDisplay(
+                              whisper.creationTime,
+                            ),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: isTAList && showAsMine
+                                  ? colorScheme.onPrimaryContainer.withValues(
+                                      alpha: 0.8,
+                                    )
+                                  : colorScheme.onSurfaceVariant,
+                            ),
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  isFavourite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                  color: isFavourite ? colorScheme.primary : colorScheme.onSurfaceVariant,
-                                ),
-                                onPressed: () => _toggleFavourite(whisper.whisperId),
-                              ),
-                              if (showDelete)
-                                IconButton(
-                                  icon: Icon(Icons.delete_outline_rounded, color: colorScheme.onSurfaceVariant),
-                                  onPressed: () => _deleteWhisper(whisper),
-                                ),
-                            ],
+                        ],
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              isFavourite
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              color: isFavourite
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
+                            ),
+                            onPressed: () =>
+                                _toggleFavourite(whisper.whisperId),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                          if (showDelete)
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_outline_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              onPressed: () => _deleteWhisper(whisper),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

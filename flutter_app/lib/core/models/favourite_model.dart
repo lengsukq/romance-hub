@@ -3,11 +3,7 @@ import 'package:romance_hub_flutter/core/models/gift_model.dart';
 import 'package:romance_hub_flutter/core/models/whisper_model.dart';
 
 /// 收藏类型
-enum FavouriteType {
-  task,
-  gift,
-  whisper,
-}
+enum FavouriteType { task, gift, whisper }
 
 /// 收藏模型
 class FavouriteModel {
@@ -27,8 +23,14 @@ class FavouriteModel {
     this.item,
   });
 
+  static int _asInt(dynamic value, [int fallback = 0]) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
   factory FavouriteModel.fromJson(Map<String, dynamic> json) {
-    final typeStr = json['collectionType'] as String? ?? '';
+    final typeStr = json['collectionType']?.toString() ?? '';
     FavouriteType type;
     switch (typeStr) {
       case 'task':
@@ -44,27 +46,29 @@ class FavouriteModel {
         type = FavouriteType.task;
     }
 
-    final favouriteId = json['favouriteId'] as int? ?? json['favId'] as int? ?? 0;
-    final collectionIdRaw = json['collectionId'];
-    final collectionId = collectionIdRaw is int
-        ? collectionIdRaw
-        : (int.tryParse(collectionIdRaw?.toString() ?? '') ?? 0);
-    final userId = json['userId'] as String? ?? '';
-    final creationTime = json['creationTime'] as String? ?? json['favTime']?.toString() ?? '';
+    final favouriteId = _asInt(json['favouriteId'] ?? json['favId']);
+    final collectionId = _asInt(json['collectionId']);
+    final userId =
+        json['userId']?.toString() ?? json['userEmail']?.toString() ?? '';
+    final creationTime =
+        json['creationTime'] as String? ?? json['favTime']?.toString() ?? '';
 
     dynamic itemData;
     final itemJson = json['item'];
-    if (itemJson is Map<String, dynamic>) {
+    final itemSource = itemJson is Map
+        ? Map<String, dynamic>.from(itemJson)
+        : Map<String, dynamic>.from(json);
+    if (itemSource.isNotEmpty) {
       try {
         switch (type) {
           case FavouriteType.task:
-            itemData = TaskModel.fromJson(itemJson);
+            itemData = TaskModel.fromJson(itemSource);
             break;
           case FavouriteType.gift:
-            itemData = GiftModel.fromJson(itemJson);
+            itemData = GiftModel.fromJson(itemSource);
             break;
           case FavouriteType.whisper:
-            itemData = WhisperModel.fromJson(itemJson);
+            itemData = WhisperModel.fromJson(itemSource);
             break;
         }
       } catch (_) {

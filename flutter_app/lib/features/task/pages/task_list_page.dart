@@ -19,7 +19,7 @@ class TaskListPage extends StatefulWidget {
 class _TaskListPageState extends State<TaskListPage> {
   final TaskService _taskService = TaskService();
   final ScrollController _scrollController = ScrollController();
-  
+
   List<TaskModel> _taskList = [];
   bool _isLoading = false;
   bool _hasMore = true;
@@ -42,7 +42,8 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.8) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.8) {
       if (!_isLoading && _hasMore) {
         _loadMoreTasks();
       }
@@ -84,9 +85,9 @@ class _TaskListPageState extends State<TaskListPage> {
           _isLoading = false;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
@@ -95,9 +96,9 @@ class _TaskListPageState extends State<TaskListPage> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('加载失败，请重试')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('加载失败，请重试')));
       }
     }
   }
@@ -128,7 +129,12 @@ class _TaskListPageState extends State<TaskListPage> {
           children: [
             const Year2026Badge(label: '2026', large: false),
             const SizedBox(width: 10),
-            Text('心诺', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              '心诺',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         elevation: 0,
@@ -172,13 +178,17 @@ class _TaskListPageState extends State<TaskListPage> {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
-                        child: CircularProgressIndicator(color: colorScheme.primary),
+                        child: CircularProgressIndicator(
+                          color: colorScheme.primary,
+                        ),
                       ),
                     );
                   }
                   return TaskCard(
                     task: _taskList[index],
-                    onTap: () => context.go(AppRoutes.taskDetail(_taskList[index].taskId)),
+                    onTap: () => context.go(
+                      AppRoutes.taskDetail(_taskList[index].taskId),
+                    ),
                   );
                 },
               ),
@@ -214,9 +224,7 @@ class _TaskListPageState extends State<TaskListPage> {
           title: const Text('寻诺'),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(
-              hintText: '输入关键词',
-            ),
+            decoration: const InputDecoration(hintText: '输入关键词'),
           ),
           actions: [
             TextButton(

@@ -22,9 +22,7 @@ class CloudSectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +36,11 @@ class CloudSectionCard extends StatelessWidget {
                   color: colorScheme.primaryContainer.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.cloud_rounded, size: 22, color: colorScheme.primary),
+                child: Icon(
+                  Icons.cloud_rounded,
+                  size: 22,
+                  color: colorScheme.primary,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -53,11 +55,18 @@ class CloudSectionCard extends StatelessWidget {
               ),
               TextButton.icon(
                 onPressed: onConfig,
-                icon: Icon(Icons.settings_rounded, size: 18, color: colorScheme.primary),
+                icon: Icon(
+                  Icons.settings_rounded,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
                 label: const Text('设置'),
                 style: TextButton.styleFrom(
                   foregroundColor: colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

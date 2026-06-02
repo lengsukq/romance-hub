@@ -30,7 +30,8 @@ GoRouter createAppRouter(AuthNotifier authNotifier) {
         final hasCookie = await ApiService().hasCookie();
         authNotifier.setLoggedIn(hasCookie);
       }
-      final isAuthRoute = state.matchedLocation == AppRoutes.login ||
+      final isAuthRoute =
+          state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.register;
       if (authNotifier.isLoggedIn && isAuthRoute) return AppRoutes.home;
       if (!authNotifier.isLoggedIn && !isAuthRoute) return AppRoutes.login;
@@ -55,16 +56,15 @@ GoRouter createAppRouter(AuthNotifier authNotifier) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/index',
+                path: AppRoutes.home,
                 name: AppRoutes.nameHome,
                 builder: (context, state) => const HomePage(),
               ),
               GoRoute(
-                path: '/favourites',
+                path: AppRoutes.favouritesPrefix,
                 name: AppRoutes.nameFavouriteList,
                 builder: (context, state) {
-                  final type =
-                      state.uri.queryParameters['type'] ?? 'task';
+                  final type = state.uri.queryParameters['type'] ?? 'task';
                   return FavouriteListPage(type: type);
                 },
               ),
@@ -74,21 +74,22 @@ GoRouter createAppRouter(AuthNotifier authNotifier) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/tasks',
+                path: AppRoutes.tasks,
                 name: AppRoutes.nameTaskList,
                 builder: (context, state) => const TaskListPage(),
               ),
               GoRoute(
-                path: '/task/:taskId',
+                path: '${AppRoutes.taskDetailPrefix}/:taskId',
                 name: AppRoutes.nameTaskDetail,
                 builder: (context, state) {
-                  final taskId =
-                      int.parse(state.pathParameters['taskId'] ?? '0');
+                  final taskId = int.parse(
+                    state.pathParameters['taskId'] ?? '0',
+                  );
                   return TaskDetailPage(taskId: taskId);
                 },
               ),
               GoRoute(
-                path: '/post-task',
+                path: AppRoutes.postTask,
                 name: AppRoutes.namePostTask,
                 builder: (context, state) => const PostTaskPage(),
               ),
@@ -98,17 +99,17 @@ GoRouter createAppRouter(AuthNotifier authNotifier) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/gifts',
+                path: AppRoutes.gifts,
                 name: AppRoutes.nameGiftList,
                 builder: (context, state) => const GiftListPage(),
               ),
               GoRoute(
-                path: '/my-gifts',
+                path: AppRoutes.myGifts,
                 name: AppRoutes.nameMyGiftList,
                 builder: (context, state) => const MyGiftListPage(),
               ),
               GoRoute(
-                path: '/add-gift',
+                path: AppRoutes.addGift,
                 name: AppRoutes.nameAddGift,
                 builder: (context, state) => const AddGiftPage(),
               ),
@@ -118,16 +119,15 @@ GoRouter createAppRouter(AuthNotifier authNotifier) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/whispers',
+                path: AppRoutes.whispersPrefix,
                 name: AppRoutes.nameWhisperList,
                 builder: (context, state) {
-                  final type =
-                      state.uri.queryParameters['type'] ?? 'my';
+                  final type = state.uri.queryParameters['type'] ?? 'my';
                   return WhisperListPage(type: type);
                 },
               ),
               GoRoute(
-                path: '/post-whisper',
+                path: AppRoutes.postWhisper,
                 name: AppRoutes.namePostWhisper,
                 builder: (context, state) => const PostWhisperPage(),
               ),
@@ -137,12 +137,12 @@ GoRouter createAppRouter(AuthNotifier authNotifier) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/user-info',
+                path: AppRoutes.userInfo,
                 name: AppRoutes.nameUserInfo,
                 builder: (context, state) => const UserInfoPage(),
               ),
               GoRoute(
-                path: '/config',
+                path: AppRoutes.config,
                 name: AppRoutes.nameConfig,
                 builder: (context, state) => const ConfigPage(),
               ),

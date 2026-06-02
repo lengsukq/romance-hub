@@ -12,10 +12,7 @@ import 'package:romance_hub_flutter/shared/widgets/empty_widget.dart';
 class FavouriteListPage extends StatefulWidget {
   final String type; // 'task', 'gift', 'whisper'
 
-  const FavouriteListPage({
-    super.key,
-    required this.type,
-  });
+  const FavouriteListPage({super.key, required this.type});
 
   @override
   State<FavouriteListPage> createState() => _FavouriteListPageState();
@@ -64,9 +61,9 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
           _isLoading = false;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
@@ -86,16 +83,16 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
 
       if (response.isSuccess) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('取消收藏成功')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('取消收藏成功')));
           _loadFavourites();
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
@@ -117,35 +114,48 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
       body: _isLoading
           ? const LoadingWidget()
           : _favouriteList.isEmpty
-              ? const EmptyWidget(message: '暂无藏心')
-              : RefreshIndicator(
-                  onRefresh: _loadFavourites,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    itemCount: _favouriteList.length,
-                    itemBuilder: (context, index) {
-                      final favourite = _favouriteList[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          title: Text(
-                            _getItemTitle(favourite),
-                            style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
-                          ),
-                          subtitle: Text(
-                            _getItemSubtitle(favourite),
-                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.favorite_rounded, color: colorScheme.primary),
-                            onPressed: () => _removeFavourite(favourite),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+          ? const EmptyWidget(message: '暂无藏心')
+          : RefreshIndicator(
+              onRefresh: _loadFavourites,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
                 ),
+                itemCount: _favouriteList.length,
+                itemBuilder: (context, index) {
+                  final favourite = _favouriteList[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      title: Text(
+                        _getItemTitle(favourite),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      subtitle: Text(
+                        _getItemSubtitle(favourite),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.favorite_rounded,
+                          color: colorScheme.primary,
+                        ),
+                        onPressed: () => _removeFavourite(favourite),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 
@@ -164,7 +174,7 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
 
   String _getItemTitle(FavouriteModel favourite) {
     if (favourite.item == null) return '未知';
-    
+
     switch (favourite.collectionType) {
       case FavouriteType.task:
         return (favourite.item as TaskModel).taskName;
@@ -177,7 +187,7 @@ class _FavouriteListPageState extends State<FavouriteListPage> {
 
   String _getItemSubtitle(FavouriteModel favourite) {
     if (favourite.item == null) return '';
-    
+
     switch (favourite.collectionType) {
       case FavouriteType.task:
         final task = favourite.item as TaskModel;

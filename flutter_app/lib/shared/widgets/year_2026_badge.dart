@@ -8,11 +8,7 @@ class Year2026Badge extends StatelessWidget {
   /// 是否使用较大样式（登录页用 true，首页/列表头用 false）
   final bool large;
 
-  const Year2026Badge({
-    super.key,
-    this.label = '2026',
-    this.large = false,
-  });
+  const Year2026Badge({super.key, this.label = '2026', this.large = false});
 
   @override
   Widget build(BuildContext context) {
@@ -44,16 +40,18 @@ class Year2026Badge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: theme.textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: large ? 0.2 : 0.15,
-          color: colorScheme.onPrimary,
-        ) ?? TextStyle(
-          fontSize: large ? 16 : 14,
-          fontWeight: FontWeight.w700,
-          letterSpacing: large ? 0.2 : 0.15,
-          color: colorScheme.onPrimary,
-        ),
+        style:
+            theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: large ? 0.2 : 0.15,
+              color: colorScheme.onPrimary,
+            ) ??
+            TextStyle(
+              fontSize: large ? 16 : 14,
+              fontWeight: FontWeight.w700,
+              letterSpacing: large ? 0.2 : 0.15,
+              color: colorScheme.onPrimary,
+            ),
       ),
     );
   }

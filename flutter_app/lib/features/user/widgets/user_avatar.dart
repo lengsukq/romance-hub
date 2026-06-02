@@ -14,7 +14,9 @@ class UserAvatar extends StatelessWidget {
     return Center(
       child: CircleAvatar(
         radius: radius,
-        backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.5,
+        ),
         backgroundImage: (avatarUrl != null && avatarUrl!.isNotEmpty)
             ? NetworkImage(avatarUrl!)
             : null,

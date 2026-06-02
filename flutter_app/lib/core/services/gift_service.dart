@@ -9,7 +9,9 @@ class GiftService {
   final ApiService _apiService = ApiService();
 
   /// 获取礼物列表
-  Future<ApiResponse<List<GiftModel>>> getGiftList({String? searchWords}) async {
+  Future<ApiResponse<List<GiftModel>>> getGiftList({
+    String? searchWords,
+  }) async {
     try {
       final response = await _apiService.post(
         ApiEndpoints.gift,
@@ -20,21 +22,37 @@ class GiftService {
       );
 
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<List<GiftModel>>.fromJson(
-        responseData,
-        (data) {
-          if (data is! List) return <GiftModel>[];
-          return data
-              .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
-              .toList();
-        },
-      );
+      return ApiResponse<List<GiftModel>>.fromJson(responseData, (data) {
+        if (data is! List) return <GiftModel>[];
+        return data
+            .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      });
     } catch (e) {
       AppLogger.e('获取礼物列表失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取礼物列表失败: ${e.toString()}',
+      return ApiResponse(code: 500, msg: '获取礼物列表失败: ${e.toString()}');
+    }
+  }
+
+  /// 获取礼物详情（后端支持，供后续详情/编辑入口复用）
+  Future<ApiResponse<GiftModel>> getGiftDetail(int giftId) async {
+    try {
+      final response = await _apiService.post(
+        ApiEndpoints.gift,
+        data: {
+          'action': 'detail',
+          'data': {'giftId': giftId},
+        },
       );
+
+      final responseData = response.data as Map<String, dynamic>;
+      return ApiResponse<GiftModel>.fromJson(
+        responseData,
+        (data) => GiftModel.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      AppLogger.e('获取礼物详情失败', e);
+      return ApiResponse(code: 500, msg: '获取礼物详情失败: ${e.toString()}');
     }
   }
 
@@ -48,29 +66,20 @@ class GiftService {
         ApiEndpoints.gift,
         data: {
           'action': 'mylist',
-          'data': {
-            'type': type,
-            'searchWords': searchWords ?? '',
-          },
+          'data': {'type': type, 'searchWords': searchWords ?? ''},
         },
       );
 
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<List<GiftModel>>.fromJson(
-        responseData,
-        (data) {
-          if (data is! List) return <GiftModel>[];
-          return data
-              .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
-              .toList();
-        },
-      );
+      return ApiResponse<List<GiftModel>>.fromJson(responseData, (data) {
+        if (data is! List) return <GiftModel>[];
+        return data
+            .map((item) => GiftModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      });
     } catch (e) {
       AppLogger.e('获取我的礼物列表失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取我的礼物列表失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取我的礼物列表失败: ${e.toString()}');
     }
   }
 
@@ -103,10 +112,39 @@ class GiftService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('创建礼物失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '创建礼物失败: ${e.toString()}',
+      return ApiResponse(code: 500, msg: '创建礼物失败: ${e.toString()}');
+    }
+  }
+
+  /// 更新礼物信息（与后端 action=update 对齐）
+  Future<ApiResponse<void>> updateGift({
+    required int giftId,
+    String? giftName,
+    String? giftDetail,
+    int? needScore,
+    int? remained,
+    String? giftImg,
+    bool? isShow,
+  }) async {
+    try {
+      final data = <String, dynamic>{'giftId': giftId};
+      if (giftName != null) data['giftName'] = giftName;
+      if (giftDetail != null) data['giftDetail'] = giftDetail;
+      if (needScore != null) data['needScore'] = needScore;
+      if (remained != null) data['remained'] = remained;
+      if (giftImg != null) data['giftImg'] = giftImg;
+      if (isShow != null) data['isShow'] = isShow;
+
+      final response = await _apiService.post(
+        ApiEndpoints.gift,
+        data: {'action': 'update', 'data': data},
       );
+
+      final responseData = response.data as Map<String, dynamic>;
+      return ApiResponse<void>.fromJson(responseData, null);
+    } catch (e) {
+      AppLogger.e('更新礼物失败', e);
+      return ApiResponse(code: 500, msg: '更新礼物失败: ${e.toString()}');
     }
   }
 
@@ -125,10 +163,7 @@ class GiftService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('兑换礼物失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '兑换礼物失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '兑换礼物失败: ${e.toString()}');
     }
   }
 
@@ -147,10 +182,7 @@ class GiftService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('使用礼物失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '使用礼物失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '使用礼物失败: ${e.toString()}');
     }
   }
 
@@ -164,10 +196,7 @@ class GiftService {
         ApiEndpoints.gift,
         data: {
           'action': 'show',
-          'data': {
-            'giftId': giftId,
-            'isShow': isShow,
-          },
+          'data': {'giftId': giftId, 'isShow': isShow},
         },
       );
 
@@ -175,10 +204,7 @@ class GiftService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('更新礼物状态失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '更新礼物状态失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '更新礼物状态失败: ${e.toString()}');
     }
   }
 }

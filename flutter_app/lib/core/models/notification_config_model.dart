@@ -22,12 +22,27 @@ class NotificationConfigModel {
     final id = json['id'];
     return NotificationConfigModel(
       id: id?.toString() ?? '',
-      notifyType: (json['notifyType'] as String?) ?? '',
-      notifyName: (json['notifyName'] as String?) ?? '',
-      webhookUrl: json['webhookUrl'] as String?,
-      apiKey: json['apiKey'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-      description: json['description'] as String?,
+      notifyType: json['notifyType']?.toString() ?? '',
+      notifyName: json['notifyName']?.toString() ?? '',
+      webhookUrl: _nullableString(json['webhookUrl']),
+      apiKey: _nullableString(json['apiKey']),
+      isActive: _bool(json['isActive'], true),
+      description: _nullableString(json['description']),
     );
+  }
+
+  static String? _nullableString(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString();
+    return text.isEmpty ? null : text;
+  }
+
+  static bool _bool(dynamic value, [bool fallback = false]) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final text = value?.toString().toLowerCase();
+    if (text == 'true' || text == '1') return true;
+    if (text == 'false' || text == '0') return false;
+    return fallback;
   }
 }

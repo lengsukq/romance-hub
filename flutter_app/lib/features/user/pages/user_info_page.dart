@@ -56,11 +56,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
         onSave: (url) async {
           await AppConfig.setBaseUrl(url);
           await ApiService().updateBaseUrl(url);
-          if (mounted) {
-            setState(() => _baseUrl = url);
-            Navigator.of(context).pop();
-            SnackBarUtils.showSuccess(context, '已更新云阁');
-          }
+          if (!mounted) return;
+          setState(() => _baseUrl = url);
+          if (!context.mounted) return;
+          Navigator.of(context).pop();
+          SnackBarUtils.showSuccess(context, '已更新云阁');
         },
       ),
     );
@@ -72,10 +72,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
     try {
       final userResponse = await _userService.getUserInfo();
-      AppLogger.i('[吾之信息-获取] isSuccess=${userResponse.isSuccess}, code=${userResponse.code}, msg=${userResponse.msg}');
+      AppLogger.i(
+        '[吾之信息-获取] isSuccess=${userResponse.isSuccess}, code=${userResponse.code}, msg=${userResponse.msg}',
+      );
       if (userResponse.data != null) {
         final u = userResponse.data!;
-        AppLogger.i('[吾之信息-获取数据] userId=${u.userId}, username=${u.username}, avatar=${u.avatar ?? "(空)"}, describeBySelf=${u.describeBySelf ?? "(空)"}');
+        AppLogger.i(
+          '[吾之信息-获取数据] userId=${u.userId}, username=${u.username}, avatar=${u.avatar ?? "(空)"}, describeBySelf=${u.describeBySelf ?? "(空)"}',
+        );
       }
       if (!mounted) return;
       if (userResponse.isSuccess && userResponse.data != null) {
@@ -169,22 +173,28 @@ class _UserInfoPageState extends State<UserInfoPage> {
               ),
             ),
           ),
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: SectionTitle(title: '云阁', verse: ClassicVerses.jianJia),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: CloudSectionCard(baseUrl: _baseUrl, onConfig: _showConfigDialog),
+              child: CloudSectionCard(
+                baseUrl: _baseUrl,
+                onConfig: _showConfigDialog,
+              ),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: SectionTitle(title: '设置', verse: LoveVerses.getShortVerseOfDay(DateTime.now()).text),
+              child: SectionTitle(
+                title: '设置',
+                verse: LoveVerses.getShortVerseOfDay(DateTime.now()).text,
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -205,18 +215,38 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: SectionTitle(title: '吾之信息', verse: ClassicVerses.ziJin),
+                    const Expanded(
+                      child: SectionTitle(
+                        title: '吾之信息',
+                        verse: ClassicVerses.ziJin,
+                      ),
                     ),
                     TextButton.icon(
                       onPressed: () async {
-                        final saved = await EditUserInfoDialog.show(context, _userInfo!);
-                        if (saved == true && mounted) _loadUserInfo();
+                        final saved = await EditUserInfoDialog.show(
+                          context,
+                          _userInfo!,
+                        );
+                        if (saved == true && context.mounted) {
+                          _loadUserInfo();
+                        }
                       },
-                      icon: Icon(Icons.edit_rounded, size: 18, color: colorScheme.primary),
-                      label: Text('编辑', style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.primary)),
+                      icon: Icon(
+                        Icons.edit_rounded,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
+                      label: Text(
+                        '编辑',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
+                      ),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -228,7 +258,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: UserAvatar(avatarUrl: _avatarUrlWithCacheBuster(_userInfo!.avatar)),
+                child: UserAvatar(
+                  avatarUrl: _avatarUrlWithCacheBuster(_userInfo!.avatar),
+                ),
               ),
             ),
             SliverPadding(
@@ -237,7 +269,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 delegate: SliverChildListDelegate([
                   InfoRowCard(
                     label: '用户名',
-                    value: _userInfo!.username.isEmpty ? '未设置' : _userInfo!.username,
+                    value: _userInfo!.username.isEmpty
+                        ? '未设置'
+                        : _userInfo!.username,
                   ),
                   InfoRowCard(label: '邮箱', value: _userInfo!.userEmail),
                   InfoRowCard(label: '积分', value: '${_userInfo!.score}'),
@@ -249,10 +283,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
           if (_loverInfo != null) ...[
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: SectionTitle(title: '良人信息', verse: ClassicVerses.chouMou),
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: SectionTitle(
+                  title: '良人信息',
+                  verse: ClassicVerses.chouMou,
+                ),
               ),
             ),
             SliverPadding(
@@ -261,11 +298,16 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 delegate: SliverChildListDelegate([
                   InfoRowCard(
                     label: '用户名',
-                    value: _loverInfo!.username.isEmpty ? '未设置' : _loverInfo!.username,
+                    value: _loverInfo!.username.isEmpty
+                        ? '未设置'
+                        : _loverInfo!.username,
                   ),
                   InfoRowCard(label: '邮箱', value: _loverInfo!.userEmail),
                   if (_loverInfo!.describeBySelf != null)
-                    InfoRowCard(label: '一言', value: _loverInfo!.describeBySelf!),
+                    InfoRowCard(
+                      label: '一言',
+                      value: _loverInfo!.describeBySelf!,
+                    ),
                 ]),
               ),
             ),

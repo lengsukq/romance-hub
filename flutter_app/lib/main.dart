@@ -26,7 +26,7 @@ void main() async {
 /// 主题：简洁 · 浪漫 · 大圆角 · 现代化（见 docs/UI_DESIGN_RULES.md）
 ThemeData _buildAppTheme() {
   const Color primary = Color(0xFFD4A5A5); // 豆沙粉
-  const Color surface = Color(0xFFFBF8F8);  // 偏暖白
+  const Color surface = Color(0xFFFBF8F8); // 偏暖白
   const Color surfaceContainer = Color(0xFFFDFCFC);
   const Color onSurface = Color(0xFF3D3636);
   const Color onSurfaceVariant = Color(0xFF7A7373);
@@ -34,16 +34,16 @@ ThemeData _buildAppTheme() {
 
   return ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary: primary,
       onPrimary: Colors.white,
-      primaryContainer: const Color(0xFFFDF2F2),
+      primaryContainer: Color(0xFFFDF2F2),
       onPrimaryContainer: onSurface,
       surface: surface,
       onSurface: onSurface,
       onSurfaceVariant: onSurfaceVariant,
       outline: outline,
-      error: const Color(0xFFC97A7A),
+      error: Color(0xFFC97A7A),
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: surface,
@@ -77,9 +77,7 @@ ThemeData _buildAppTheme() {
         backgroundColor: primary,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 0,
       ),
     ),
@@ -88,15 +86,11 @@ ThemeData _buildAppTheme() {
         foregroundColor: onSurface,
         side: const BorderSide(color: outline),
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: primary,
-      ),
+      style: TextButton.styleFrom(foregroundColor: primary),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: surfaceContainer,
@@ -113,26 +107,19 @@ ThemeData _buildAppTheme() {
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: surfaceContainer,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       titleTextStyle: const TextStyle(
         color: onSurface,
         fontSize: 18,
         fontWeight: FontWeight.w600,
       ),
-      contentTextStyle: const TextStyle(
-        color: onSurfaceVariant,
-        fontSize: 15,
-      ),
+      contentTextStyle: const TextStyle(color: onSurfaceVariant, fontSize: 15),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: onSurface,
       contentTextStyle: const TextStyle(color: surface),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
   );
 }
@@ -141,11 +128,7 @@ class MyApp extends StatelessWidget {
   final GoRouter router;
   final AuthNotifier authNotifier;
 
-  const MyApp({
-    super.key,
-    required this.router,
-    required this.authNotifier,
-  });
+  const MyApp({super.key, required this.router, required this.authNotifier});
 
   @override
   Widget build(BuildContext context) {

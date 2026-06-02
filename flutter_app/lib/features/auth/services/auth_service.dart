@@ -17,10 +17,7 @@ class AuthService {
         ApiEndpoints.user,
         data: {
           'action': 'login',
-          'data': {
-            'username': username,
-            'password': password,
-          },
+          'data': {'username': username, 'password': password},
         },
       );
 
@@ -33,7 +30,9 @@ class AuthService {
       final code = (raw['code'] is int) ? raw['code'] as int : 500;
       final msg = (raw['msg'] is String) ? raw['msg'] as String : '未知错误';
       UserModel? userData;
-      if (code == 200 && raw['data'] != null && raw['data'] is Map<String, dynamic>) {
+      if (code == 200 &&
+          raw['data'] != null &&
+          raw['data'] is Map<String, dynamic>) {
         try {
           userData = UserModel.fromJson(raw['data'] as Map<String, dynamic>);
         } catch (e) {
@@ -42,14 +41,25 @@ class AuthService {
         }
       }
 
-      final apiResponse = ApiResponse<UserModel>(code: code, msg: msg, data: userData);
+      final apiResponse = ApiResponse<UserModel>(
+        code: code,
+        msg: msg,
+        data: userData,
+      );
 
       if (apiResponse.isSuccess && apiResponse.data != null) {
         // 保存所有 cookie（服务端 middleware 需要 cookie=JSON 与 name=JWT 两个 cookie）
-        final raw = response.headers['set-cookie'] ?? response.headers['Set-Cookie'];
-        List<String> list = raw != null ? List<String>.from(raw as List) : <String>[];
+        final raw =
+            response.headers['set-cookie'] ?? response.headers['Set-Cookie'];
+        List<String> list = raw != null
+            ? List<String>.from(raw as List)
+            : <String>[];
         if (list.length == 1 && list[0].contains(', ')) {
-          list = list[0].split(', ').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+          list = list[0]
+              .split(', ')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
         }
         final parts = list
             .map((v) => v.contains(';') ? v.split(';').first.trim() : v.trim())
@@ -68,10 +78,7 @@ class AuthService {
     } catch (e, stack) {
       AppLogger.e('登录失败', e);
       AppLogger.d('堆栈: $stack');
-      return ApiResponse(
-        code: 500,
-        msg: '登录失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '登录失败: ${e.toString()}');
     }
   }
 
@@ -87,7 +94,9 @@ class AuthService {
         final code = e.response?.statusCode;
         if (code == 401) return '用户名或密码错误';
         if (code != null && code >= 500) return '云阁繁忙，请稍后重试';
-        return e.response?.data is Map ? (e.response!.data['msg'] as String? ?? '请求失败') : '请求失败';
+        return e.response?.data is Map
+            ? (e.response!.data['msg'] as String? ?? '请求失败')
+            : '请求失败';
       case DioExceptionType.cancel:
         return '请求已取消';
       default:
@@ -127,21 +136,21 @@ class AuthService {
       );
 
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<void>.fromJson(
-        responseData,
-        (_) => null,
-      );
+      return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('注册失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '注册失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '注册失败: ${e.toString()}');
     }
   }
 
   /// 退出登录
   Future<void> logout() async {
-    await _apiService.clearCookie();
+    try {
+      await _apiService.post(ApiEndpoints.user, data: {'action': 'logout'});
+    } catch (e) {
+      AppLogger.e('服务端退出登录失败，继续清理本地登录态', e);
+    } finally {
+      await _apiService.clearCookie();
+    }
   }
 }

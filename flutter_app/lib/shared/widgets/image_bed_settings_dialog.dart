@@ -41,10 +41,13 @@ class _ImageBedSettingsDialogState extends State<ImageBedSettingsDialog> {
   }
 
   Future<void> _showAddImageBedDialog() async {
+    final pageContext = context;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final nameCtrl = TextEditingController();
-    final apiUrlCtrl = TextEditingController(text: 'https://api.imgbb.com/1/upload');
+    final apiUrlCtrl = TextEditingController(
+      text: 'https://api.imgbb.com/1/upload',
+    );
     final apiKeyCtrl = TextEditingController();
     String bedType = 'imgbb';
     bool isDefault = _imageBeds.isEmpty;
@@ -71,7 +74,7 @@ class _ImageBedSettingsDialogState extends State<ImageBedSettingsDialog> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: bedType,
+                      initialValue: bedType,
                       decoration: const InputDecoration(
                         labelText: '图床类型',
                         border: OutlineInputBorder(),
@@ -114,12 +117,17 @@ class _ImageBedSettingsDialogState extends State<ImageBedSettingsDialog> {
                       children: [
                         Checkbox(
                           value: isDefault,
-                          onChanged: (v) => setDialogState(() => isDefault = v ?? false),
+                          onChanged: (v) =>
+                              setDialogState(() => isDefault = v ?? false),
                           activeColor: colorScheme.primary,
                         ),
                         GestureDetector(
-                          onTap: () => setDialogState(() => isDefault = !isDefault),
-                          child: Text('设为默认（与良人共用）', style: theme.textTheme.bodyMedium),
+                          onTap: () =>
+                              setDialogState(() => isDefault = !isDefault),
+                          child: Text(
+                            '设为默认（与良人共用）',
+                            style: theme.textTheme.bodyMedium,
+                          ),
                         ),
                       ],
                     ),
@@ -137,9 +145,9 @@ class _ImageBedSettingsDialogState extends State<ImageBedSettingsDialog> {
                     final apiUrl = apiUrlCtrl.text.trim();
                     final apiKey = apiKeyCtrl.text.trim();
                     if (bedName.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('请填写图床名称')),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('请填写图床名称')));
                       return;
                     }
                     if (apiUrl.isEmpty) {
@@ -162,12 +170,12 @@ class _ImageBedSettingsDialogState extends State<ImageBedSettingsDialog> {
                       apiKey: apiKey,
                       isDefault: isDefault,
                     );
-                    if (!mounted) return;
+                    if (!pageContext.mounted) return;
                     if (res.isSuccess) {
-                      SnackBarUtils.showSuccess(context, '图床已保存，与良人共用');
+                      SnackBarUtils.showSuccess(pageContext, '图床已保存，与良人共用');
                       _loadImageBeds();
                     } else {
-                      SnackBarUtils.showError(context, res.msg);
+                      SnackBarUtils.showError(pageContext, res.msg);
                     }
                   },
                   child: const Text('保存'),
@@ -193,7 +201,10 @@ class _ImageBedSettingsDialogState extends State<ImageBedSettingsDialog> {
           child: SizedBox(
             width: 24,
             height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: colorScheme.primary,
+            ),
           ),
         ),
       );
@@ -205,32 +216,48 @@ class _ImageBedSettingsDialogState extends State<ImageBedSettingsDialog> {
           children: [
             Text(
               '与良人共用。上传时由后端决定使用此处配置或服务端兜底。',
-              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             if (_imageBeds.isEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 '暂无图床，请添加并设为默认。',
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ] else ...[
               const SizedBox(height: 12),
-              ..._imageBeds.map((bed) => ListTile(
-                dense: true,
-                leading: Icon(Icons.cloud_rounded, color: colorScheme.primary, size: 22),
-                title: Text(bed.bedName, style: theme.textTheme.bodyMedium),
-                subtitle: Text(
-                  '${bed.bedType} · ${bed.apiUrl}${bed.isDefault ? " · 默认" : ""}',
-                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              ..._imageBeds.map(
+                (bed) => ListTile(
+                  dense: true,
+                  leading: Icon(
+                    Icons.cloud_rounded,
+                    color: colorScheme.primary,
+                    size: 22,
+                  ),
+                  title: Text(bed.bedName, style: theme.textTheme.bodyMedium),
+                  subtitle: Text(
+                    '${bed.bedType} · ${bed.apiUrl}${bed.isDefault ? " · 默认" : ""}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              )),
+              ),
             ],
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: _showAddImageBedDialog,
-              icon: Icon(Icons.add_rounded, size: 20, color: colorScheme.primary),
+              icon: Icon(
+                Icons.add_rounded,
+                size: 20,
+                color: colorScheme.primary,
+              ),
               label: Text('添加图床', style: TextStyle(color: colorScheme.primary)),
             ),
           ],

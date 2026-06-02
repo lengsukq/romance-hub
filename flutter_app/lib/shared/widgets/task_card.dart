@@ -7,11 +7,7 @@ class TaskCard extends StatelessWidget {
   final TaskModel task;
   final VoidCallback onTap;
 
-  const TaskCard({
-    super.key,
-    required this.task,
-    required this.onTap,
-  });
+  const TaskCard({super.key, required this.task, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +85,10 @@ class TaskCard extends StatelessWidget {
                                   width: 100,
                                   height: 100,
                                   color: colorScheme.surfaceContainerHighest,
-                                  child: Icon(Icons.image_not_supported_rounded, color: colorScheme.onSurfaceVariant),
+                                  child: Icon(
+                                    Icons.image_not_supported_rounded,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 );
                               },
                             ),
@@ -112,7 +111,11 @@ class TaskCard extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Icon(Icons.star_rounded, size: 18, color: colorScheme.primary),
+                      Icon(
+                        Icons.star_rounded,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${task.taskScore}',

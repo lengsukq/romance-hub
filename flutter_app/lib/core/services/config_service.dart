@@ -17,21 +17,15 @@ class ConfigService {
         data: {'action': 'get_image_beds'},
       );
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<List<ImageBedModel>>.fromJson(
-        responseData,
-        (data) {
-          if (data is! List) return <ImageBedModel>[];
-          return data
-              .map((e) => ImageBedModel.fromJson(e as Map<String, dynamic>))
-              .toList();
-        },
-      );
+      return ApiResponse<List<ImageBedModel>>.fromJson(responseData, (data) {
+        if (data is! List) return <ImageBedModel>[];
+        return data
+            .map((e) => ImageBedModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      });
     } catch (e) {
       AppLogger.e('获取图床配置失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取图床配置失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取图床配置失败: ${e.toString()}');
     }
   }
 
@@ -69,10 +63,7 @@ class ConfigService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('更新图床配置失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '更新图床配置失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '更新图床配置失败: ${e.toString()}');
     }
   }
 
@@ -84,21 +75,20 @@ class ConfigService {
         data: {'action': 'get_notifications'},
       );
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<List<NotificationConfigModel>>.fromJson(
-        responseData,
-        (data) {
-          if (data is! List) return <NotificationConfigModel>[];
-          return data
-              .map((e) => NotificationConfigModel.fromJson(e as Map<String, dynamic>))
-              .toList();
-        },
-      );
+      return ApiResponse<List<NotificationConfigModel>>.fromJson(responseData, (
+        data,
+      ) {
+        if (data is! List) return <NotificationConfigModel>[];
+        return data
+            .map(
+              (e) =>
+                  NotificationConfigModel.fromJson(e as Map<String, dynamic>),
+            )
+            .toList();
+      });
     } catch (e) {
       AppLogger.e('获取通知配置失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取通知配置失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取通知配置失败: ${e.toString()}');
     }
   }
 
@@ -128,10 +118,7 @@ class ConfigService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('更新通知配置失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '更新通知配置失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '更新通知配置失败: ${e.toString()}');
     }
   }
 
@@ -143,21 +130,15 @@ class ConfigService {
         data: {'action': 'get_system_configs'},
       );
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<Map<String, String>>.fromJson(
-        responseData,
-        (data) {
-          if (data is! Map) return <String, String>{};
-          return Map<String, String>.from(
-            data.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
-          );
-        },
-      );
+      return ApiResponse<Map<String, String>>.fromJson(responseData, (data) {
+        if (data is! Map) return <String, String>{};
+        return Map<String, String>.from(
+          data.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+        );
+      });
     } catch (e) {
       AppLogger.e('获取系统配置失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取系统配置失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取系统配置失败: ${e.toString()}');
     }
   }
 
@@ -185,10 +166,7 @@ class ConfigService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('更新系统配置失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '更新系统配置失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '更新系统配置失败: ${e.toString()}');
     }
   }
 
@@ -203,10 +181,7 @@ class ConfigService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('初始化配置失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '初始化配置失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '初始化配置失败: ${e.toString()}');
     }
   }
 }

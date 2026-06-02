@@ -11,6 +11,7 @@ class WhisperModel {
   final String creationTime;
   final bool isRead;
   final int? favId;
+
   /// TA的私语列表中：true=我发的，false=对方发的，用于区分展示
   final bool? fromMe;
 
@@ -29,20 +30,54 @@ class WhisperModel {
     this.fromMe,
   });
 
+  static int _asInt(dynamic value, [int fallback = 0]) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
+  static bool _asBool(dynamic value, [bool fallback = false]) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final text = value?.toString().toLowerCase();
+    if (text == 'true' || text == '1') return true;
+    if (text == 'false' || text == '0') return false;
+    return fallback;
+  }
+
+  static String? _asNullableString(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString();
+    return text.isEmpty ? null : text;
+  }
+
   factory WhisperModel.fromJson(Map<String, dynamic> json) {
     return WhisperModel(
-      whisperId: json['whisperId'] as int,
-      title: json['title'] as String?,
-      content: json['content'] as String,
-      fromUserId: json['fromUserId'] as String? ?? json['publisherEmail'] as String? ?? '',
-      fromUserName: json['fromUserName'] as String? ?? json['publisherName'] as String? ?? json['userName'] as String? ?? '',
-      toUserId: json['toUserId'] as String? ?? json['toUserEmail'] as String?,
-      toUserName: json['toUserName'] as String?,
-      userName: json['userName'] as String? ?? json['fromUserName'] as String? ?? json['publisherName'] as String? ?? '',
-      creationTime: json['creationTime'] as String,
-      isRead: json['isRead'] as bool? ?? false,
-      favId: json['favId'] as int?,
-      fromMe: json['fromMe'] as bool?,
+      whisperId: _asInt(json['whisperId']),
+      title: _asNullableString(json['title']),
+      content: _asNullableString(json['content']) ?? '',
+      fromUserId:
+          _asNullableString(json['fromUserId']) ??
+          _asNullableString(json['publisherEmail']) ??
+          '',
+      fromUserName:
+          _asNullableString(json['fromUserName']) ??
+          _asNullableString(json['publisherName']) ??
+          _asNullableString(json['userName']) ??
+          '',
+      toUserId:
+          _asNullableString(json['toUserId']) ??
+          _asNullableString(json['toUserEmail']),
+      toUserName: _asNullableString(json['toUserName']),
+      userName:
+          _asNullableString(json['userName']) ??
+          _asNullableString(json['fromUserName']) ??
+          _asNullableString(json['publisherName']) ??
+          '',
+      creationTime: json['creationTime']?.toString() ?? '',
+      isRead: _asBool(json['isRead']),
+      favId: json['favId'] == null ? null : _asInt(json['favId']),
+      fromMe: json['fromMe'] == null ? null : _asBool(json['fromMe']),
     );
   }
 

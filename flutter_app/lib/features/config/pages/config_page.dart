@@ -117,9 +117,9 @@ class _ConfigPageState extends State<ConfigPage> {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.msg)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(response.msg)));
       }
     } catch (e) {
       AppLogger.e('加载用户信息失败', e);
@@ -133,7 +133,9 @@ class _ConfigPageState extends State<ConfigPage> {
 
   Future<void> _pickAndUploadAvatar() async {
     try {
-      final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
       if (image == null || !mounted) return;
 
       setState(() {
@@ -148,16 +150,16 @@ class _ConfigPageState extends State<ConfigPage> {
           _avatarController.text = uploadRes.data!;
           _isUploadingAvatar = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('头像上传成功，请点击保存')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('头像上传成功，请点击保存')));
       } else {
         setState(() {
           _isUploadingAvatar = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(uploadRes.msg)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(uploadRes.msg)));
       }
     } catch (e) {
       AppLogger.e('选择或上传头像失败', e);
@@ -165,9 +167,9 @@ class _ConfigPageState extends State<ConfigPage> {
         setState(() {
           _isUploadingAvatar = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('选择或上传头像失败')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('选择或上传头像失败')));
       }
     }
   }
@@ -180,8 +182,12 @@ class _ConfigPageState extends State<ConfigPage> {
 
     try {
       final response = await _userService.updateUserInfo(
-        username: _usernameController.text.isEmpty ? null : _usernameController.text,
-        describeBySelf: _describeController.text.isEmpty ? null : _describeController.text,
+        username: _usernameController.text.isEmpty
+            ? null
+            : _usernameController.text,
+        describeBySelf: _describeController.text.isEmpty
+            ? null
+            : _describeController.text,
         avatar: _avatarController.text.isEmpty ? null : _avatarController.text,
       );
 
@@ -192,17 +198,17 @@ class _ConfigPageState extends State<ConfigPage> {
           _isLoading = false;
           _pickedAvatarFile = null;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存成功')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('保存成功')));
         _loadUserInfo();
       } else {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.msg)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(response.msg)));
       }
     } catch (e) {
       AppLogger.e('保存用户信息失败', e);
@@ -220,7 +226,9 @@ class _ConfigPageState extends State<ConfigPage> {
     final colorScheme = theme.colorScheme;
     if (_isLoading && _userInfo == null) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
       );
     }
 
@@ -262,26 +270,39 @@ class _ConfigPageState extends State<ConfigPage> {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+                            onTap: _isUploadingAvatar
+                                ? null
+                                : _pickAndUploadAvatar,
                             child: CircleAvatar(
                               radius: 48,
-                              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                              backgroundColor: colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
                               backgroundImage: _avatarImageProvider,
-                              child: _pickedAvatarFile == null &&
+                              child:
+                                  _pickedAvatarFile == null &&
                                       _avatarController.text.isEmpty
                                   ? (_isUploadingAvatar
-                                      ? Padding(
-                                          padding: const EdgeInsets.all(24),
-                                          child: CircularProgressIndicator(color: colorScheme.primary),
-                                        )
-                                      : Icon(Icons.add_a_photo_rounded, size: 40, color: colorScheme.onSurfaceVariant))
+                                        ? Padding(
+                                            padding: const EdgeInsets.all(24),
+                                            child: CircularProgressIndicator(
+                                              color: colorScheme.primary,
+                                            ),
+                                          )
+                                        : Icon(
+                                            Icons.add_a_photo_rounded,
+                                            size: 40,
+                                            color: colorScheme.onSurfaceVariant,
+                                          ))
                                   : null,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             _isUploadingAvatar ? '上传中…' : '仅支持从相册上传',
-                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -301,7 +322,8 @@ class _ConfigPageState extends State<ConfigPage> {
                     _buildInfoRow(context, '用户名', _userInfo?.username ?? '未设置'),
                     _buildInfoRow(context, '邮箱', _userInfo?.userEmail ?? ''),
                     _buildInfoRow(context, '积分', '${_userInfo?.score ?? 0}'),
-                    if (_userInfo?.describeBySelf != null && _userInfo!.describeBySelf!.isNotEmpty)
+                    if (_userInfo?.describeBySelf != null &&
+                        _userInfo!.describeBySelf!.isNotEmpty)
                       _buildInfoRow(context, '一言', _userInfo!.describeBySelf!),
                   ],
                 ],
@@ -321,7 +343,10 @@ class _ConfigPageState extends State<ConfigPage> {
           _buildSectionTitle(context, '其他'),
           Card(
             child: ListTile(
-              leading: Icon(Icons.info_outline_rounded, color: colorScheme.primary),
+              leading: Icon(
+                Icons.info_outline_rounded,
+                color: colorScheme.primary,
+              ),
               title: const Text('关于'),
               subtitle: const Text('锦书'),
               onTap: () {
@@ -390,7 +415,9 @@ class _ConfigPageState extends State<ConfigPage> {
           Expanded(
             child: Text(
               value,
-              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
         ],
@@ -410,7 +437,10 @@ class _ConfigPageState extends State<ConfigPage> {
             child: SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
             ),
           ),
         ),
@@ -425,32 +455,48 @@ class _ConfigPageState extends State<ConfigPage> {
           children: [
             Text(
               '与良人共用。上传时由后端决定使用此处配置或服务端兜底。',
-              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             if (_imageBeds.isEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 '暂无图床，请添加并设为默认。',
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ] else ...[
               const SizedBox(height: 12),
-              ..._imageBeds.map((bed) => ListTile(
-                dense: true,
-                leading: Icon(Icons.cloud_rounded, color: colorScheme.primary, size: 22),
-                title: Text(bed.bedName, style: theme.textTheme.bodyMedium),
-                subtitle: Text(
-                  '${bed.bedType} · ${bed.apiUrl}${bed.isDefault ? " · 默认" : ""}',
-                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              ..._imageBeds.map(
+                (bed) => ListTile(
+                  dense: true,
+                  leading: Icon(
+                    Icons.cloud_rounded,
+                    color: colorScheme.primary,
+                    size: 22,
+                  ),
+                  title: Text(bed.bedName, style: theme.textTheme.bodyMedium),
+                  subtitle: Text(
+                    '${bed.bedType} · ${bed.apiUrl}${bed.isDefault ? " · 默认" : ""}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              )),
+              ),
             ],
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: () => _showAddImageBedDialog(context),
-              icon: Icon(Icons.add_rounded, size: 20, color: colorScheme.primary),
+              icon: Icon(
+                Icons.add_rounded,
+                size: 20,
+                color: colorScheme.primary,
+              ),
               label: Text('添加图床', style: TextStyle(color: colorScheme.primary)),
             ),
           ],
@@ -460,10 +506,13 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   Future<void> _showAddImageBedDialog(BuildContext context) async {
+    final pageContext = context;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final nameCtrl = TextEditingController();
-    final apiUrlCtrl = TextEditingController(text: 'https://api.imgbb.com/1/upload');
+    final apiUrlCtrl = TextEditingController(
+      text: 'https://api.imgbb.com/1/upload',
+    );
     final apiKeyCtrl = TextEditingController();
     String bedType = 'imgbb';
     bool isDefault = _imageBeds.isEmpty;
@@ -490,7 +539,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: bedType,
+                      initialValue: bedType,
                       decoration: const InputDecoration(
                         labelText: '图床类型',
                         border: OutlineInputBorder(),
@@ -533,12 +582,17 @@ class _ConfigPageState extends State<ConfigPage> {
                       children: [
                         Checkbox(
                           value: isDefault,
-                          onChanged: (v) => setDialogState(() => isDefault = v ?? false),
+                          onChanged: (v) =>
+                              setDialogState(() => isDefault = v ?? false),
                           activeColor: colorScheme.primary,
                         ),
                         GestureDetector(
-                          onTap: () => setDialogState(() => isDefault = !isDefault),
-                          child: Text('设为默认（与良人共用）', style: theme.textTheme.bodyMedium),
+                          onTap: () =>
+                              setDialogState(() => isDefault = !isDefault),
+                          child: Text(
+                            '设为默认（与良人共用）',
+                            style: theme.textTheme.bodyMedium,
+                          ),
                         ),
                       ],
                     ),
@@ -556,9 +610,9 @@ class _ConfigPageState extends State<ConfigPage> {
                     final apiUrl = apiUrlCtrl.text.trim();
                     final apiKey = apiKeyCtrl.text.trim();
                     if (bedName.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('请填写图床名称')),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('请填写图床名称')));
                       return;
                     }
                     if (apiUrl.isEmpty) {
@@ -581,12 +635,12 @@ class _ConfigPageState extends State<ConfigPage> {
                       apiKey: apiKey,
                       isDefault: isDefault,
                     );
-                    if (!mounted) return;
+                    if (!pageContext.mounted) return;
                     if (res.isSuccess) {
-                      SnackBarUtils.showSuccess(context, '图床已保存，与良人共用');
+                      SnackBarUtils.showSuccess(pageContext, '图床已保存，与良人共用');
                       _loadImageBeds();
                     } else {
-                      SnackBarUtils.showError(context, res.msg);
+                      SnackBarUtils.showError(pageContext, res.msg);
                     }
                   },
                   child: const Text('保存'),
@@ -611,7 +665,10 @@ class _ConfigPageState extends State<ConfigPage> {
             child: SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
             ),
           ),
         ),
@@ -626,33 +683,52 @@ class _ConfigPageState extends State<ConfigPage> {
           children: [
             Text(
               '与良人共用。任务/礼物等通知将按此处配置推送。',
-              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             if (_notifications.isEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 '暂无通知配置，可添加钉钉、飞书、企业微信等。',
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ] else ...[
               const SizedBox(height: 12),
-              ..._notifications.map((n) => ListTile(
-                dense: true,
-                leading: Icon(Icons.notifications_rounded, color: colorScheme.primary, size: 22),
-                title: Text('${n.notifyName} (${n.notifyType})', style: theme.textTheme.bodyMedium),
-                subtitle: Text(
-                  n.webhookUrl ?? n.description ?? '',
-                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              ..._notifications.map(
+                (n) => ListTile(
+                  dense: true,
+                  leading: Icon(
+                    Icons.notifications_rounded,
+                    color: colorScheme.primary,
+                    size: 22,
+                  ),
+                  title: Text(
+                    '${n.notifyName} (${n.notifyType})',
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  subtitle: Text(
+                    n.webhookUrl ?? n.description ?? '',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () => _showNotificationDialog(context, existing: n),
                 ),
-                onTap: () => _showNotificationDialog(context, existing: n),
-              )),
+              ),
             ],
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: () => _showNotificationDialog(context),
-              icon: Icon(Icons.add_rounded, size: 20, color: colorScheme.primary),
+              icon: Icon(
+                Icons.add_rounded,
+                size: 20,
+                color: colorScheme.primary,
+              ),
               label: Text('添加通知', style: TextStyle(color: colorScheme.primary)),
             ),
           ],
@@ -673,7 +749,10 @@ class _ConfigPageState extends State<ConfigPage> {
             child: SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
             ),
           ),
         ),
@@ -688,7 +767,9 @@ class _ConfigPageState extends State<ConfigPage> {
           children: [
             Text(
               '与良人共用。如网站地址、在一起的日子（首页展示相守时长）等。',
-              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -730,8 +811,9 @@ class _ConfigPageState extends State<ConfigPage> {
                       firstDate: DateTime(2000),
                       lastDate: DateTime.now(),
                     );
-                    if (picked != null && mounted) {
-                      final value = '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                    if (picked != null && context.mounted) {
+                      final value =
+                          '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                       _coupleSinceController.text = value;
                     }
                   },
@@ -749,7 +831,7 @@ class _ConfigPageState extends State<ConfigPage> {
                   configType: 'other',
                   description: '网站地址',
                 );
-                if (!mounted) return;
+                if (!context.mounted) return;
                 if (res.isSuccess) {
                   SnackBarUtils.showSuccess(context, '已保存');
                   _loadSystemConfigs();
@@ -769,7 +851,7 @@ class _ConfigPageState extends State<ConfigPage> {
                   configType: 'other',
                   description: '在一起的日子',
                 );
-                if (!mounted) return;
+                if (!context.mounted) return;
                 if (res.isSuccess) {
                   SnackBarUtils.showSuccess(context, '已保存');
                   _loadSystemConfigs();
@@ -785,7 +867,11 @@ class _ConfigPageState extends State<ConfigPage> {
     );
   }
 
-  Future<void> _showNotificationDialog(BuildContext context, {NotificationConfigModel? existing}) async {
+  Future<void> _showNotificationDialog(
+    BuildContext context, {
+    NotificationConfigModel? existing,
+  }) async {
+    final pageContext = context;
     final nameCtrl = TextEditingController(text: existing?.notifyName ?? '');
     final typeCtrl = TextEditingController(text: existing?.notifyType ?? '');
     final webhookCtrl = TextEditingController(text: existing?.webhookUrl ?? '');
@@ -858,9 +944,9 @@ class _ConfigPageState extends State<ConfigPage> {
                 final notifyType = typeCtrl.text.trim();
                 final notifyName = nameCtrl.text.trim();
                 if (notifyType.isEmpty || notifyName.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('请填写通知类型和名称')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('请填写通知类型和名称')));
                   return;
                 }
                 Navigator.pop(ctx);
@@ -871,12 +957,12 @@ class _ConfigPageState extends State<ConfigPage> {
                   apiKey: apiKeyCtrl.text.trim(),
                   description: descCtrl.text.trim(),
                 );
-                if (!mounted) return;
+                if (!pageContext.mounted) return;
                 if (res.isSuccess) {
-                  SnackBarUtils.showSuccess(context, '通知配置已保存，与良人共用');
+                  SnackBarUtils.showSuccess(pageContext, '通知配置已保存，与良人共用');
                   _loadNotifications();
                 } else {
-                  SnackBarUtils.showError(context, res.msg);
+                  SnackBarUtils.showError(pageContext, res.msg);
                 }
               },
               child: const Text('保存'),

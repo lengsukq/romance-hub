@@ -5,11 +5,7 @@ class InfoRowCard extends StatelessWidget {
   final String label;
   final String value;
 
-  const InfoRowCard({
-    super.key,
-    required this.label,
-    required this.value,
-  });
+  const InfoRowCard({super.key, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {

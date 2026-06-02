@@ -23,10 +23,7 @@ class UserService {
       );
     } catch (e) {
       AppLogger.e('获取用户信息失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取用户信息失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取用户信息失败: ${e.toString()}');
     }
   }
 
@@ -45,10 +42,7 @@ class UserService {
       );
     } catch (e) {
       AppLogger.e('获取关联者信息失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取关联者信息失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取关联者信息失败: ${e.toString()}');
     }
   }
 
@@ -75,10 +69,7 @@ class UserService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('更新用户信息失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '更新用户信息失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '更新用户信息失败: ${e.toString()}');
     }
   }
 
@@ -91,21 +82,17 @@ class UserService {
       );
 
       final responseData = response.data as Map<String, dynamic>;
-      return ApiResponse<int>.fromJson(
-        responseData,
-        (data) {
-          if (data == null) return 0;
-          if (data is int) return data;
-          if (data is Map && data['score'] != null) return (data['score'] as num).toInt();
-          return 0;
-        },
-      );
+      return ApiResponse<int>.fromJson(responseData, (data) {
+        if (data == null) return 0;
+        if (data is int) return data;
+        if (data is Map && data['score'] != null) {
+          return (data['score'] as num).toInt();
+        }
+        return 0;
+      });
     } catch (e) {
       AppLogger.e('获取积分失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '获取积分失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '获取积分失败: ${e.toString()}');
     }
   }
 
@@ -122,10 +109,7 @@ class UserService {
       return ApiResponse<void>.fromJson(responseData, null);
     } catch (e) {
       AppLogger.e('退出登录失败', e);
-      return ApiResponse(
-        code: 500,
-        msg: '退出登录失败: ${e.toString()}',
-      );
+      return ApiResponse(code: 500, msg: '退出登录失败: ${e.toString()}');
     }
   }
 }

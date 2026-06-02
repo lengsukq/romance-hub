@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -97,16 +99,20 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
     try {
       final url = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
       final uri = Uri.parse(url);
-      final dio = Dio(BaseOptions(
-        baseUrl: url,
-        connectTimeout: const Duration(seconds: 8),
-        receiveTimeout: const Duration(seconds: 5),
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: url,
+          connectTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
       // 测试时对该 host 放宽证书校验，以排除“浏览器能开、App 报证书错误”的情况
       final testHost = uri.host;
       final adapter = IOHttpClientAdapter();
-      adapter.onHttpClientCreate = (client) {
-        client.badCertificateCallback = (_, String host, __) => host == testHost;
+      adapter.createHttpClient = () {
+        final client = HttpClient();
+        client.badCertificateCallback = (cert, String host, port) =>
+            host == testHost;
         return client;
       };
       dio.httpClientAdapter = adapter;
@@ -143,15 +149,15 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('无法打开浏览器')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('无法打开浏览器')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('打开失败: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('打开失败: $e')));
       }
     }
   }
@@ -162,15 +168,19 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
       _networkResults[label] = '…';
     });
     try {
-      final dio = Dio(BaseOptions(
-        connectTimeout: const Duration(seconds: 6),
-        receiveTimeout: const Duration(seconds: 6),
-      ));
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 6),
+          receiveTimeout: const Duration(seconds: 6),
+        ),
+      );
       final response = await dio.get(url);
       if (mounted) {
         setState(() {
           _networkTestingLabel = null;
-          _networkResults[label] = response.statusCode == 200 ? '✓' : '${response.statusCode}';
+          _networkResults[label] = response.statusCode == 200
+              ? '✓'
+              : '${response.statusCode}';
         });
       }
     } on DioException catch (e) {
@@ -211,9 +221,9 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
           widget.onUrlUpdated();
           if (ctx.mounted) {
             Navigator.of(ctx).pop();
-            ScaffoldMessenger.of(ctx).showSnackBar(
-              const SnackBar(content: Text('云阁已更新，可再次测试连接')),
-            );
+            ScaffoldMessenger.of(
+              ctx,
+            ).showSnackBar(const SnackBar(content: Text('云阁已更新，可再次测试连接')));
           }
         },
       ),
@@ -245,7 +255,11 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(theme: theme, colorScheme: colorScheme, title: '构建模式'),
+            _SectionTitle(
+              theme: theme,
+              colorScheme: colorScheme,
+              title: '构建模式',
+            ),
             Text(
               _buildMode,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -262,7 +276,11 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
               ),
             ],
             const SizedBox(height: 20),
-            _SectionTitle(theme: theme, colorScheme: colorScheme, title: '网络连通性'),
+            _SectionTitle(
+              theme: theme,
+              colorScheme: colorScheme,
+              title: '网络连通性',
+            ),
             Text(
               '点下面地址可测本机是否能上网。若都连不上，多为权限或网络问题；若只有云阁连不上，多为云阁地址/证书问题。',
               style: theme.textTheme.bodySmall?.copyWith(
@@ -289,25 +307,43 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
                 OutlinedButton.icon(
                   onPressed: () {
                     final url = widget.currentBaseUrl.trim().isNotEmpty
-                        ? (widget.currentBaseUrl.endsWith('/') ? widget.currentBaseUrl : '${widget.currentBaseUrl}/')
+                        ? (widget.currentBaseUrl.endsWith('/')
+                              ? widget.currentBaseUrl
+                              : '${widget.currentBaseUrl}/')
                         : AppConfig.defaultBaseUrl;
                     _openInBrowser(url);
                   },
-                  icon: Icon(Icons.open_in_browser_rounded, size: 18, color: colorScheme.primary),
+                  icon: Icon(
+                    Icons.open_in_browser_rounded,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
                   label: const Text('用浏览器打开云阁'),
-                  style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
                   onPressed: () => _openInBrowser('https://www.baidu.com'),
-                  icon: Icon(Icons.language_rounded, size: 18, color: colorScheme.primary),
+                  icon: Icon(
+                    Icons.language_rounded,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
                   label: const Text('用浏览器打开百度'),
-                  style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            _SectionTitle(theme: theme, colorScheme: colorScheme, title: '云阁地址'),
+            _SectionTitle(
+              theme: theme,
+              colorScheme: colorScheme,
+              title: '云阁地址',
+            ),
             Text(
               widget.currentBaseUrl.isEmpty ? '未配置' : widget.currentBaseUrl,
               style: theme.textTheme.bodySmall?.copyWith(
@@ -321,9 +357,15 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
               children: [
                 OutlinedButton.icon(
                   onPressed: _openConfigDialog,
-                  icon: Icon(Icons.edit_rounded, size: 18, color: colorScheme.primary),
+                  icon: Icon(
+                    Icons.edit_rounded,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
                   label: const Text('配置云阁'),
-                  style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 FilledButton.icon(
@@ -337,14 +379,22 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
                             color: colorScheme.onPrimary,
                           ),
                         )
-                      : Icon(Icons.wifi_find_rounded, size: 18, color: colorScheme.onPrimary),
+                      : Icon(
+                          Icons.wifi_find_rounded,
+                          size: 18,
+                          color: colorScheme.onPrimary,
+                        ),
                   label: Text(_isTesting ? '连接中…' : '测试连接'),
                 ),
               ],
             ),
             if (hasHost) ...[
               const SizedBox(height: 16),
-              _SectionTitle(theme: theme, colorScheme: colorScheme, title: '证书校验'),
+              _SectionTitle(
+                theme: theme,
+                colorScheme: colorScheme,
+                title: '证书校验',
+              ),
               Row(
                 children: [
                   Expanded(
@@ -373,15 +423,21 @@ class _DebugPanelDialogState extends State<DebugPanelDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.6,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      _connectionStatus == '连接成功' ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                      _connectionStatus == '连接成功'
+                          ? Icons.check_circle_rounded
+                          : Icons.info_outline_rounded,
                       size: 20,
-                      color: _connectionStatus == '连接成功' ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                      color: _connectionStatus == '连接成功'
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 10),
                     Expanded(

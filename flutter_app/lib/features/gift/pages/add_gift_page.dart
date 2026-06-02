@@ -24,7 +24,7 @@ class _AddGiftPageState extends State<AddGiftPage> {
   final GiftService _giftService = GiftService();
   final UploadService _uploadService = UploadService();
   final ImagePicker _imagePicker = ImagePicker();
-  
+
   File? _selectedImage;
   String? _uploadedImageUrl;
   bool _isUploadingImage = false;
@@ -42,7 +42,9 @@ class _AddGiftPageState extends State<AddGiftPage> {
   Future<void> _pickImage() async {
     if (_isUploadingImage) return;
     try {
-      final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
       if (image == null || !mounted) return;
       final file = File(image.path);
       setState(() {
@@ -52,14 +54,16 @@ class _AddGiftPageState extends State<AddGiftPage> {
       });
       final uploadResponse = await _uploadService.uploadImage(file);
       if (!mounted) return;
-      if (uploadResponse.isSuccess && uploadResponse.data != null && uploadResponse.data!.isNotEmpty) {
+      if (uploadResponse.isSuccess &&
+          uploadResponse.data != null &&
+          uploadResponse.data!.isNotEmpty) {
         setState(() {
           _uploadedImageUrl = uploadResponse.data;
           _isUploadingImage = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('图片上传成功')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('图片上传成功')));
       } else {
         setState(() {
           _selectedImage = null;
@@ -67,7 +71,11 @@ class _AddGiftPageState extends State<AddGiftPage> {
           _isUploadingImage = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(uploadResponse.msg.isNotEmpty ? uploadResponse.msg : '图片上传失败')),
+          SnackBar(
+            content: Text(
+              uploadResponse.msg.isNotEmpty ? uploadResponse.msg : '图片上传失败',
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -78,9 +86,9 @@ class _AddGiftPageState extends State<AddGiftPage> {
           _uploadedImageUrl = null;
           _isUploadingImage = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('选择或上传图片失败')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('选择或上传图片失败')));
       }
     }
   }
@@ -132,9 +140,9 @@ class _AddGiftPageState extends State<AddGiftPage> {
     }
     if (!_formKey.currentState!.validate()) return;
     if (_isUploadingImage) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请等待图片上传完成')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请等待图片上传完成')));
       return;
     }
 
@@ -155,24 +163,24 @@ class _AddGiftPageState extends State<AddGiftPage> {
 
       if (response.isSuccess) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('添加成功')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('添加成功')));
           context.go(AppRoutes.gifts);
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.msg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(response.msg)));
         }
       }
     } catch (e) {
       AppLogger.e('添加礼物失败', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('添加失败，请重试')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('添加失败，请重试')));
       }
     } finally {
       if (mounted) {
@@ -252,7 +260,10 @@ class _AddGiftPageState extends State<AddGiftPage> {
                   ? SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.onPrimary),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
                     )
                   : const Icon(Icons.image_rounded),
               label: Text(_isUploadingImage ? '上传中…' : '选择图片（选填）'),
@@ -282,7 +293,10 @@ class _AddGiftPageState extends State<AddGiftPage> {
                         children: [
                           CircularProgressIndicator(color: colorScheme.primary),
                           const SizedBox(height: 8),
-                          Text('上传中…', style: TextStyle(color: colorScheme.onSurface)),
+                          Text(
+                            '上传中…',
+                            style: TextStyle(color: colorScheme.onSurface),
+                          ),
                         ],
                       ),
                     ),
@@ -291,14 +305,18 @@ class _AddGiftPageState extends State<AddGiftPage> {
             ],
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: (_isSubmitting || _isUploadingImage) ? null : _submitGift,
+              onPressed: (_isSubmitting || _isUploadingImage)
+                  ? null
+                  : _submitGift,
               child: _isSubmitting
                   ? SizedBox(
                       height: 22,
                       width: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.onPrimary,
+                        ),
                       ),
                     )
                   : const Text('添加'),
